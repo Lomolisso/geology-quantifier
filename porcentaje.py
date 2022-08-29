@@ -9,7 +9,7 @@ Encuentra un color (negro)
 Se busca el porcentaje de este color
 '''
 
-img = cv2.imread('b4Sombra.png')
+img = cv2.imread('geology-quantifier/b4Sombra.png')
 # Here, you define your target color as
 # a tuple of three values: RGB
 green = [0, 0, 0]

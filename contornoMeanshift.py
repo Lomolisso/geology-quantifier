@@ -18,7 +18,7 @@ import numpy as np
 
 from skimage.filters import threshold_otsu
 
-img = cv2.imread('b4.png')
+img = cv2.imread('geology-quantifier/b4.png')
 img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 Z = np.float32(img.reshape((-1,3)))
 
