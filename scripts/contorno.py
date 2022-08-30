@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import sys
+import api_fm
 from matplotlib import pyplot as plt
 # import Image
 
@@ -28,10 +29,10 @@ def maxCoords(lines):
                 
     return xmin,ymin,xmax,ymax
 #input para leer el archivo
-file_name = input("enter the name of the image file: ")
+file_name = api_fm.load_image()
 # file_name = 'Litologia-_Areniscas..jpg'
 
-img = cv2.imread(file_name)
+img = api_fm.load_image()
 img = cv2.resize(img, (int(img.shape[1]*0.2),int(img.shape[0]*0.2)))
 # cv2.imshow('image', img)
 

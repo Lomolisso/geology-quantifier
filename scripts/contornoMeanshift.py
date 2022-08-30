@@ -15,9 +15,10 @@ plt.show()
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
+import api_fm
 
 
-org_img = cv2.imread('../img/processed/isolated_long_jurel.png')
+org_img = api_fm.load_image()
 
 cv2.imshow("original", org_img)
 
