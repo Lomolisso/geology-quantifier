@@ -15,6 +15,7 @@ def load_image():
     # Ask for the image to load.
     filename = filedialog.askopenfilename(initialdir="../img", title="Select a File", filetypes=(("Image files","*.png *.jpg"), ("all files", ".*")))
     root.withdraw()
+    print(f"Loading image with name: {filename}")
     # Return the readed image as a matrix.
     return cv2.imread(filename)
 
@@ -25,6 +26,7 @@ def save_image(img):
     # Ask for the path where the image will be saved.
     filename = filedialog.asksaveasfilename(initialdir="../img", title="Select a File", filetypes=(("Image files","*.png *.jpg"), ("all files", ".*")))
     root.withdraw()
+    print(f"Saving image with name: {filename}")
     # Save image using cv2 save method.
     # TODO get image type besides hardcode the type.
     cv2.imwrite(f"{filename}.png", img)
