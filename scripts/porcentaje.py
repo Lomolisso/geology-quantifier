@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+from api_fm import load_image
 
 '''
 se le aplica un algoritmo desconocido
@@ -9,7 +10,7 @@ Encuentra un color (negro)
 Se busca el porcentaje de este color
 '''
 
-img = cv2.imread('../img/raw/b4Sombra.png')
+img = load_image()
 # Here, you define your target color as
 # a tuple of three values: RGB
 green = [0, 0, 0]
@@ -20,7 +21,7 @@ diff = 0
 
 # Be aware that opencv loads image in BGR format,
 # that's why the color values have been adjusted here:
-boundaries = [([green[2], green[1]-diff, green[0]-diff],
+boundaries = [([green[2]-diff, green[1]-diff, green[0]-diff],
            [green[2]+diff, green[1]+diff, green[0]+diff])]
 
 # Scale your BIG image into a small one:
@@ -51,6 +52,7 @@ for (lower, upper) in boundaries:
     # All the pixels that do not fall inside this interval will
     # be rendered in black, for all three channels:
     mask = cv2.inRange(img, lower, upper)
+    print(mask)
 
     # Check out the binary mask:
     cv2.imshow("binary mask", mask)
