@@ -29,7 +29,7 @@ def maxCoords(lines):
                 
     return xmin,ymin,xmax,ymax
 #input para leer el archivo
-file_name = api_fm.load_image()
+#file_name = api_fm.load_image()
 # file_name = 'Litologia-_Areniscas..jpg'
 
 img = api_fm.load_image()
@@ -43,7 +43,7 @@ gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
 blur = cv2.GaussianBlur(gray,(3,3), cv2.BORDER_DEFAULT)
 # cannyB = cv2.Canny(1blur, 125, 175)
-canny = cv2.Canny(blur, 80, 175)
+canny = cv2.Canny(blur, 80, 100)
 
 lines = cv2.HoughLinesP(canny, 1, np.pi/180, 60, np.array([]), 50, 5)
 
@@ -54,7 +54,7 @@ img_cut = img[ymin:ymax,xmin:xmax]
 # cv2.imshow("lines in image1", img_cut)
 gray1 = cv2.cvtColor(img_cut, cv2.COLOR_BGR2GRAY)
 blur1 = cv2.GaussianBlur(gray1,(3,3), cv2.BORDER_DEFAULT)
-canny1 = cv2.Canny(blur1, 80, 150)
+canny1 = cv2.Canny(gray, 50, 100)
 # cv2.imshow('canny2', canny1)
 
 lines1 = cv2.HoughLinesP(canny1, 1, np.pi/180, 60, np.array([]), 50, 5)
@@ -66,11 +66,9 @@ img = img_cut1
 img = cv2.resize(img, (int(1296),int(1823)))
 img = cv2.resize(img, (int(img.shape[1]*0.3),int(img.shape[0]*0.3)))
 gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-canny = cv2.Canny(gray,50,200)
+canny = cv2.Canny(gray,50,100)
 canny = cv2.dilate(canny,None,iterations=1)
 # cv2.imshow('gray',canny)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
 #cv2.imshow('gray',thresh)
 contours, hierarchy = cv2.findContours(canny, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
 # print ('hierarchy=',hierarchy)
@@ -81,11 +79,6 @@ for c in contours:
     x,y,w,h = rect
     area = w*h
     if area< img_area*0.5 and area > img_area*0.20:
-        
-        # a = (rect[0]+50,rect[1]+50,rect[2]-100,rect[3]+10)
-        # print(rect)
-        #area = cv2.minAreaRect(rect)
-        #cv2.drawContours(img , [c], -1, (0,0,255), 3)
         cv2.rectangle(img , rect, (0,0,255), 1)
         rect_list.append(rect)
 
@@ -104,66 +97,6 @@ cv2.imshow('cut masked image', img2)
 
 
 
-import PIL
-from PIL import Image
-from matplotlib import pyplot as plt
-
-print("mask",rect_list[0])
-# im = masked #Image.open('./color_gradient.png')
-
-#cv.imread('home.jpg')
-color = ('b','g','r')
-for i,col in enumerate(color):
-    histr = cv2.calcHist([img2],[i],None,[256],[0,256])
-    plt.plot(histr,color = col)
-    plt.xlim([0,256])
-plt.show()
-
-img = cv2.cvtColor(img2, cv2.COLOR_BGR2HSV)
-# img = img2
-Z = np.float32(img.reshape((-1,3)))
-
-img = cv2.pyrMeanShiftFiltering(img, 20, 10, 6)
-img = cv2.cvtColor(img, cv2.COLOR_HSV2RGB)
-# debería estar en RGB o BGR???
-img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
-
-# plt.imshow(img)
-# plt.show()
-
-imgray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-ret, thresh = cv2.threshold(imgray, 127, 255, 0)
-canny = cv2.Canny(imgray,50,200)
-cv2.imshow('canny',canny)
-contours, hierarchy = cv2.findContours(canny, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
-print ('hierarchy=',hierarchy)
-cv2.drawContours(img , contours, -1, (0,0,255), 3)
-cv2.imshow('imagen',img)
-cv2.imshow('thresh', thresh)
-
 cv2.waitKey(0)
 cv2.destroyAllWindows()
 #"""
-"""
-import cv2
-import numpy as np
-url = 'images/Litologia-_Granito.jpg'
-img = cv2.imread(url)
-img = cv2.resize(img, (int(img.shape[1]*0.4),int(img.shape[0]*0.4)))
-mask = np.zeros(img.shape[:2],np.uint8)
-bgdModel = np.zeros((1,65),np.float64)
-fgdModel = np.zeros((1,65),np.float64)
-rect = (0,0,img.shape[0],img.shape[1])
-blur = cv2.blur(img, (7,7))
-cv2.grabCut(blur,mask,rect,bgdModel,fgdModel,1,cv2.GC_INIT_WITH_RECT)
-mask2 = np.where((mask==2)|(mask==0),0,1).astype('uint8')
-contornos,_ = cv2.findContours(mask2, cv2.RETR_EXTERNAL,
-      cv2.CHAIN_APPROX_SIMPLE)
-for c in contornos:
-    nvCont = cv2.convexHull(c)
-    cv2.drawContours(img, [nvCont], -1, (255,0,0), 3)
-
-
-cv2.imshow('frame',img)
-#img = img*mask2[:,:,np.newaxis]
-#cv.imshow('nombre',img)"""
