@@ -29,5 +29,8 @@ def save_image(img):
     print(f"Saving image with name: {filename}")
     # Save image using cv2 save method.
     # TODO get image type besides hardcode the type.
-    cv2.imwrite(f"{filename}.png", img)
-    return True
+    if filename == "":
+        return False
+    else:
+        cv2.imwrite(f"{filename}.png", img)
+        return True
