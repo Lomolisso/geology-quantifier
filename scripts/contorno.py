@@ -29,7 +29,7 @@ def maxCoords(lines):
                 
     return xmin,ymin,xmax,ymax
 #input para leer el archivo
-file_name = api_fm.load_image()
+
 # file_name = 'Litologia-_Areniscas..jpg'
 
 img = api_fm.load_image()
