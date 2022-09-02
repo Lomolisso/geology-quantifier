@@ -48,7 +48,7 @@ def order_points(pts):
     # y-coordinates so we can grab the top-left and bottom-left
     # points, respectively
     left_most = left_most[np.argsort(left_most[:, 1]), :]
-    tl, bl = left_most
+    a, b = left_most
 
     # now that we have the top-left coordinate, use it as an
     # anchor to calculate the Euclidean distance between the
@@ -58,13 +58,13 @@ def order_points(pts):
     # we are dealing with rectangles only.
     # We need to use this instead of just using min/max to handle the case where
     # there are points that have the same x or y value.
-    dist = pointwise_distance(np.vstack([tl, tl]), right_most)
+    dist = pointwise_distance(np.vstack([a, b]), right_most)
     
-    br, tr = right_most[np.argsort(dist)[::-1], :]
+    d, c = right_most[np.argsort(dist)[::-1], :]
 
     # return the coordinates in top-left, top-right,
     # bottom-right, and bottom-left order
-    return np.array([tl, bl, br, tr], dtype="float")
+    return np.array([b, a, d, c], dtype="float")
 
 
 def click_and_crop(event, x, y, flags, param):
