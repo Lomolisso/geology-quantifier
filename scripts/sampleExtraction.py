@@ -1,6 +1,9 @@
+"""
+Script to manualy cut the target sample of an image.
+You can do it calling extract_sample() and selecting the desire image.
+"""
 import cv2
 import numpy as np
-import pyvista as pv
 import api_fm
 
 # Variables globales
@@ -111,7 +114,7 @@ def click_and_crop(event, x, y, flags, param):
             M = cv2.getPerspectiveTransform(input_pts,output_pts)
             out = cv2.warpPerspective(clone,M,(maxWidth, maxHeight),flags=cv2.INTER_LINEAR)
 
-def function_out():
+def extract_sample():
     global img, out, clone, refPt, cont
     # Cargamos la imagen, ajustando sus dimenciones para que se pueda
     # visualizar completa en la pantalla.
@@ -143,23 +146,4 @@ def function_out():
     # close all open windows
     cv2.destroyAllWindows()
 
-    # ajustamos la imagen recien cortada para colocarla sobre el tubo
-    #out = cv2.flip(out, 1)
-    #outRGB = cv2.cvtColor(out, cv2.COLOR_BGR2RGB)
-    #tex = pv.numpy_to_texture(outRGB)
-    # Creamos el tubo y luego cargamos sobre él la textura, para
-    # luego visualizarlo
-    #surf = pv.read('.\scripts\\tubo.obj')
-    #surf.plot(texture=tex, background="black")
     return out
-
-
-def cilindro(image):
-    out = cv2.flip(image, 1)
-    outRGB = cv2.cvtColor(out, cv2.COLOR_BGR2RGB)
-    tex = pv.numpy_to_texture(outRGB)
-    #Creamos el tubo y luego cargamos sobre él la textura, para
-    #luego visualizarlo
-    surf = pv.read('.\scripts\\tubo.obj')
-    surf.plot(texture=tex, background="black")
-    return True
