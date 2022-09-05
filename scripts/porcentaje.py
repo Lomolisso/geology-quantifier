@@ -10,7 +10,7 @@ Encuentra un color (negro)
 Se busca el porcentaje de este color
 '''
 
-img = load_image()
+img, img_name = load_image()
 # Here, you define your target color as
 # a tuple of three values: RGB
 green = [0, 0, 0]
