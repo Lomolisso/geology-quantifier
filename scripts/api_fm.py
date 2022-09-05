@@ -31,3 +31,13 @@ def save_image(img):
     # TODO get image type besides hardcode the type.
     cv2.imwrite(f"{filename}.png", img)
     return True
+
+def save_image_as(img):
+    """
+    Method to save an image from a selected path by name.
+    """
+    filename = filedialog.asksaveasfilename(initialdir="../img", title="Save as", filetypes=(("Image files","*.png *.jpg"), ("all files", ".*")))
+    root.withdraw()
+    print(f"Saving image as: {filename}")
+    cv2.imwrite(f"{filename}.png", img)
+    return True

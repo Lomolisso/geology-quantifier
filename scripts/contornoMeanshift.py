@@ -57,6 +57,7 @@ for K in range(2,10):
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
     attempts=10
     ret,label,center=cv2.kmeans(twoDimage,K,None,criteria,attempts,cv2.KMEANS_PP_CENTERS)
+    # ret,label,center=cv2.kmeans(twoDimage,K,None,criteria,attempts,cv2.KMEANS_RANDOM_CENTERS)
     center = np.uint8(center)
     
     res = center[label.flatten()]
@@ -70,6 +71,8 @@ for K in range(2,10):
         masked_image = np.copy(im)
         # convert to the shape of a vector of pixel values
         masked_image = masked_image.reshape((-1, 3))
+
+
         # color (i.e cluster) to disable
         
         masked_image[label != cluster] = [0, 0, 0]
@@ -78,6 +81,9 @@ for K in range(2,10):
         masked_image = masked_image.reshape(im.shape)
         # show the image
         cv2.imshow(f'{cluster}',masked_image)
+        # api_fm.save_image(cluster)
+        api_fm.save_image_as(cluster)
+    
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
