@@ -3,7 +3,7 @@ from api_fm import load_image, save_image
 
 #Porcentaje en el que se redimensiona la imagen
 scale_percent = 50
-src, img_name = load_image()
+src = load_image()
 #calcular el 50 por ciento de las dimensiones originales
 width = int(src.shape[1] * scale_percent / 100)
 height = int(src.shape[0] * scale_percent / 100)

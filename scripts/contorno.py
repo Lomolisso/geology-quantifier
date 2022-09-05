@@ -32,7 +32,7 @@ def maxCoords(lines):
 #file_name = api_fm.load_image()
 # file_name = 'Litologia-_Areniscas..jpg'
 
-img, img_name = api_fm.load_image()
+img = api_fm.load_image()
 img = cv2.resize(img, (int(img.shape[1]*0.2),int(img.shape[0]*0.2)))
 cv2.imshow('image', img)
 

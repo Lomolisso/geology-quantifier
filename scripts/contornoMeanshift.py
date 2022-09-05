@@ -18,7 +18,7 @@ import numpy as np
 import api_fm
 
 
-org_img, img_name = api_fm.load_image()
+org_img = api_fm.load_image()
 
 cv2.imshow("original", org_img)
 

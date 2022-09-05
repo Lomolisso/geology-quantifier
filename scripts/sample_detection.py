@@ -24,7 +24,7 @@ ASPECT_RATIO = 9, 16
 RESOLUTION = 1080, 1920
 
 
-img, img_name = load_image()
+img = load_image()
 
 # First we resize the input to the standards.
 resized_img = cv2.resize(img, RESOLUTION)
