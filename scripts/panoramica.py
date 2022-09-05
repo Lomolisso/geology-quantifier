@@ -7,6 +7,9 @@ import api_fm
 refPt = []
 refPt_array = np.zeros((4,2), dtype='float')
 cont = 0
+img = []
+clone = []
+out = []
 
 def pointwise_distance(pts1, pts2):
     """Calculates the distance between pairs of points
@@ -108,9 +111,10 @@ def click_and_crop(event, x, y, flags, param):
             M = cv2.getPerspectiveTransform(input_pts,output_pts)
             out = cv2.warpPerspective(clone,M,(maxWidth, maxHeight),flags=cv2.INTER_LINEAR)
 
-if __name__ == '__main__':
+def function_out():
+    global img, out, clone, refPt, cont
     # Cargamos la imagen, ajustando sus dimenciones para que se pueda
-    # visualizar completa en la pantalla. 
+    # visualizar completa en la pantalla.
     img = api_fm.load_image()
     img = cv2.resize(img, (int(img.shape[1]*0.2),int(img.shape[0]*0.2)))
     clone = img.copy()
@@ -140,10 +144,22 @@ if __name__ == '__main__':
     cv2.destroyAllWindows()
 
     # ajustamos la imagen recien cortada para colocarla sobre el tubo
-    out = cv2.flip(out, 1)
-    outRGB = cv2.cvtColor(out, cv2.COLOR_BGR2RGB)
-    tex = pv.numpy_to_texture(outRGB)
+    #out = cv2.flip(out, 1)
+    #outRGB = cv2.cvtColor(out, cv2.COLOR_BGR2RGB)
+    #tex = pv.numpy_to_texture(outRGB)
     # Creamos el tubo y luego cargamos sobre él la textura, para
     # luego visualizarlo
+    #surf = pv.read('.\scripts\\tubo.obj')
+    #surf.plot(texture=tex, background="black")
+    return out
+
+
+def cilindro(image):
+    out = cv2.flip(image, 1)
+    outRGB = cv2.cvtColor(out, cv2.COLOR_BGR2RGB)
+    tex = pv.numpy_to_texture(outRGB)
+    #Creamos el tubo y luego cargamos sobre él la textura, para
+    #luego visualizarlo
     surf = pv.read('.\scripts\\tubo.obj')
     surf.plot(texture=tex, background="black")
+    return True
