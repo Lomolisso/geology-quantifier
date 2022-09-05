@@ -1,4 +1,5 @@
 import cv2
+import matplotlib.pyplot as plt
 import numpy as np
 from pywt import dwt2
 from skimage.filters import gabor, gaussian
@@ -7,10 +8,14 @@ from sklearn.preprocessing import StandardScaler
 
 from api_fm import load_image
 
+# ----- Gabor filters params -----
+ORIENTATIONS = [(np.pi/6)*i for i in range(0,6)] # {0, 30, 60, 90, 120, 150}
+FREQUENCIES = [np.sqrt(2), 1+np.sqrt(2), 2+np.sqrt(2), 2*np.sqrt(2)] # empiric
+CLUSTERS = 2
 
 # ----- Utilities -----
 def get_energy_density(pixels):
-    SCALE_FACTOR = 100 # scaling needed if density is small float
+    SCALE_FACTOR = 1 # scaling needed if density is small float
     _, (cH, cV, cD) = dwt2(pixels.T, 'db1')
     energy = (cH ** 2 + cV ** 2 + cD ** 2).sum() / pixels.size
     energy_density = energy / (pixels.shape[0]*pixels.shape[1])
@@ -30,22 +35,19 @@ def get_magnitude(re_filter, im_filter):
 
     return magnitude
 
-def apply_pca(array):
-    """
-    :param array: array of shape pXd
-    :return: reduced and transformed array of shape dX1
-    """
-    # apply dimensionality reduction to the input array
-    standardized_data = StandardScaler().fit_transform(array)
-    pca = PCA(n_components=1)
-    pca.fit(standardized_data)
-    transformed_data = pca.transform(standardized_data)
-    return transformed_data
+def label2rgb(labels):
+  """
+  Convert a labels image to an rgb image using a matplotlib colormap
+  """
+  label_range = np.linspace(0, 1, 256)
+  lut = np.uint8(plt.cm.viridis(label_range)[:,2::-1]*256).reshape(256, 1, 3) # replace viridis with a matplotlib colormap of your choice
+  return cv2.LUT(cv2.merge((labels, labels, labels)), lut)
 
+# ----- Main script -----
 
 def main():
     img = load_image()
-    
+
     # Pre processing the img
     img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     rows, cols = img.shape
@@ -57,34 +59,63 @@ def main():
 
     # Apply the filters to the img
     magnitude_dict = {}
-    for theta in np.arange(0, np.pi, np.pi / 6):
-        for freq in np.array([1.4142135623730951, 2.414213562373095, 2.8284271247461903, 3.414213562373095]): 
+    for theta in ORIENTATIONS:
+        for freq in FREQUENCIES:
             re_filter, im_filter = gabor(img, frequency=freq, bandwidth=bandwidth, theta=theta)
             magnitude_dict[(theta, freq)] = get_magnitude(re_filter, im_filter)
-            #img_gab = cv2.getGaborKernel()
-            #magnitude_dict[(theta, freq)] = img_gab
 
     # Apply gaussian smoothing to the magnitudes
-    gabor_mag = np.array([
+    gabor_mags = np.array([
         gaussian(gab_filter_mag, sigma=0.5*freq)
         for (_, freq), gab_filter_mag in magnitude_dict.items()
     ])
 
-    # Reshape so that we can apply PCA
-    value = gabor_mag.reshape((-1, rows * cols))
+    for i, mag in enumerate(gabor_mags):
+        cv2.imshow(f"Texture {i}", np.uint8(mag))
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
 
-    # Get dimensionally reduced image
-    pca_img_arr = apply_pca(value.T).astype(np.uint8)
+    # Reshape the array before standarizing
+    reshaped_gabor_mags = gabor_mags.reshape((-1, rows * cols))
+
+    # Standarize the array before applying PCA
+    standardized_data = StandardScaler().fit_transform(reshaped_gabor_mags.T)
+    
+    # Apply PCA to reduce the components to 1, i.e. from 24 
+    # gabor features we reduce them to only one.
+    pca = PCA(n_components=1).fit(standardized_data)
+    pca_img_arr = pca.transform(standardized_data).astype(np.uint8)
+
+    # Reshape the array to the dimensions of the image
     result = pca_img_arr.reshape((rows, cols))
-
-    cv2.imshow(f"Image segmented by textures", result)
+    cv2.imshow(f"Gabor feature bank (PCA)", result)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
+"""
+    # Let N = len(gabor_mags), to segmentate the image we will 
+    # apply KMeans in a N-dimension space where each dim. is a 
+    # gabor feature.
+
+    # Create the DataFrame
+    gabor_feature_bank = gabor_mags.reshape((rows * cols, -1))
+
+    # Standarize the data before applying PCA
+    std_gabor = StandardScaler().fit_transform(gabor_feature_bank)
+    
+    # Apply PCA to avoid the curse of dimensionality
+    pca = PCA(n_components=12).fit(std_gabor)
+    pca_gabor = np.float32(pca.transform(std_gabor))
+
+    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 100, 0.85)
+    _, labels, _ = cv2.kmeans(np.float32(gabor_feature_bank), CLUSTERS, None, criteria, 10, cv2.KMEANS_RANDOM_CENTERS)
+
+    x = labels.flatten().reshape(rows, cols)
+    
+    cv2.imshow(f"Gabor feature bank (PCA)", np.float32(x))
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+"""
+
 if __name__ == "__main__":
     main()
-
-
-
-
-    
