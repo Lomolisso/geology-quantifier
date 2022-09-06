@@ -1,16 +1,12 @@
-
-
-import numpy as np
-
 import cv2
-import sys 
-from PIL import Image, ImageEnhance
-from PIL import ImageFilter
-from skimage.filters import gabor, gaussian
-from IPython.display import display 
+import numpy as np
 from pywt import dwt2
+from skimage.filters import gabor, gaussian
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
+
+from api_fm import load_image
+
 
 # ----- Utilities -----
 def get_energy_density(pixels):
@@ -47,12 +43,9 @@ def apply_pca(array):
     return transformed_data
 
 
-
-
-
-def main(file_name):
-    img = cv2.imread(f"../img/processed/{file_name}")
-
+def main():
+    img = load_image()
+    
     # Pre processing the img
     img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     rows, cols = img.shape
@@ -68,7 +61,8 @@ def main(file_name):
         for freq in np.array([1.4142135623730951, 2.414213562373095, 2.8284271247461903, 3.414213562373095]): 
             re_filter, im_filter = gabor(img, frequency=freq, bandwidth=bandwidth, theta=theta)
             magnitude_dict[(theta, freq)] = get_magnitude(re_filter, im_filter)
-    
+            #img_gab = cv2.getGaborKernel()
+            #magnitude_dict[(theta, freq)] = img_gab
 
     # Apply gaussian smoothing to the magnitudes
     gabor_mag = np.array([
@@ -88,7 +82,7 @@ def main(file_name):
     cv2.destroyAllWindows()
 
 if __name__ == "__main__":
-    main(sys.argv[1])
+    main()
 
 
 
