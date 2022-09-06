@@ -108,41 +108,42 @@ def click_and_crop(event, x, y, flags, param):
             M = cv2.getPerspectiveTransform(input_pts,output_pts)
             out = cv2.warpPerspective(clone,M,(maxWidth, maxHeight),flags=cv2.INTER_LINEAR)
 
-# Cargamos la imagen, ajustando sus dimenciones para que se pueda
-# visualizar completa en la pantalla. 
-img = api_fm.load_image()
-img = cv2.resize(img, (int(img.shape[1]*0.2),int(img.shape[0]*0.2)))
-clone = img.copy()
-out = img.copy()
-# Creamos una nueva ventana donde se carga la función de mouse creada anteriormente.
-cv2.namedWindow("image")
-cv2.setMouseCallback("image", click_and_crop)
-# keep looping until the 'x' key is pressed
-while True:
-    # display the image and wait for a keypress
-    cv2.imshow("image", img)
-    key = cv2.waitKey(1) & 0xFF
-    # Si se preciona 'r' se vuelve a empezar de cero la selcción de puntos.
-    if key == ord("r"):
-        cont = 0
-        refPt = []
-        img = clone.copy()
-    # if the 'x' key is pressed, break from the loop
-    elif key == ord("x"):
-        break
-# if there are two reference points, then crop the region of interest
-# from teh image and display it
-if len(refPt) == 4:
-	cv2.imshow("Image cut", out)
-	cv2.waitKey(0)
-# close all open windows
-cv2.destroyAllWindows()
+if __name__ == '__main__':
+    # Cargamos la imagen, ajustando sus dimenciones para que se pueda
+    # visualizar completa en la pantalla. 
+    img = api_fm.load_image()
+    img = cv2.resize(img, (int(img.shape[1]*0.2),int(img.shape[0]*0.2)))
+    clone = img.copy()
+    out = img.copy()
+    # Creamos una nueva ventana donde se carga la función de mouse creada anteriormente.
+    cv2.namedWindow("image")
+    cv2.setMouseCallback("image", click_and_crop)
+    # keep looping until the 'x' key is pressed
+    while True:
+        # display the image and wait for a keypress
+        cv2.imshow("image", img)
+        key = cv2.waitKey(1) & 0xFF
+        # Si se preciona 'r' se vuelve a empezar de cero la selcción de puntos.
+        if key == ord("r"):
+            cont = 0
+            refPt = []
+            img = clone.copy()
+        # if the 'x' key is pressed, break from the loop
+        elif key == ord("x"):
+            break
+    # if there are two reference points, then crop the region of interest
+    # from teh image and display it
+    if len(refPt) == 4:
+        cv2.imshow("Image cut", out)
+        cv2.waitKey(0)
+    # close all open windows
+    cv2.destroyAllWindows()
 
-# ajustamos la imagen recien cortada para colocarla sobre el tubo
-out = cv2.flip(out, 1)
-outRGB = cv2.cvtColor(out, cv2.COLOR_BGR2RGB)
-tex = pv.numpy_to_texture(outRGB)
-# Creamos el tubo y luego cargamos sobre él la textura, para
-# luego visualizarlo
-surf = pv.read('.\scripts\\tubo.obj')
-surf.plot(texture=tex, background="black")
+    # ajustamos la imagen recien cortada para colocarla sobre el tubo
+    out = cv2.flip(out, 1)
+    outRGB = cv2.cvtColor(out, cv2.COLOR_BGR2RGB)
+    tex = pv.numpy_to_texture(outRGB)
+    # Creamos el tubo y luego cargamos sobre él la textura, para
+    # luego visualizarlo
+    surf = pv.read('.\scripts\\tubo.obj')
+    surf.plot(texture=tex, background="black")
