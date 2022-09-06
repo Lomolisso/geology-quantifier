@@ -91,9 +91,9 @@ def click_and_crop(event, x, y, flags, param):
             # en sentido antihorario y el primer punto es de más arriba a 
             # la izquierda.
             cv2.line(img, refPt[0], refPt[cont-1], (0,0,255), 2)
-            print(refPt)
+            # print(refPt)
             refPt = order_points(refPt_array)
-            print(refPt)
+            # print(refPt)
             
             # Se calculan las dimensiones del rectángulo
             width_AD = np.sqrt(((refPt[0][0] - refPt[3][0]) ** 2) + ((refPt[0][1] - refPt[3][1]) ** 2))
@@ -145,5 +145,8 @@ def extract_sample():
         cv2.waitKey(0)
     # close all open windows
     cv2.destroyAllWindows()
+    # Clean point buffer
+    refPt = []
+    cont = 0
 
     return out

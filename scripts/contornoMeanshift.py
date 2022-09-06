@@ -16,6 +16,7 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 import api_fm
+import sampleExtraction
 
 def run_histogram_equalization(rgb_img):
     # convert from RGB color-space to YCrCb
@@ -40,85 +41,114 @@ def contornoMeanshift(org_img):
     #img = cv2.pyrMeanShiftFiltering(img, 50, 5, 3)
     img = cv2.cvtColor(img, cv2.COLOR_HSV2RGB)
 
+def gen_masks(mask_num):
+    output_masks = []
+    # Get image from file
+    img = sampleExtraction.extract_sample()
+
+    # Kmeans stuff
+    twoDimage = img.reshape((-1,3))
+    twoDimage = np.float32(twoDimage)
+    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
+    attempts=10
+    _,label,_=cv2.kmeans(twoDimage,mask_num,None,criteria,attempts,cv2.KMEANS_PP_CENTERS)
+
+    label = label.flatten()
+    for cluster in range(0,mask_num):
+        # convert to the shape of a vector of pixel values
+        masked_image = np.copy(img)
+
+        # color (i.e cluster) to disable
+        masked_image = masked_image.reshape((-1, 3))
+        masked_image[label != cluster] = [0, 0, 0]
+
+        # convert back to original shape
+        masked_image = masked_image.reshape(img.shape)
+
+        # append mask to output
+        output_masks.append(masked_image)
+
+    return output_masks
+
 #img = cv2.pyrMeanShiftFiltering(img, 50, 5, 3)
-img = cv2.cvtColor(img, cv2.COLOR_HSV2RGB)
+#img = cv2.cvtColor(img, cv2.COLOR_HSV2RGB)
 
 #plt.imshow(img)
 #plt.show()
 
 
-img = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
-for K in range(2,10):
-    im = np.copy(img)
-    twoDimage = img.reshape((-1,3))
-    twoDimage = np.float32(twoDimage)
-    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
-    attempts=10
-    ret,label,center=cv2.kmeans(twoDimage,K,None,criteria,attempts,cv2.KMEANS_PP_CENTERS)
-    # ret,label,center=cv2.kmeans(twoDimage,K,None,criteria,attempts,cv2.KMEANS_RANDOM_CENTERS)
-    center = np.uint8(center)
+# img = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
+# for K in range(2,10):
+#     im = np.copy(img)
+#     twoDimage = img.reshape((-1,3))
+#     twoDimage = np.float32(twoDimage)
+#     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
+#     attempts=10
+#     ret,label,center=cv2.kmeans(twoDimage,K,None,criteria,attempts,cv2.KMEANS_PP_CENTERS)
+#     # ret,label,center=cv2.kmeans(twoDimage,K,None,criteria,attempts,cv2.KMEANS_RANDOM_CENTERS)
+#     center = np.uint8(center)
     
-    res = center[label.flatten()]
-    result_image = res.reshape((img.shape))
-    #cv2.imshow('imagen',result_image)
-    #cv2.waitKey(0)
-    #cv2.destroyAllWindows()
+#     res = center[label.flatten()]
+#     result_image = res.reshape((img.shape))
+#     #cv2.imshow('imagen',result_image)
+#     #cv2.waitKey(0)
+#     #cv2.destroyAllWindows()
     
-    label = label.flatten()
-    for cluster in range(0,K):
-        masked_image = np.copy(im)
-        # convert to the shape of a vector of pixel values
-        masked_image = masked_image.reshape((-1, 3))
+#     label = label.flatten()
+#     for cluster in range(0,K):
+#         masked_image = np.copy(im)
+#         # convert to the shape of a vector of pixel values
+#         masked_image = masked_image.reshape((-1, 3))
 
 
-        # color (i.e cluster) to disable
+#         # color (i.e cluster) to disable
         
-        masked_image[label != cluster] = [0, 0, 0]
+#         masked_image[label != cluster] = [0, 0, 0]
 
-        # convert back to original shape
-        masked_image = masked_image.reshape(im.shape)
-        # show the image
-        cv2.imshow(f'{cluster}',masked_image)
-        # api_fm.save_image(cluster)
-        api_fm.save_image_as(cluster)
+#         # convert back to original shape
+#         masked_image = masked_image.reshape(im.shape)
+#         # show the image
+#         cv2.imshow(f'{cluster}',masked_image)
+#         # api_fm.save_image(cluster)
+#         api_fm.save_image_as(cluster)
     
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+#     cv2.waitKey(0)
+#     cv2.destroyAllWindows()
     #plt.imshow(img)
     #plt.show()
 
 
-    img = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
-    for K in range(2,10):
-        im = np.copy(img)
-        twoDimage = img.reshape((-1,3))
-        twoDimage = np.float32(twoDimage)
-        criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
-        attempts=10
-        ret,label,center=cv2.kmeans(twoDimage,K,None,criteria,attempts,cv2.KMEANS_PP_CENTERS)
-        center = np.uint8(center)
-        
-        res = center[label.flatten()]
-        result_image = res.reshape((img.shape))
-        #cv2.imshow('imagen',result_image)
-        #cv2.waitKey(0)
-        #cv2.destroyAllWindows()
-        
-        label = label.flatten()
-        for cluster in range(0,K):
-            masked_image = np.copy(im)
-            # convert to the shape of a vector of pixel values
-            masked_image = masked_image.reshape((-1, 3))
-            # color (i.e cluster) to disable
-            
-            masked_image[label != cluster] = [0, 0, 0]
+#img = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
+# K = 3
+# im = np.copy(img)
+# twoDimage = img.reshape((-1,3))
+# twoDimage = np.float32(twoDimage)
+# criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
+# attempts=10
+# ret,label,center=cv2.kmeans(twoDimage,K,None,criteria,attempts,cv2.KMEANS_PP_CENTERS)
+# center = np.uint8(center)
 
-            # convert back to original shape
-            masked_image = masked_image.reshape(im.shape)
-            # show the image
-            cv2.imshow(f'{cluster}',masked_image)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
+# res = center[label.flatten()]
+# result_image = res.reshape((img.shape))
+# #cv2.imshow('imagen',result_image)
+# #cv2.waitKey(0)
+# #cv2.destroyAllWindows()
+
+# label = label.flatten()
+# for cluster in range(0,K):
+#     masked_image = np.copy(im)
+#     # convert to the shape of a vector of pixel values
+#     masked_image = masked_image.reshape((-1, 3))
+#     # color (i.e cluster) to disable
+    
+#     masked_image[label != cluster] = [0, 0, 0]
+
+#     # convert back to original shape
+#     masked_image = masked_image.reshape(im.shape)
+#     # show the image
+#     cv2.imshow(f'{cluster}',masked_image)
+# cv2.waitKey(0)
+# cv2.destroyAllWindows()
 
 """
 imgray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
