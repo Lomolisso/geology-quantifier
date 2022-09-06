@@ -17,7 +17,7 @@ def load_image():
     root.withdraw()
     print(f"Loading image with name: {filename}")
     # Return the readed image as a matrix.
-    return cv2.imread(filename),filename
+    return cv2.imread(filename)
 
 def save_image(img):
     """
