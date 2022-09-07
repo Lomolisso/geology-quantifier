@@ -68,7 +68,7 @@ def gen_masks(mask_num):
         # append mask to output
         output_masks.append(masked_image)
 
-    return output_masks
+    return output_masks, img
 
 #img = cv2.pyrMeanShiftFiltering(img, 50, 5, 3)
 #img = cv2.cvtColor(img, cv2.COLOR_HSV2RGB)

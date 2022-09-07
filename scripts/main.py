@@ -7,10 +7,11 @@ import porcentaje
 
 def gen_percent():
 	# Get mask using kmeans
-	cluster_masks = contornoMeanshift.gen_masks(3)
+	cluster_masks, img = contornoMeanshift.gen_masks(3)
 
 	# Show the masks
 	for i in range(len(cluster_masks)):
+		cv2.imshow(f"Original", img)
 		cv2.imshow(f"Cluster {i}",cluster_masks[i])
 		# Calculate and show the area pecent of the cluster in the image
 		mask_percent = porcentaje.porcentaje(cluster_masks[i])
