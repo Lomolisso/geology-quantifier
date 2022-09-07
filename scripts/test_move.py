@@ -31,42 +31,11 @@ def dif_circle(center, x, y):
     dif_y = abs(y - center[1])
     return math.sqrt(dif_x**2 + dif_y**2)
 
-move_circle_1 = False
-move_circle_2 = False
-move_circle_3 = False
-move_circle_4 = False
-BLUE = [255,0,0]
-RED = [0, 0, 255]
-GREEN = [0, 255, 0]
 
-#bg es la imagen, basta con cambiar la URL a la imagen deseada
 
-#Apliqué un rescale a la imagen, eso se puede modificar
 
-bg = rescale(cv.imread('imagenes/piedra_1.jpg'))
 
-bg_original = bg.copy()
-
-bg_size = bg.shape
-
-#radio de los puntos visibles en la imagen
-radius = 7
-
-#Estos son los 4 puntos (en orden son A, B, C y D), son variables globales
-#En teoría siempre son A, B, C y D en ese orden, a menos que alguien deforme el cuadrilátero visible
-#(o lo invierta), estos casos son mejorables pero lo haré a futuro (para impedir que un punto cruze
-# una línea)
-#Tienen valores iniciales equivalentes a las 4 esquinas de la imagen y se van modificando con el código,
-#si están muy esquinadas inicialmente se pueden correr algunos píxeles hacia adentro en la pos. inicial
-
-r1_center = (0,0)
-r2_center = (0,bg_size[0])
-r3_center = (bg_size[1],0)
-r4_center = (bg_size[1],bg_size[0])
-
-draw_circles_and_lines(bg, radius, r1_center, r2_center, r3_center, r4_center)
-
-def mouse(event,x,y,flags,params):
+def mouse(event,x,y, flags, params):
     global move_circle_1, move_circle_2, move_circle_3, move_circle_4, BLUE, bg
     global r1_center, r2_center, r3_center, r4_center, bg_size
     if event == cv.EVENT_LBUTTONDOWN:
@@ -102,7 +71,43 @@ def mouse(event,x,y,flags,params):
         move_circle_4 = False
 
 if __name__ == '__main__':
-    rows, cols = bg.shape[:2][0] * 0.2 , bg.shape[:2][0] * 0.2
+
+    
+
+    move_circle_1 = False
+    move_circle_2 = False
+    move_circle_3 = False
+    move_circle_4 = False
+    BLUE = [255,0,0]
+    RED = [0, 0, 255]
+    GREEN = [0, 255, 0]
+
+    #bg es la imagen, basta con cambiar la URL a la imagen deseada
+
+    #Apliqué un rescale a la imagen, eso se puede modificar
+
+    bg = rescale(cv.imread('./img/raw/DIO_1_Panoramica.jpg'))
+
+    bg_original = bg.copy()
+
+    bg_size = bg.shape
+
+    #radio de los puntos visibles en la imagen
+    radius = 7
+
+    #Estos son los 4 puntos (en orden son A, B, C y D), son variables globales
+    #En teoría siempre son A, B, C y D en ese orden, a menos que alguien deforme el cuadrilátero visible
+    #(o lo invierta), estos casos son mejorables pero lo haré a futuro (para impedir que un punto cruze
+    # una línea)
+    #Tienen valores iniciales equivalentes a las 4 esquinas de la imagen y se van modificando con el código,
+    #si están muy esquinadas inicialmente se pueden correr algunos píxeles hacia adentro en la pos. inicial
+
+    r1_center = (0,0)
+    r2_center = (0,bg_size[0])
+    r3_center = (bg_size[1],0)
+    r4_center = (bg_size[1],bg_size[0])
+
+    draw_circles_and_lines(bg, radius, r1_center, r2_center, r3_center, r4_center)
 
     cv.namedWindow('draw')
     cv.setMouseCallback('draw', mouse)
