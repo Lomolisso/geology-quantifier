@@ -3,15 +3,12 @@ This script contains different ways to load and save images.
 All the loaded and saved images must be matrix objects.
 """
 
-import tkinter, cv2
+import cv2
 from tkinter import filedialog
 
 # String to identify the prints of this file
 TOKEN = "[IMG_MAN]"
 
-# Global vars for interactive file system UI.
-root = tkinter.Tk()
-root.withdraw()
 
 def load_image_from_path(img_path):
     """
@@ -35,7 +32,6 @@ def load_image_from_window():
     """
     # Ask for the image to load.
     filename = filedialog.askopenfilename(initialdir="../img", title="Select a File", filetypes=(("Image files","*.png *.jpg"), ("all files", ".*")))
-    root.withdraw()
     print(f"{TOKEN} Loading image with name: {filename}")
     # Return the readed image as a matrix.
     return cv2.imread(filename)
@@ -46,7 +42,6 @@ def save_image_from_window(img):
     """
     # Ask for the path where the image will be saved.
     filename = filedialog.asksaveasfilename(initialdir="../img", title="Save as", filetypes=(("Image files","*.png *.jpg"), ("all files", ".*")))
-    root.withdraw()
     if filename == "":
         return False
     else:
