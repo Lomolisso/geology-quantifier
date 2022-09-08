@@ -44,13 +44,13 @@ def mouse(event,x,y, flags, params):
             move_circle_4 = True
     elif event == cv2.EVENT_MOUSEMOVE and x <= bg_size[1] and y <= bg_size[0] and x >= 0 and y>=0:
         bg = bg_original.copy() 
-        if move_circle_1:
+        if move_circle_1 and x < min(r3_center[0], r4_center[0]) and y < min(r2_center[1], r4_center[1]):
             r1_center = (x, y)
-        elif move_circle_2:
+        elif move_circle_2 and x < min(r3_center[0], r4_center[0]) and y > max(r1_center[1], r3_center[1]):
             r2_center = (x, y)
-        elif move_circle_3:
+        elif move_circle_3 and x > max(r1_center[0], r2_center[0]) and y < min(r2_center[1], r4_center[1]):
             r3_center = (x, y)
-        elif move_circle_4:
+        elif move_circle_4 and x > max(r1_center[0], r2_center[0]) and y > max(r1_center[1], r3_center[1]):
             r4_center = (x, y)
         draw_circles_and_lines(bg, radius, r1_center, r2_center, r3_center, r4_center)
     elif event == cv2.EVENT_LBUTTONUP:
