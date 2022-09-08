@@ -104,7 +104,8 @@ def mouse(event,x,y,flags,params):
         move_circle_3 = False
         move_circle_4 = False
 
-
+# This code uses 4 dots to create a rectangle wich shape can be changed by moving its corners.
+# The dots are in the following order, counter clock: 1,2,4,3. Those dots are not interchangeable, and will allways be in that order.
 def mouse_rectangle(event,x,y,flags,params):
     global move_circle_1, move_circle_2, move_circle_3, move_circle_4, BLUE, bg
     global r1_center, r2_center, r3_center, r4_center, bg_size
