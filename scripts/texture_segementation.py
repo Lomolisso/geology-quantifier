@@ -5,6 +5,7 @@ from pywt import dwt2
 from skimage.filters import gabor, gaussian
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
+import matplotlib.pyplot as plt
 
 from api_fm import load_image
 
@@ -35,13 +36,6 @@ def get_magnitude(re_filter, im_filter):
 
     return magnitude
 
-def label2rgb(labels):
-  """
-  Convert a labels image to an rgb image using a matplotlib colormap
-  """
-  label_range = np.linspace(0, 1, 256)
-  lut = np.uint8(plt.cm.viridis(label_range)[:,2::-1]*256).reshape(256, 1, 3) # replace viridis with a matplotlib colormap of your choice
-  return cv2.LUT(cv2.merge((labels, labels, labels)), lut)
 
 # ----- Main script -----
 
@@ -88,10 +82,8 @@ def main():
 
     # Reshape the array to the dimensions of the image
     result = pca_img_arr.reshape((rows, cols))
-    cv2.imshow(f"Gabor feature bank (PCA)", result)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
-
+    plt.imshow(result)
+    plt.show()
 """
     # Let N = len(gabor_mags), to segmentate the image we will 
     # apply KMeans in a N-dimension space where each dim. is a 
