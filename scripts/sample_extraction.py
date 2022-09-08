@@ -96,11 +96,15 @@ def extract_sample(img):
 
     cv2.namedWindow('draw')
     cv2.setMouseCallback('draw', mouse)
-    print(f"{TOKEN} Use 's' to save or 'r' to reset the cut, 'Esc' for exit.")
+    instr = cv2.imread("./img/keyboard.png")
     
+    # print(f"{TOKEN} Use 's' to save or 'r' to reset the cut, 'Esc' for exit.")
+    
+
     while True:
-        
+
         cv2.imshow('draw', bg)
+        cv2.imshow('instructions', instr)
         k = cv2.waitKey(1)
 
         # if 'Esc' is pressed, the cuting stops.
@@ -129,9 +133,9 @@ def extract_sample(img):
             # The perspective is built and cut on a clone of the original image.
             M = cv2.getPerspectiveTransform(input_pts,output_pts)
             out = cv2.warpPerspective(bg_original,M,(maxWidth, maxHeight),flags=cv2.INTER_LINEAR)
-            cv2.imshow("Image cut", out)
-            cv2.waitKey(0)
-            cv2.destroyAllWindows()
+            # cv2.imshow("Image cut", out)
+            # cv2.waitKey(0)
+            # cv2.destroyAllWindows()
             return out
 
         # if 'r' is pressed, the rectangle return to the original position.
