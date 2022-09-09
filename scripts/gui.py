@@ -84,14 +84,30 @@ def separar():
             
 # plotear panoramica sobre cilindro 3D            
 def plot3d():
+    global altWin
+    if altWin:
+        altWin.destroy()
+    for wget in canvas_frame.winfo_children():
+        wget.destroy()
+    
     # Load image using OS file window
-	raw_img = image_managers.load_image_from_window()
+    raw_img = image_managers.load_image_from_window()
 
-	# Cut the img to analize an specific part of it.
-	img = sample_extraction.extract_sample(raw_img)
+    # Cut the img to analize an specific part of it.
+    img = sample_extraction.extract_sample(raw_img)
+    cv2.destroyAllWindows()
+    if isinstance(img, np.ndarray):
+        cv2.imshow("cropped image",img)
+        # cv2.waitKey(0)
+        # cv2.waitKey(0)
+        window.withdraw()
+    # Use the loaded img to fill a 3D tube surface.
+        plotter = tube.fill_tube(img)
+        cv2.waitKey(0)
+        # plotter.close()
+        cv2.destroyAllWindows()
+        window.deiconify()
 
-	# Use the loaded img to fill a 3D tube surface.
-	tube.fill_tube(img)
 
 # funcion para evento click sobre imagenes
 def click(event, image, key, canvas):
