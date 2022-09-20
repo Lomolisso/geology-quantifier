@@ -28,8 +28,9 @@ def gen_percent():
 	cluster_masks = contorno_meanshift.gen_masks(img, cluster_num)
 
 	# Show the masks
+	cv2.imshow(f"Original", img)
+	
 	for i in range(len(cluster_masks)):
-		cv2.imshow(f"Original", img)
 		cv2.imshow(f"Cluster {i}",cluster_masks[i])
 		# Calculate and show the area pecent of the cluster in the image
 		mask_percent = percent.percent(cluster_masks[i])
