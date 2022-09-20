@@ -11,6 +11,7 @@ TOKEN = "[IMG_MAN]"
 
 # Global vars for interactive file system UI.
 root = tkinter.Tk()
+root.iconbitmap("icon.ico")
 root.withdraw()
 
 def load_image_from_path(img_path):

@@ -15,6 +15,12 @@ def gen_percent():
 	# Cut the img to analize an specific part of it.
 	img = sample_extraction.extract_sample(raw_img)
 
+	try:
+		assert img.all() != None
+	except:
+		# If 'Esc' was pressed, restart the program
+		return
+	
 	# Ask user for the number of clusters to use
 	cluster_num = int(input(f"{TOKEN} Enter the number of clusters to use: "))
 
