@@ -27,13 +27,23 @@ def show_img():
     window.withdraw()
     image = image_managers.load_image_from_window()
     img = sample_extraction.extract_sample(image)
+
+    min_width = 600
+    min_heigth = 300
+    print(img.shape[0])
     #TODO resize the image to a common shape
-    img = cv2.resize(img, (int(img.shape[1]*0.7), int(img.shape[0]*0.7)))
+    if img.shape[0] < 400:
+        img = cv2.resize(img, (int(img.shape[1] * min_width/img.shape[0]), min_width))
+    if img.shape[1] < 200:      
+        img = cv2.resize(img, (min_heigth, int(img.shape[0] * min_heigth/img.shape[1])))
+    else:
+        img = cv2.resize(img, (int(img.shape[1]*0.7), int(img.shape[0]*0.7)))
     cv2.destroyAllWindows()
 
     # Set image for cropped image frame
     canva = Canvas(cropped_image_frame, width=img.shape[1], height=img.shape[0])
-    img_for_canva = Image.fromarray(img)
+    fix_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    img_for_canva = Image.fromarray(fix_img)
     img_for_canva = ImageTk.PhotoImage(img_for_canva)
     canva.image = img_for_canva
     canva.create_image(0,0, image=img_for_canva, anchor=NW)
