@@ -96,11 +96,12 @@ def extract_sample(img):
 
     cv2.namedWindow('Sample Area')
     cv2.setMouseCallback('Sample Area', mouse)
-    print(f"{TOKEN} Use 's' to save or 'r' to reset the cut, 'Esc' for exit.")
+    instr = cv2.imread("./img/keyboard.png")
     
     while True:
         
         cv2.imshow('Sample Area', bg)
+        cv2.imshow('instructions', instr)
         k = cv2.waitKey(1)
 
         # if 'Esc' is pressed, the cuting stops.
