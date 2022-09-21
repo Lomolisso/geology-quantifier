@@ -51,10 +51,7 @@ def show_img():
     
     
     if isinstance(img, np.ndarray):
-        img2show = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        im = Image.fromarray(img2show)
-        img4lbl = ImageTk.PhotoImage(im)
-        # CroppedImgWindow(img4lbl)
+        btn3D.grid(row=0, column=1)
         num_of_cluster.grid(row=0, column=2)
         btnCluster.grid(row=0, column=3)
         btnSplit.grid(row=0, column=4)
@@ -205,7 +202,6 @@ num_of_cluster.bind("<1>", lambda _ : num_of_cluster.delete(0,'end'))
 
 
 btn3D = Button(btns_frame, text='3D', width=20, command=plot3d, cursor='arrow')
-btn3D.grid(row=0, column=1)
 btn3D['font'] = myFont
 
 btnSplit = Button(btns_frame, text='Separar', width=20, command=split, cursor='arrow')
