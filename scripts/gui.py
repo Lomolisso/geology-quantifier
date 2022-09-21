@@ -81,7 +81,7 @@ def get_percents():
 def split():
     global selected_images
 
-    commingSoon()
+    comingSoon()
     return
     
     # for pic in selected_images.values():
@@ -105,7 +105,7 @@ def split():
         canva.grid(row=1+i//cluster_len, column=i%cluster_len)
             
 def merge():
-    commingSoon()
+    comingSoon()
     return
 
 # plotear panoramica sobre cilindro 3D            
@@ -157,8 +157,8 @@ def CroppedImgWindow(im):
     lblImg.image = im
     lblImg.pack(fill=BOTH, expand=True)
     
-def commingSoon():
-    messagebox.showinfo("Proximamente", message="Estamos trabajando para usted")
+def comingSoon():
+    messagebox.showinfo("Proximamente", message="En desarrollo")
 
 
 # Inicializacion de ventana
