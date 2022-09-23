@@ -9,7 +9,6 @@ from tkinter import filedialog
 # String to identify the prints of this file
 TOKEN = "[IMG_MAN]"
 
-
 def load_image_from_path(img_path):
     """
     Method to load an image usign the path declared by the user.

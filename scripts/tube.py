@@ -7,6 +7,8 @@ a matrix.
 import cv2
 import pyvista as pv
 
+pv.global_theme.title = '3D Rock Sample'
+
 
 def fill_tube(image):
     out = cv2.flip(image, 1)

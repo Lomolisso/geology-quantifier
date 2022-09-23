@@ -27,13 +27,22 @@ def show_img():
     window.withdraw()
     image = image_managers.load_image_from_window()
     img = sample_extraction.extract_sample(image)
+
+    min_width = 600
+    min_heigth = 300
     #TODO resize the image to a common shape
-    img = cv2.resize(img, (int(img.shape[1]*0.7), int(img.shape[0]*0.7)))
+    if img.shape[0] < 400:
+        img = cv2.resize(img, (int(img.shape[1] * min_width/img.shape[0]), min_width))
+    if img.shape[1] < 200:      
+        img = cv2.resize(img, (min_heigth, int(img.shape[0] * min_heigth/img.shape[1])))
+    else:
+        img = cv2.resize(img, (int(img.shape[1]*0.7), int(img.shape[0]*0.7)))
     cv2.destroyAllWindows()
 
     # Set image for cropped image frame
     canva = Canvas(cropped_image_frame, width=img.shape[1], height=img.shape[0])
-    img_for_canva = Image.fromarray(img)
+    fix_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    img_for_canva = Image.fromarray(fix_img)
     img_for_canva = ImageTk.PhotoImage(img_for_canva)
     canva.image = img_for_canva
     canva.create_image(0,0, image=img_for_canva, anchor=NW)
@@ -41,10 +50,7 @@ def show_img():
     
     
     if isinstance(img, np.ndarray):
-        img2show = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        im = Image.fromarray(img2show)
-        img4lbl = ImageTk.PhotoImage(im)
-        # CroppedImgWindow(img4lbl)
+        btn3D.grid(row=0, column=1)
         num_of_cluster.grid(row=0, column=2)
         btnCluster.grid(row=0, column=3)
         btnSplit.grid(row=0, column=4)
@@ -81,7 +87,7 @@ def get_percents():
 def split():
     global selected_images
 
-    commingSoon()
+    comingSoon()
     return
     
     # for pic in selected_images.values():
@@ -105,7 +111,7 @@ def split():
         canva.grid(row=1+i//cluster_len, column=i%cluster_len)
             
 def merge():
-    commingSoon()
+    comingSoon()
     return
 
 # plotear panoramica sobre cilindro 3D            
@@ -157,9 +163,9 @@ def CroppedImgWindow(im):
     lblImg.image = im
     lblImg.pack(fill=BOTH, expand=True)
     
-def commingSoon():
-    messagebox.showinfo("Proximamente", message="Estamos trabajando para usted")
-
+def comingSoon():
+    messagebox.showinfo("Proximamente", message="En desarrollo")
+    
 
 # Inicializacion de ventana
 window = Tk()
@@ -195,7 +201,6 @@ num_of_cluster.bind("<1>", lambda _ : num_of_cluster.delete(0,'end'))
 
 
 btn3D = Button(btns_frame, text='3D', width=20, command=plot3d, cursor='arrow')
-btn3D.grid(row=0, column=1)
 btn3D['font'] = myFont
 
 btnSplit = Button(btns_frame, text='Separar', width=20, command=split, cursor='arrow')

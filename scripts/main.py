@@ -15,6 +15,12 @@ def gen_percent():
 	# Cut the img to analize an specific part of it.
 	img = sample_extraction.extract_sample(raw_img)
 
+	try:
+		assert img.all() != None
+	except:
+		# If 'Esc' was pressed, restart the program
+		return
+	
 	# Ask user for the number of clusters to use
 	cluster_num = int(input(f"{TOKEN} Enter the number of clusters to use: "))
 
@@ -22,8 +28,9 @@ def gen_percent():
 	cluster_masks = contorno_meanshift.gen_masks(img, cluster_num)
 
 	# Show the masks
+	cv2.imshow(f"Original", img)
+	
 	for i in range(len(cluster_masks)):
-		cv2.imshow(f"Original", img)
 		cv2.imshow(f"Cluster {i}",cluster_masks[i])
 		# Calculate and show the area pecent of the cluster in the image
 		mask_percent = percent.percent(cluster_masks[i])

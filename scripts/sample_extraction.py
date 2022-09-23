@@ -44,13 +44,13 @@ def mouse(event,x,y, flags, params):
             move_circle_4 = True
     elif event == cv2.EVENT_MOUSEMOVE and x <= bg_size[1] and y <= bg_size[0] and x >= 0 and y>=0:
         bg = bg_original.copy() 
-        if move_circle_1:
+        if move_circle_1 and x < min(r3_center[0], r4_center[0]) and y < min(r2_center[1], r4_center[1]):
             r1_center = (x, y)
-        elif move_circle_2:
+        elif move_circle_2 and x < min(r3_center[0], r4_center[0]) and y > max(r1_center[1], r3_center[1]):
             r2_center = (x, y)
-        elif move_circle_3:
+        elif move_circle_3 and x > max(r1_center[0], r2_center[0]) and y < min(r2_center[1], r4_center[1]):
             r3_center = (x, y)
-        elif move_circle_4:
+        elif move_circle_4 and x > max(r1_center[0], r2_center[0]) and y > max(r1_center[1], r3_center[1]):
             r4_center = (x, y)
         draw_circles_and_lines(bg, radius, r1_center, r2_center, r3_center, r4_center)
     elif event == cv2.EVENT_LBUTTONUP:
@@ -94,16 +94,16 @@ def extract_sample(img):
 
     draw_circles_and_lines(bg, radius, r1_center, r2_center, r3_center, r4_center)    
 
-    cv2.namedWindow('draw')
-    cv2.setMouseCallback('draw', mouse)
+    cv2.namedWindow('Sample Area')
+    cv2.setMouseCallback('Sample Area', mouse)
     instr = cv2.imread("./img/keyboard.png")
     
     # print(f"{TOKEN} Use 's' to save or 'r' to reset the cut, 'Esc' for exit.")
     
 
     while True:
-
-        cv2.imshow('draw', bg)
+        
+        cv2.imshow('Sample Area', bg)
         cv2.imshow('instructions', instr)
         k = cv2.waitKey(1)
 
@@ -133,14 +133,12 @@ def extract_sample(img):
             # The perspective is built and cut on a clone of the original image.
             M = cv2.getPerspectiveTransform(input_pts,output_pts)
             out = cv2.warpPerspective(bg_original,M,(maxWidth, maxHeight),flags=cv2.INTER_LINEAR)
-            # cv2.imshow("Image cut", out)
-            # cv2.waitKey(0)
-            # cv2.destroyAllWindows()
+            cv2.destroyAllWindows()
             return out
 
         # if 'r' is pressed, the rectangle return to the original position.
         elif k == ord('r'):
-            r1_center = (0,0)
-            r2_center = (0,bg_size[0])
-            r4_center = (bg_size[1],bg_size[0])
-            r3_center = (bg_size[1],0)
+            r1_center = (bg_size[1]//4, bg_size[0]//4)
+            r2_center = (bg_size[1]//4, bg_size[0]*3//4)
+            r4_center = (bg_size[1]*3//4, bg_size[0]*3//4)
+            r3_center = (bg_size[1]*3//4, bg_size[0]//4)
