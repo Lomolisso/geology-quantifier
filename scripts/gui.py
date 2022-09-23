@@ -30,7 +30,6 @@ def show_img():
 
     min_width = 600
     min_heigth = 300
-    print(img.shape[0])
     #TODO resize the image to a common shape
     if img.shape[0] < 400:
         img = cv2.resize(img, (int(img.shape[1] * min_width/img.shape[0]), min_width))
