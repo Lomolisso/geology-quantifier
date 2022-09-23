@@ -9,15 +9,21 @@ import math
 
 TOKEN = "[EXTRACT]"
 
-def draw_circles_and_lines(frame, r, c1, c2, c3, c4):
-    cv2.circle(frame, c1, r, RED, -1) 
-    cv2.circle(frame, c2, r, RED, -1) 
-    cv2.circle(frame, c3, r, RED, -1) 
-    cv2.circle(frame, c4, r, RED, -1)
-    cv2.line(frame, c1, c2, BLUE)
-    cv2.line(frame, c2, c4, BLUE)
-    cv2.line(frame, c3, c4, BLUE)
-    cv2.line(frame, c3, c1, BLUE) 
+def draw_circles_and_lines(frame, r, min_r, c1, c2, c3, c4):
+    cv2.line(frame, c1, c2, BLACK)
+    cv2.line(frame, c2, c4, BLACK)
+    cv2.line(frame, c3, c4, BLACK)
+    cv2.line(frame, c3, c1, BLACK) 
+    cv2.circle(frame, c1, r, BLACK, -1) 
+    cv2.circle(frame, c2, r, BLACK, -1) 
+    cv2.circle(frame, c3, r, BLACK, -1) 
+    cv2.circle(frame, c4, r, BLACK, -1)
+
+    cv2.circle(frame, c1, min_r, LIGHTBLUE, -1) 
+    cv2.circle(frame, c2, min_r, LIGHTBLUE, -1) 
+    cv2.circle(frame, c3, min_r, LIGHTBLUE, -1) 
+    cv2.circle(frame, c4, min_r, LIGHTBLUE, -1)
+
 
 # Pythagorean formula for calculating the difference between 
 # the click point and some other point.
@@ -52,18 +58,18 @@ def mouse(event,x,y, flags, params):
             r3_center = (x, y)
         elif move_circle_4 and x > max(r1_center[0], r2_center[0]) and y > max(r1_center[1], r3_center[1]):
             r4_center = (x, y)
-        draw_circles_and_lines(bg, radius, r1_center, r2_center, r3_center, r4_center)
+        draw_circles_and_lines(bg, radius, min_radius, r1_center, r2_center, r3_center, r4_center)
     elif event == cv2.EVENT_LBUTTONUP:
         bg = bg_original.copy()
-        draw_circles_and_lines(bg, radius, r1_center, r2_center, r3_center, r4_center)
+        draw_circles_and_lines(bg, radius, min_radius, r1_center, r2_center, r3_center, r4_center)
         move_circle_1 = False
         move_circle_2 = False
         move_circle_3 = False
         move_circle_4 = False
 
 def extract_sample(img):
-    global RED, BLUE, GREEN, move_circle_1, move_circle_2, move_circle_3, move_circle_4
-    global radius, bg, bg_original, bg_size, r1_center, r2_center, r3_center, r4_center
+    global RED, BLUE, GREEN, LIGHTBLUE, BLACK, move_circle_1, move_circle_2, move_circle_3, move_circle_4
+    global radius, min_radius, bg, bg_original, bg_size, r1_center, r2_center, r3_center, r4_center
     move_circle_1 = False
     move_circle_2 = False
     move_circle_3 = False
@@ -71,6 +77,8 @@ def extract_sample(img):
     BLUE = [255,0,0]
     RED = [0, 0, 255]
     GREEN = [0, 255, 0]
+    LIGHTBLUE = [230, 216, 173]
+    BLACK = [0, 0, 0]
 
     img = cv2.resize(img, (int(img.shape[1]*0.2),int(img.shape[0]*0.2)))
     bg = img
@@ -80,6 +88,7 @@ def extract_sample(img):
     bg_size = bg.shape
 
     # radius of the visible points in the image
+    min_radius = 6
     radius = 7
 
     # The points r1,r2,r4,r3 _center are the corners of the rectangle, the are
@@ -92,15 +101,12 @@ def extract_sample(img):
     r4_center = (bg_size[1]*3//4, bg_size[0]*3//4)
     r3_center = (bg_size[1]*3//4, bg_size[0]//4)
 
-    draw_circles_and_lines(bg, radius, r1_center, r2_center, r3_center, r4_center)    
+    draw_circles_and_lines(bg, radius, min_radius, r1_center, r2_center, r3_center, r4_center)    
 
     cv2.namedWindow('Sample Area')
     cv2.setMouseCallback('Sample Area', mouse)
     instr = cv2.imread("./img/keyboard.png")
     
-    # print(f"{TOKEN} Use 's' to save or 'r' to reset the cut, 'Esc' for exit.")
-    
-
     while True:
         
         cv2.imshow('Sample Area', bg)
