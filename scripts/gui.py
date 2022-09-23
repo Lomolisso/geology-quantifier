@@ -120,14 +120,41 @@ def split():
         canva.grid(row=1+i//cluster_len, column=i%cluster_len)
             
 def merge():
-    comingSoon()
-    return
+    global selected_images
+    imagen = np.zeros(img.shape, dtype='uint8')
+    try:
+        # canva1 = list(selected_images.values())[0][1]
+        key1 = list(selected_images.keys())[0]
+        column = key1 % 2
+        row = (key1 // 2) + 1
+        for key,val in selected_images.items():
+            imagen = cv2.add(imagen,val[0])
+            val[1].destroy()
+        selected_images = {}
+        imagenOrg = imagen
+        imagen = cv2.resize(imagen, (int(imagen.shape[1]*0.5), int(imagen.shape[0]*0.5)))
+
+        imagen = cv2.cvtColor(imagen, cv2.COLOR_BGR2RGB)
+        canva = Canvas(canvas_frame, width=imagen.shape[1], height=imagen.shape[0])
+        im = Image.fromarray(imagen)
+        imgg = ImageTk.PhotoImage(im)
+        labelimg = Label(canva, image=imgg)
+        labelimg.image = imgg
+        labelimg.bind('<ButtonPress-1>', lambda event, image=imagenOrg, key=key1, canvas=canva: click(event, image, key, canvas))
+        labelimg.grid(row=0, column=0, padx=10, pady=10)
+        canva.grid(row=row, column=column)
+    except:
+        messagebox.showwarning("Error", message="Selecciona cluster por favor")
+        
+    
+
 def substract():
-    global img, cropped_image_frame
+    global img, cropped_image_frame, selected_images
     imagen = img
     for key,val in selected_images.items():
         imagen = cv2.subtract(imagen,val[0])
         val[1].grid_remove()
+    selected_images = {}
     img = imagen
     cropped_image_frame.destroy()
     cropped_image_frame = Frame(window)
