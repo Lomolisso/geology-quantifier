@@ -1,3 +1,4 @@
+from ctypes.wintypes import tagPOINT
 from glob import glob
 from tkinter import messagebox, font
 import cv2
@@ -69,18 +70,22 @@ def get_percents():
     cluster_num = int(num_of_cluster.get())
     # Get mask using kmeans
     cluster_masks = contorno_meanshift.gen_masks(img, cluster_num)
-
     # Show the masks
     cluster_len = 2 #TODO set a valua depending on the image sizes
     for i in range(len(cluster_masks)):
+        imgClusterOrg = cluster_masks[i]
         cluster_masks[i] = cv2.resize(cluster_masks[i], (int(cluster_masks[i].shape[1]*0.5), int(cluster_masks[i].shape[0]*0.5)))
+
         cluster_masks[i] = cv2.cvtColor(cluster_masks[i], cv2.COLOR_BGR2RGB)
         canva = Canvas(canvas_frame, width=cluster_masks[i].shape[1], height=cluster_masks[i].shape[0])
-        canva.bind('<ButtonPress-1>', lambda event, image=cluster_masks[i], key=i, canvas=canva: click(event, image, key, canvas))
+        
         im = Image.fromarray(cluster_masks[i])
         imgg = ImageTk.PhotoImage(im)
-        canva.image = imgg
-        canva.create_image(0,0, image=imgg, anchor=NW)
+        labelimg = Label(canva, image=imgg)
+        labelimg.image = imgg
+        labelimg.bind('<ButtonPress-1>', lambda event, image=imgClusterOrg, key=i, canvas=canva: click(event, image, key, canvas))
+        labelimg.grid(row=0, column=0, padx=10, pady=10)
+        # canva.create_image(0,0, image=imgg, anchor=NW)
         canva.grid(row=1+i//cluster_len, column=i%cluster_len)
 
 # separacion y nuevo clustering sobre imagen seleccionada
@@ -142,9 +147,19 @@ def click(event, image, key, canvas):
     if key in selected_images.keys():
         selected_images.pop(key)
         canvas.configure(bg='white')
+        for widget in canvas.winfo_children():
+            if widget.cget("text"):
+                widget.destroy()
+
     else:
         selected_images.update({key : image})
         canvas.configure(bg='red')
+
+        widget = Label(canvas, text=str(percent.percent(image)), fg='white', bg='black')
+        
+        widget.grid(row = 1,column=0 )
+
+    
     
 # funcion para crear una ventanita donde se vea el recorte original
 def CroppedImgWindow(im):
@@ -179,7 +194,7 @@ btns_frame.grid(row=0, column=1, columnspan=3, padx=10, pady=10)
 canvas_frame.grid(row=1, column=2, columnspan=2)
 cropped_image_frame.grid(row=1, column=1)
 
-myFont = font.Font(size=18)
+myFont = font.Font(size=15)
 
 #Imagenes seleccionadas
 selected_images = {}
