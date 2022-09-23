@@ -59,4 +59,13 @@ def percent(image):
     # Print the color percent, use 2 figures past the decimal point
     return np.round(colorPercent, 2)
 
+def contour(img):
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    canny = cv2.Canny(gray,50,200)
+    (_, threshInv) = cv2.threshold(gray, 1, 255,cv2.THRESH_BINARY)
+    # cv2.imshow("thresh", threshInv)
+    contours, hierarchy = cv2.findContours(threshInv, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    # cv2.drawContours(img, contours,-1, (0,0,255),1)
 
+    # cv2.imshow("img", img)
+    return len(contours)

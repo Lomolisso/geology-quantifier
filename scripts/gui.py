@@ -21,42 +21,46 @@ def show_img():
     cropped_image_frame.destroy()
     cropped_image_frame = Frame(window)
     cropped_image_frame.grid(row=1, column=1)
-    canvas_frame.destroy()
-    canvas_frame = Frame(window)
+    canvas_frame.grid_forget()
+    # canvas_frame = Frame(window)
     canvas_frame.grid(row=1, column=2, columnspan=2)
     # hasta aca
     window.withdraw()
     image = image_managers.load_image_from_window()
-    img = sample_extraction.extract_sample(image)
+    try:
+        img = sample_extraction.extract_sample(image)
+        min_width = 600
+        min_heigth = 300
+        #TODO resize the image to a common shape
+        if img.shape[0] < 400:
+            img = cv2.resize(img, (int(img.shape[1] * min_width/img.shape[0]), min_width))
+        if img.shape[1] < 200:      
+            img = cv2.resize(img, (min_heigth, int(img.shape[0] * min_heigth/img.shape[1])))
+        else:
+            img = cv2.resize(img, (int(img.shape[1]*0.7), int(img.shape[0]*0.7)))
+        cv2.destroyAllWindows()
 
-    min_width = 600
-    min_heigth = 300
-    #TODO resize the image to a common shape
-    if img.shape[0] < 400:
-        img = cv2.resize(img, (int(img.shape[1] * min_width/img.shape[0]), min_width))
-    if img.shape[1] < 200:      
-        img = cv2.resize(img, (min_heigth, int(img.shape[0] * min_heigth/img.shape[1])))
-    else:
-        img = cv2.resize(img, (int(img.shape[1]*0.7), int(img.shape[0]*0.7)))
-    cv2.destroyAllWindows()
-
-    # Set image for cropped image frame
-    canva = Canvas(cropped_image_frame, width=img.shape[1], height=img.shape[0])
-    fix_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    img_for_canva = Image.fromarray(fix_img)
-    img_for_canva = ImageTk.PhotoImage(img_for_canva)
-    canva.image = img_for_canva
-    canva.create_image(0,0, image=img_for_canva, anchor=NW)
-    canva.grid(row=1, column=1)
-    
-    
-    if isinstance(img, np.ndarray):
-        btn3D.grid(row=0, column=1)
-        num_of_cluster.grid(row=0, column=2)
-        btnCluster.grid(row=0, column=3)
-        btnSplit.grid(row=0, column=4)
-        btnMerge.grid(row=0, column=5)
+        # Set image for cropped image frame
+        canva = Canvas(cropped_image_frame, width=img.shape[1], height=img.shape[0])
+        fix_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        img_for_canva = Image.fromarray(fix_img)
+        img_for_canva = ImageTk.PhotoImage(img_for_canva)
+        canva.image = img_for_canva
+        canva.create_image(0,0, image=img_for_canva, anchor=NW)
+        canva.grid(row=1, column=1)
+        
+        
+        if isinstance(img, np.ndarray):
+            btn3D.grid(row=0, column=1)
+            num_of_cluster.grid(row=0, column=2)
+            btnCluster.grid(row=0, column=3)
+            btnSplit.grid(row=0, column=4)
+            btnMerge.grid(row=0, column=5)
+            btnSub.grid(row=0, column=6)
+    except:
+        pass
     window.deiconify()
+    
 
 def get_percents():
     global img, selected_images
@@ -118,6 +122,27 @@ def split():
 def merge():
     comingSoon()
     return
+def substract():
+    global img, cropped_image_frame
+    imagen = img
+    for key,val in selected_images.items():
+        imagen = cv2.subtract(imagen,val[0])
+        val[1].grid_remove()
+    img = imagen
+    cropped_image_frame.destroy()
+    cropped_image_frame = Frame(window)
+    cropped_image_frame.grid(row=1, column=1)
+
+    canva = Canvas(cropped_image_frame, width=img.shape[1], height=img.shape[0])
+    fix_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    img_for_canva = Image.fromarray(fix_img)
+    img_for_canva = ImageTk.PhotoImage(img_for_canva)
+    canva.image = img_for_canva
+    canva.create_image(0,0, image=img_for_canva, anchor=NW)
+    canva.grid(row=1, column=1)
+
+
+
 
 # plotear panoramica sobre cilindro 3D            
 def plot3d():
@@ -152,13 +177,15 @@ def click(event, image, key, canvas):
                 widget.destroy()
 
     else:
-        selected_images.update({key : image})
+        selected_images.update({key : [image, canvas]})
         canvas.configure(bg='red')
 
-        widget = Label(canvas, text=str(percent.percent(image)), fg='white', bg='black')
+        widgetP = Label(canvas, text=str(percent.percent(image)), fg='white', bg='black')
         
-        widget.grid(row = 1,column=0 )
+        widgetP.grid(row = 1,column=0 )
 
+        widgetC = Label(canvas, text=str(percent.contour(image)), fg='white', bg='black')
+        widgetC.grid(row = 2,column=0 )
     
     
 # funcion para crear una ventanita donde se vea el recorte original
@@ -190,11 +217,11 @@ window.config(cursor='plus')
 btns_frame = Frame(window)
 canvas_frame = Frame(window)
 cropped_image_frame = Frame(window)
-btns_frame.grid(row=0, column=1, columnspan=3, padx=10, pady=10)
+btns_frame.grid(row=0, column=1, columnspan=3, padx=10, pady=10, sticky=NW)
 canvas_frame.grid(row=1, column=2, columnspan=2)
 cropped_image_frame.grid(row=1, column=1)
 
-myFont = font.Font(size=15)
+myFont = font.Font(size=13)
 
 #Imagenes seleccionadas
 selected_images = {}
@@ -222,6 +249,8 @@ btnSplit = Button(btns_frame, text='Separar', width=20, command=split, cursor='a
 btnSplit['font'] = myFont
 btnMerge = Button(btns_frame, text='Combinar', width=20, command=merge, cursor='arrow')
 btnMerge['font'] = myFont
+btnSub = Button(btns_frame, text='Eliminar', width=20, command=substract, cursor='arrow')
+btnSub['font'] = myFont
 
 if not img:
     btnCluster.grid_remove()
