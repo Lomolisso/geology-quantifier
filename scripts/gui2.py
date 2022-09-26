@@ -7,6 +7,8 @@ import numpy as np
 import image_managers, sample_extraction, percent, tube
 
 # FUNCIONES AUXILIARES
+CLUSTER_RESHAPE = 0.7
+IMAGE_RESHAPE = 0.7
 
 def update_screen():
     global cropped_image_frame, canvas_frame, img_tree, current_image
@@ -34,10 +36,9 @@ def update_screen():
     canva.grid(row=1, column=1)
 
     img_row_shape = 2
-    for i in range(len(img_tree.childs)):
-        child_img_org = img_tree.childs[i]
-        images_with_clusters[current_image].append(child_img_org)
-        child_img = cv2.resize(img_tree.childs[i], (int(img_tree.childs[i].shape[1]*0.7), int(img_tree.childs[i].shape[0]*0.7)))
+    i = 0
+    for child in img_tree.childs:
+        child_img = cv2.resize(child.image, (int(child.image.shape[1]*CLUSTER_RESHAPE), int(child.image.shape[0]*CLUSTER_RESHAPE)))
         child_img = cv2.cvtColor(child_img, cv2.COLOR_BGR2RGB)
         canva = Canvas(canvas_frame, width=child_img.shape[1], height=child_img.shape[0])
         
@@ -45,9 +46,11 @@ def update_screen():
         img_for_label = ImageTk.PhotoImage(photo_img)
         labelimg = Label(canva, image=img_for_label)
         labelimg.image = img_for_label
-        labelimg.bind('<ButtonPress-1>', lambda event, image=child_img_org, key=i, canvas=canva: click(event, image, key, canvas))
+        labelimg.bind('<ButtonPress-1>', lambda event, image=child.image, key=i, canvas=canva: click(event, image, key, canvas))
         labelimg.grid(row=0, column=0, padx=10, pady=10)
         canva.grid(row=1+i//img_row_shape, column=i%img_row_shape)
+        i+=1
+    
 
 def show_img():
     global img, canvas_frame, altWin, cropped_image_frame, images_with_clusters, img_tree
@@ -81,7 +84,7 @@ def show_img():
         if img.shape[1] < 200:      
             img = cv2.resize(img, (min_heigth, int(img.shape[0] * min_heigth/img.shape[1])))
         else:
-            img = cv2.resize(img, (int(img.shape[1]*0.7), int(img.shape[0]*0.7)))
+            img = cv2.resize(img, (int(img.shape[1]*IMAGE_RESHAPE), int(img.shape[0]*IMAGE_RESHAPE)))
 
         img_tree = refactor_gui.ImageNode(None, img)
         
@@ -106,95 +109,41 @@ def show_img():
 
 # separacion y nuevo clustering sobre imagen seleccionada
 def split():
-    global selected_images,images_with_clusters,current_image, img, cropped_image_frame, canvas_frame
-
-    # comingSoon()
-    # return
-    
-    # for pic in selected_images.values():
-    #Solo puede haber una imagen seleccionada
-    if(len(list(selected_images.keys())) != 1):
+    global selected_images_indices, img_tree, num_of_cluster
+    n_childs = int(num_of_cluster.get())
+    if len(selected_images_indices) > 1:
         messagebox.showwarning("Error", message="Por favor seleccionar solo una imagen.")
         return
-    #Extraer la imagen seleccionada
-    dict2list = list(selected_images.values())
-    pic = dict2list[0][0]
-    #Agregar el cluster seleccionado como nueva imagen al diccionario de imagen con cluster
-    actual_len = len(list(images_with_clusters.keys()))
-    images_with_clusters.update({actual_len:[pic]})
-
-    cluster_num = int(num_of_cluster.get())
-    cluster_masks = contorno_meanshift.gen_masks(pic, cluster_num)
-
-    cluster_len = 2 # hardcodeado por mientras, saludos
-    for wget in canvas_frame.winfo_children():
-        wget.destroy()
-    #Actualizar imagen acual
-    current_image = actual_len
-    img = pic
-    #Reemplazar la imagen actual por el cluster a separar
-    cropped_image_frame.destroy()
-    cropped_image_frame = Frame(window)
-    cropped_image_frame.grid(row=1, column=1)
-
-    canva = Canvas(cropped_image_frame, width=img.shape[1], height=img.shape[0])
-    fix_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    img_for_canva = Image.fromarray(fix_img)
-    img_for_canva = ImageTk.PhotoImage(img_for_canva)
-    canva.image = img_for_canva
-    canva.create_image(0,0, image=img_for_canva, anchor=NW)
-    canva.grid(row=1, column=1)
-    #Resetear imagenes seleccionadas
-    selected_images = {}
-    #generar nuevos clusters
-    for i in range(len(cluster_masks)):
-        imgClusterOrg = cluster_masks[i]
-        images_with_clusters[current_image].append(imgClusterOrg)
-        cluster_masks[i] = cv2.resize(cluster_masks[i], (int(cluster_masks[i].shape[1]*0.7), int(cluster_masks[i].shape[0]*0.7)))
-        cluster_masks[i] = cv2.cvtColor(cluster_masks[i], cv2.COLOR_BGR2RGB)
-        # name = " new cluster" + str(i)
-        # cv2.imshow(name,cluster_masks[i])
-        canva = Canvas(canvas_frame, width=cluster_masks[i].shape[1], height=cluster_masks[i].shape[0])
-        
-        im = Image.fromarray(cluster_masks[i])
-        imgg = ImageTk.PhotoImage(im)
-        labelimg = Label(canva, image=imgg)
-        labelimg.image = imgg
-        labelimg.bind('<ButtonPress-1>', lambda event, image=imgClusterOrg, key=i, canvas=canva: click(event, image, key, canvas))
-        labelimg.grid(row=0, column=0, padx=10, pady=10)
-        # canva.create_image(0,0, image=imgg, anchor=NW)
-        canva.grid(row=1+i//cluster_len, column=i%cluster_len)
+    if len(selected_images_indices) ==1:
+        img_tree = img_tree.childs[selected_images_indices[0]]
+    
+    img_tree.split(n_childs)
+    update_screen()
+    selected_images_indices=[]
+    return 
+    
             
 def merge():
-    global selected_images
-    imagen = np.zeros(img.shape, dtype='uint8')
-    try:
-        # canva1 = list(selected_images.values())[0][1]
-        key1 = list(selected_images.keys())[0]
-        column = key1 % 2
-        row = (key1 // 2) + 1
-        for key,val in selected_images.items():
-            imagen = cv2.add(imagen,val[0])
-            val[1].destroy()
-        selected_images = {}
-        imagenOrg = imagen
-        imagen = cv2.resize(imagen, (int(imagen.shape[1]*0.5), int(imagen.shape[0]*0.5)))
-
-        imagen = cv2.cvtColor(imagen, cv2.COLOR_BGR2RGB)
-        canva = Canvas(canvas_frame, width=imagen.shape[1], height=imagen.shape[0])
-        im = Image.fromarray(imagen)
-        imgg = ImageTk.PhotoImage(im)
-        labelimg = Label(canva, image=imgg)
-        labelimg.image = imgg
-        labelimg.bind('<ButtonPress-1>', lambda event, image=imagenOrg, key=key1, canvas=canva: click(event, image, key, canvas))
-        labelimg.grid(row=0, column=0, padx=10, pady=10)
-        canva.grid(row=row, column=column)
-    except:
-        messagebox.showwarning("Error", message="Selecciona cluster por favor")
+    global selected_images_indices, img_tree
+    if len(selected_images_indices) < 2:
+        messagebox.showwarning("Error", message="Por favor seleccionar más de una imagen.")
+        return
+    img_tree.merge(selected_images_indices)
+    update_screen()
+    selected_images_indices=[]
+    return
         
     
 
-def substract():
+def delete():
+    global selected_images_indices, img_tree
+    if len(selected_images_indices) == 0:
+        messagebox.showwarning("Error", message="Por favor seleccionar al menos una imagen.")
+        return
+    img_tree.delete(selected_images_indices)
+    update_screen()
+    selected_images_indices=[]
+    return
     global img, cropped_image_frame, selected_images
     imagen = img
     for key,val in selected_images.items():
@@ -219,7 +168,8 @@ def substract():
 
 # plotear panoramica sobre cilindro 3D            
 def plot3d():
-    global altWin, img, window
+    global altWin, img_tree, window
+    img = img_tree.image
     # Clean window
     if altWin:
         altWin.destroy()
@@ -243,19 +193,18 @@ def plot3d():
 def click(event, image, key, canvas):
     global selected_images
     # print(selected_images)
-    if key in selected_images.keys():
-        selected_images.pop(key)
+    if key in selected_images_indices:
+        selected_images_indices.remove(key)
         canvas.configure(bg='white')
         for widget in canvas.winfo_children():
             if widget.cget("text"):
                 widget.destroy()
 
     else:
-        selected_images.update({key : [image, canvas]})
+        selected_images_indices.append(key)
         canvas.configure(bg='red')
 
         widgetP = Label(canvas, text=str(percent.percent(image)), fg='white', bg='black')
-        
         widgetP.grid(row = 1,column=0 )
 
         widgetC = Label(canvas, text=str(percent.contour(image)), fg='white', bg='black')
@@ -280,6 +229,7 @@ def CroppedImgWindow(im):
     lblImg.pack(fill=BOTH, expand=True)
 
 def imageGoBack():
+    return
     global current_image,selected_images, img,cropped_image_frame, canvas_frame
     # comingSoon()
     #Si la imagen actual es la primera no se puede retroceder
@@ -328,6 +278,7 @@ def imageGoBack():
 
 
 def imageGoFor():
+    return
     global current_image,selected_images, img,cropped_image_frame, canvas_frame
     # comingSoon()
     actual_len = len(list(images_with_clusters.keys()))
@@ -397,9 +348,7 @@ img_tree = None
 myFont = font.Font(size=13)
 
 #Imagenes seleccionadas
-selected_images = {}
-#Imágenes junto a sus clusters
-images_with_clusters = {}
+selected_images_indices = []
 #Imagen actual
 current_image = 0
 # variable globales
@@ -422,7 +371,7 @@ btnSplit = Button(btns_frame, text='Separar', width=20, command=split, cursor='a
 btnSplit['font'] = myFont
 btnMerge = Button(btns_frame, text='Combinar', width=20, command=merge, cursor='arrow')
 btnMerge['font'] = myFont
-btnSub = Button(btns_frame, text='Eliminar', width=20, command=substract, cursor='arrow')
+btnSub = Button(btns_frame, text='Eliminar', width=20, command=delete, cursor='arrow')
 btnSub['font'] = myFont
 #boton para retroceder en las imagenes creadas con clusters
 btnGoBack = Button(btns_frame, text='<-', width=20, command=imageGoBack, cursor='arrow')
