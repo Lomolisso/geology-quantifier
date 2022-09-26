@@ -10,13 +10,13 @@ import image_managers, sample_extraction, contorno_meanshift, percent, tube
 
 # FUNCIONES AUXILIARES
 def show_img():
-    global img, canvas_frame, altWin, cropped_image_frame
+    global img, canvas_frame, altWin, cropped_image_frame, images_with_clusters
     # Clean window
     if altWin:
         altWin.destroy()
     for wget in canvas_frame.winfo_children():
         wget.destroy()
-
+    
     # buscar una mejor manera resetear size del frame para imagenes
     cropped_image_frame.destroy()
     cropped_image_frame = Frame(window)
@@ -24,11 +24,15 @@ def show_img():
     canvas_frame.grid_forget()
     # canvas_frame = Frame(window)
     canvas_frame.grid(row=1, column=2, columnspan=2)
+    #Resetear imagenes con cluster al seleccionar nueva imagen
+    images_with_clusters = {}
+    current_image = 0
     # hasta aca
     window.withdraw()
     image = image_managers.load_image_from_window()
     try:
         img = sample_extraction.extract_sample(image)
+        #parámetros para resize
         min_width = 600
         min_heigth = 300
         #TODO resize the image to a common shape
@@ -39,7 +43,10 @@ def show_img():
         else:
             img = cv2.resize(img, (int(img.shape[1]*0.7), int(img.shape[0]*0.7)))
         cv2.destroyAllWindows()
-
+        #Guardar la imagen original en el diccionario de imagenes con cluster en la última posición
+        #y la posición como llave
+        actual_len = len(list(images_with_clusters.keys()))
+        images_with_clusters.update({actual_len: [img] })
         # Set image for cropped image frame
         canva = Canvas(cropped_image_frame, width=img.shape[1], height=img.shape[0])
         fix_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -57,13 +64,15 @@ def show_img():
             btnSplit.grid(row=0, column=4)
             btnMerge.grid(row=0, column=5)
             btnSub.grid(row=0, column=6)
+            btnGoBack.grid(row=2, column=1)
+            btnGoFor.grid(row=2, column=2)
     except:
         pass
     window.deiconify()
     
 
 def get_percents():
-    global img, selected_images
+    global img, selected_images, images_with_clusters
 
     # Dictionary to store the cluster images
     selected_images = {}
@@ -76,8 +85,12 @@ def get_percents():
     cluster_masks = contorno_meanshift.gen_masks(img, cluster_num)
     # Show the masks
     cluster_len = 2 #TODO set a valua depending on the image sizes
+    #Eliminar los clusters antiguos
+    images_with_clusters[current_image] = [images_with_clusters[current_image][0]]
     for i in range(len(cluster_masks)):
         imgClusterOrg = cluster_masks[i]
+        #Agregar los clusters a la imagen actual dentro del diccionario de imágen con clusters para la imagen actual
+        images_with_clusters[current_image].append(cluster_masks[i])
         cluster_masks[i] = cv2.resize(cluster_masks[i], (int(cluster_masks[i].shape[1]*0.5), int(cluster_masks[i].shape[0]*0.5)))
 
         cluster_masks[i] = cv2.cvtColor(cluster_masks[i], cv2.COLOR_BGR2RGB)
@@ -94,29 +107,63 @@ def get_percents():
 
 # separacion y nuevo clustering sobre imagen seleccionada
 def split():
-    global selected_images
+    global selected_images,images_with_clusters,current_image, img, cropped_image_frame, canvas_frame
 
-    comingSoon()
-    return
+    # comingSoon()
+    # return
     
     # for pic in selected_images.values():
+    #Solo puede haber una imagen seleccionada
+    if(len(list(selected_images.keys())) != 1):
+        messagebox.showwarning("Error", message="Por favor seleccionar solo una imagen.")
+        return
+    #Extraer la imagen seleccionada
     dict2list = list(selected_images.values())
-    pic = dict2list[0]
-    miniWin = Toplevel(window)
-    miniWin.title("new cluster")
-    miniWin.attributes('-toolwindow', True)
+    pic = dict2list[0][0]
+    #Agregar el cluster seleccionado como nueva imagen al diccionario de imagen con cluster
+    actual_len = len(list(images_with_clusters.keys()))
+    images_with_clusters.update({actual_len:[pic]})
+
     cluster_num = int(num_of_cluster.get())
     cluster_masks = contorno_meanshift.gen_masks(pic, cluster_num)
 
-    cluster_len = 5 # hardcodeado por mientras, saludos
+    cluster_len = 2 # hardcodeado por mientras, saludos
+    for wget in canvas_frame.winfo_children():
+        wget.destroy()
+    #Actualizar imagen acual
+    current_image = actual_len
+    img = pic
+    #Reemplazar la imagen actual por el cluster a separar
+    cropped_image_frame.destroy()
+    cropped_image_frame = Frame(window)
+    cropped_image_frame.grid(row=1, column=1)
+
+    canva = Canvas(cropped_image_frame, width=img.shape[1], height=img.shape[0])
+    fix_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    img_for_canva = Image.fromarray(fix_img)
+    img_for_canva = ImageTk.PhotoImage(img_for_canva)
+    canva.image = img_for_canva
+    canva.create_image(0,0, image=img_for_canva, anchor=NW)
+    canva.grid(row=1, column=1)
+    #Resetear imagenes seleccionadas
+    selected_images = {}
+    #generar nuevos clusters
     for i in range(len(cluster_masks)):
+        imgClusterOrg = cluster_masks[i]
+        images_with_clusters[current_image].append(imgClusterOrg)
         cluster_masks[i] = cv2.resize(cluster_masks[i], (int(cluster_masks[i].shape[1]*0.7), int(cluster_masks[i].shape[0]*0.7)))
         cluster_masks[i] = cv2.cvtColor(cluster_masks[i], cv2.COLOR_BGR2RGB)
-        canva = Canvas(miniWin, width=cluster_masks[i].shape[1], height=cluster_masks[i].shape[0])
+        # name = " new cluster" + str(i)
+        # cv2.imshow(name,cluster_masks[i])
+        canva = Canvas(canvas_frame, width=cluster_masks[i].shape[1], height=cluster_masks[i].shape[0])
+        
         im = Image.fromarray(cluster_masks[i])
         imgg = ImageTk.PhotoImage(im)
-        canva.image = imgg
-        canva.create_image(0,0, image=imgg, anchor=NW)
+        labelimg = Label(canva, image=imgg)
+        labelimg.image = imgg
+        labelimg.bind('<ButtonPress-1>', lambda event, image=imgClusterOrg, key=i, canvas=canva: click(event, image, key, canvas))
+        labelimg.grid(row=0, column=0, padx=10, pady=10)
+        # canva.create_image(0,0, image=imgg, anchor=NW)
         canva.grid(row=1+i//cluster_len, column=i%cluster_len)
             
 def merge():
@@ -196,6 +243,7 @@ def plot3d():
 # funcion para evento click sobre imagenes
 def click(event, image, key, canvas):
     global selected_images
+    # print(selected_images)
     if key in selected_images.keys():
         selected_images.pop(key)
         canvas.configure(bg='white')
@@ -231,7 +279,102 @@ def CroppedImgWindow(im):
 
     lblImg.image = im
     lblImg.pack(fill=BOTH, expand=True)
-    
+
+def imageGoBack():
+    global current_image,selected_images, img,cropped_image_frame, canvas_frame
+    # comingSoon()
+    #Si la imagen actual es la primera no se puede retroceder
+    if(current_image == 0):
+        messagebox.showwarning("No se puede retroceder", message= "No hay más imágenes atras")
+        return
+    imgAnterior = images_with_clusters[current_image-1]
+    pic = imgAnterior[0]
+    list_of_clusters = imgAnterior[1:len(imgAnterior)]
+    img = pic
+    #Reemplazar la imagen actual por el cluster a separar
+    cropped_image_frame.destroy()
+    cropped_image_frame = Frame(window)
+    cropped_image_frame.grid(row=1, column=1)
+    canva = Canvas(cropped_image_frame, width=img.shape[1], height=img.shape[0])
+    fix_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    img_for_canva = Image.fromarray(fix_img)
+    img_for_canva = ImageTk.PhotoImage(img_for_canva)
+    canva.image = img_for_canva
+    canva.create_image(0,0, image=img_for_canva, anchor=NW)
+    canva.grid(row=1, column=1)
+    for wget in canvas_frame.winfo_children():
+        wget.destroy()
+    #Actualizar imagen actual
+    current_image -= 1
+    #Resetear imagenes seleccionadas
+    selected_images = {}
+    #generar nuevos clusters
+    cluster_len = 2
+    for i in range(len(list_of_clusters)):
+        imgClusterOrg = list_of_clusters[i]
+        list_of_clusters[i] = cv2.resize(list_of_clusters[i], (int(list_of_clusters[i].shape[1]*0.7), int(list_of_clusters[i].shape[0]*0.7)))
+        list_of_clusters[i] = cv2.cvtColor(list_of_clusters[i], cv2.COLOR_BGR2RGB)
+        # name = " new cluster" + str(i)
+        # cv2.imshow(name,cluster_masks[i])
+        canva = Canvas(canvas_frame, width=list_of_clusters[i].shape[1], height=list_of_clusters[i].shape[0])
+        
+        im = Image.fromarray(list_of_clusters[i])
+        imgg = ImageTk.PhotoImage(im)
+        labelimg = Label(canva, image=imgg)
+        labelimg.image = imgg
+        labelimg.bind('<ButtonPress-1>', lambda event, image=imgClusterOrg, key=i, canvas=canva: click(event, image, key, canvas))
+        labelimg.grid(row=0, column=0, padx=10, pady=10)
+        # canva.create_image(0,0, image=imgg, anchor=NW)
+        canva.grid(row=1+i//cluster_len, column=i%cluster_len)
+
+
+def imageGoFor():
+    global current_image,selected_images, img,cropped_image_frame, canvas_frame
+    # comingSoon()
+    actual_len = len(list(images_with_clusters.keys()))
+    #Si la imagen actual es la última no se puede avanzar
+    if(current_image == actual_len - 1):
+        messagebox.showwarning("No se puede avanzar", message= "No hay más imágenes adelante")
+        return
+    imgSgte = images_with_clusters[current_image+1]
+    pic = imgSgte[0]
+    list_of_clusters = imgSgte[1:len(imgSgte)]
+    img = pic
+    #Reemplazar la imagen actual por el cluster a separar
+    cropped_image_frame.destroy()
+    cropped_image_frame = Frame(window)
+    cropped_image_frame.grid(row=1, column=1)
+    canva = Canvas(cropped_image_frame, width=img.shape[1], height=img.shape[0])
+    fix_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    img_for_canva = Image.fromarray(fix_img)
+    img_for_canva = ImageTk.PhotoImage(img_for_canva)
+    canva.image = img_for_canva
+    canva.create_image(0,0, image=img_for_canva, anchor=NW)
+    canva.grid(row=1, column=1)
+    for wget in canvas_frame.winfo_children():
+        wget.destroy()
+    #Actualizar imagen actual
+    current_image += 1
+    #Resetear imagenes seleccionadas
+    selected_images = {}
+    #generar nuevos clusters
+    cluster_len = 2
+    for i in range(len(list_of_clusters)):
+        imgClusterOrg = list_of_clusters[i]
+        list_of_clusters[i] = cv2.resize(list_of_clusters[i], (int(list_of_clusters[i].shape[1]*0.7), int(list_of_clusters[i].shape[0]*0.7)))
+        list_of_clusters[i] = cv2.cvtColor(list_of_clusters[i], cv2.COLOR_BGR2RGB)
+        # name = " new cluster" + str(i)
+        # cv2.imshow(name,cluster_masks[i])
+        canva = Canvas(canvas_frame, width=list_of_clusters[i].shape[1], height=list_of_clusters[i].shape[0])
+        
+        im = Image.fromarray(list_of_clusters[i])
+        imgg = ImageTk.PhotoImage(im)
+        labelimg = Label(canva, image=imgg)
+        labelimg.image = imgg
+        labelimg.bind('<ButtonPress-1>', lambda event, image=imgClusterOrg, key=i, canvas=canva: click(event, image, key, canvas))
+        labelimg.grid(row=0, column=0, padx=10, pady=10)
+        # canva.create_image(0,0, image=imgg, anchor=NW)
+        canva.grid(row=1+i//cluster_len, column=i%cluster_len)
 def comingSoon():
     messagebox.showinfo("Proximamente", message="En desarrollo")
     
@@ -252,7 +395,10 @@ myFont = font.Font(size=13)
 
 #Imagenes seleccionadas
 selected_images = {}
-
+#Imágenes junto a sus clusters
+images_with_clusters = {}
+#Imagen actual
+current_image = 0
 # variable globales
 img = None
 altWin = None
@@ -278,6 +424,12 @@ btnMerge = Button(btns_frame, text='Combinar', width=20, command=merge, cursor='
 btnMerge['font'] = myFont
 btnSub = Button(btns_frame, text='Eliminar', width=20, command=substract, cursor='arrow')
 btnSub['font'] = myFont
+#boton para retroceder en las imagenes creadas con clusters
+btnGoBack = Button(btns_frame, text='<-', width=20, command=imageGoBack, cursor='arrow')
+btnGoBack['font'] = myFont
+#boton para avanzar en las imagenes creadas con clusters
+btnGoFor = Button(btns_frame, text='->', width=20, command=imageGoFor, cursor='arrow')
+btnGoFor['font'] = myFont
 
 if not img:
     btnCluster.grid_remove()
