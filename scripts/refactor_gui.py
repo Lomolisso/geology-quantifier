@@ -1,17 +1,15 @@
+import contorno_meanshift
 import numpy as np
+import cv2
 
 def clustering(image, N):
-    pass
+    return contorno_meanshift.gen_masks(image, N)
 
 def substract(image_1, image_2):
-    pass
+    return cv2.subtract(image_1, image_2)
 
 def add(image_1, image_2):
-    pass
-
-class ImageTree(object):
-    def __init__(self, image) -> None:
-        self.tree = ImageNode(self, None, image)
+    return cv2.add(image_1, image_2)
     
 class ImageNode(object):
     def __init__(self, parent, image) -> None:
@@ -22,7 +20,7 @@ class ImageNode(object):
     def __propagate_delete(self, deleted_component):
         self.image = substract(self.image, deleted_component)
         if self.parent != None:
-            self.__propagate_delete(deleted_component)
+            self.parent.__propagate_delete(deleted_component)
 
     def __collapse_image_nodes(self, indices):
         acc = np.zeros(self.image.shape, dtype='uint8')
