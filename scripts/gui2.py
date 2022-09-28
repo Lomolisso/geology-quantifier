@@ -1,10 +1,11 @@
+from sqlalchemy import column
 import refactor_gui
 from tkinter import messagebox, font
 import cv2
 from tkinter import *
 from PIL import Image, ImageTk
 import numpy as np
-import image_managers, sample_extraction, percent, tube
+import image_managers, sample_extraction, percent, tube, segmentacion_contorno as sc
 
 # FUNCIONES AUXILIARES
 CLUSTER_RESHAPE = 0.7
@@ -105,6 +106,7 @@ def show_img():
             btnUp.grid(row=1, column=2)
             btnDown.grid(row=1, column=3)
             btnUndo.grid(row=1,column=0)
+            btnContour.grid(row = 1, column = 4)
     except:
         pass
     window.deiconify()
@@ -212,6 +214,32 @@ def up():
     selected_images_indices = []
     update_screen()
 
+def segmentate():
+    global img_tree, selected_images_indices
+
+    if len(selected_images_indices) > 1:
+        messagebox.showwarning("Error", message="Por favor seleccionar solo una imagen.")
+        return
+    if len(selected_images_indices) ==1:
+        img_tree = img_tree.childs[selected_images_indices[0]]
+    update_screen()
+    selected_images_indices = []
+    contour = sc.contour_segmentation(img_tree.image) 
+    sc.contour_agrupation(contour)
+    segmentated = sc.cluster_segmentation(img_tree.image,contour)
+    child_img = segmentated
+    child_img = cv2.cvtColor(child_img, cv2.COLOR_BGR2RGB)
+    canva = Canvas(canvas_frame, width=child_img.shape[1], height=child_img.shape[0])
+    
+    photo_img = Image.fromarray(child_img)
+    img_for_label = ImageTk.PhotoImage(photo_img)
+    labelimg = Label(canva, image=img_for_label)
+    labelimg.image = img_for_label
+    labelimg.bind('<ButtonPress-1>', lambda event, image=segmentated, key=0, canvas=canva: click(event, image, key, canvas))
+    labelimg.grid(row=0, column=0, padx=10, pady=10)
+    canva.grid()
+    
+    
 def comingSoon():
     messagebox.showinfo("Proximamente", message="En desarrollo")
     
@@ -269,6 +297,9 @@ btnDown['font'] = myFont
 
 btnUndo = Button(btns_frame, text='undo', width=20, command=undo, cursor='arrow')
 btnUndo['font'] = myFont
+
+btnContour = Button(btns_frame, text='Segmentar', width=20, command=segmentate, cursor='arrow')
+btnContour['font'] = myFont
 
 mainloop()
 

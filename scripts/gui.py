@@ -430,11 +430,13 @@ btnGoBack['font'] = myFont
 #boton para avanzar en las imagenes creadas con clusters
 btnGoFor = Button(btns_frame, text='->', width=20, command=imageGoFor, cursor='arrow')
 btnGoFor['font'] = myFont
+btnContour = Button(btns_frame, text='Segmentar', width=20, command=Segmentate, cursor='arrow')
+btnContour['font'] = myFont
 
-if not img:
-    btnCluster.grid_remove()
-    num_of_cluster.grid_remove()
-    btnCluster.grid_remove()
+# if not img:
+#     btnCluster.grid_remove()
+#     num_of_cluster.grid_remove()
+#     btnCluster.grid_remove()
 
 mainloop()
 
