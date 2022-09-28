@@ -1,4 +1,3 @@
-from sqlalchemy import column
 import refactor_gui
 from tkinter import messagebox, font
 import cv2
@@ -222,8 +221,11 @@ def segmentate():
         return
     if len(selected_images_indices) ==1:
         img_tree = img_tree.childs[selected_images_indices[0]]
+
     update_screen()
     selected_images_indices = []
+    
+
     contour = sc.contour_segmentation(img_tree.image) 
     sc.contour_agrupation(contour)
     segmentated = sc.cluster_segmentation(img_tree.image,contour)
@@ -238,7 +240,42 @@ def segmentate():
     labelimg.bind('<ButtonPress-1>', lambda event, image=segmentated, key=0, canvas=canva: click(event, image, key, canvas))
     labelimg.grid(row=0, column=0, padx=10, pady=10)
     canva.grid()
-    
+
+    results = sc.generate_results(contour)
+    fill_table(results)
+
+
+def fill_table(results):
+    table_canva = Canvas(results_frame)
+
+    label_color = Label(table_canva, text="Color")
+    label_color.grid(row=0, column=0)
+    label_name = Label(table_canva, text="Grupo")
+    label_name.grid(row=0, column=1)
+    label_total = Label(table_canva, text="Porcentaje Total")
+    label_total.grid(row=0, column=2)
+    label_prom = Label(table_canva, text="Porcentaje Promedio")
+    label_prom.grid(row=0, column=3)
+
+    for row_num in range(1, len(results[0])+1):
+        (b, g, r) = sc.COLORS[row_num-1]
+        color = '#%02x%02x%02x' % (r, g, b)
+        label_color = Label(table_canva, bg=color, width=1, height=1)
+        label_color.grid(row=row_num, column=0, sticky=W)
+        
+        name = Entry(table_canva)
+        name['font'] = myFont
+        name.insert(0, f"Grupo {row_num}")
+        name.bind("<1>", lambda _ : name.delete(0,'end'))
+        name.grid(row=row_num, column=1)
+
+        label_total = Label(table_canva, text=results[0][row_num-1])
+        label_total.grid(row=row_num, column=2)
+
+        label_prom = Label(table_canva, text=results[1][row_num-1])
+        label_prom.grid(row=row_num, column=3)
+    table_canva.grid()
+
     
 def comingSoon():
     messagebox.showinfo("Proximamente", message="En desarrollo")
@@ -252,9 +289,11 @@ window.config(cursor='plus')
 btns_frame = Frame(window)
 canvas_frame = Frame(window)
 cropped_image_frame = Frame(window)
+results_frame = Frame(window)
 btns_frame.grid(row=0, column=1, columnspan=3, padx=10, pady=10, sticky=NW)
 canvas_frame.grid(row=1, column=2, columnspan=2)
 cropped_image_frame.grid(row=1, column=1)
+results_frame.grid(row=2,column=1,sticky=S)
 
 # Arbol con imagenes
 img_tree = None

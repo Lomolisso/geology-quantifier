@@ -1,7 +1,5 @@
-from sympy import im
-
-
 import cv2, numpy as np
+import percent
 
 class Contour():
     def __init__(self, img, r) -> None:
@@ -48,3 +46,16 @@ def cluster_segmentation(cluster, contours):
         color = COLORS[c.group]
         cv2.rectangle(im, c.r, color, 2)
     return im
+
+def generate_results(contours):
+    total_percentages = [0,0,0]
+    prom_percentages = [0,0,0]
+    num_of_contors = [0,0,0]
+    for c in contours:
+        per = percent.percent(c.img)
+        total_percentages[c.group] += per
+        num_of_contors[c.group] += 1
+    for i in range(3):
+        if num_of_contors[i] != 0:
+            prom_percentages[i] = total_percentages[i]/num_of_contors[i]
+    return total_percentages, prom_percentages
