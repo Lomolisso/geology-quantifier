@@ -6,6 +6,7 @@ from tkinter import *
 from PIL import Image, ImageTk
 import numpy as np
 import image_managers, sample_extraction, percent, tube, segmentacion_contorno as sc
+from utils import EntryWithPlaceholder
 
 # FUNCIONES AUXILIARES
 CLUSTER_RESHAPE = 0.7
@@ -223,10 +224,12 @@ def segmentate():
     if len(selected_images_indices) > 1:
         messagebox.showwarning("Error", message="Por favor seleccionar solo una imagen.")
         return
-    if len(selected_images_indices) ==1:
+    if len(selected_images_indices) == 1:
         img_tree = img_tree.childs[selected_images_indices[0]]
 
     update_screen()
+    for wget in canvas_frame.winfo_children():
+        wget.destroy()
     selected_images_indices = []
     
 
@@ -264,10 +267,8 @@ def fill_table(results):
         label_color = Label(results_frame, bg=color, width=1, height=1, justify=CENTER)
         label_color.grid(row=row_num, column=0, sticky=W)
         
-        name = Entry(results_frame)
+        name = EntryWithPlaceholder(results_frame, f"Grupo {row_num}")
         name['font'] = myFont
-        name.insert(0, f"Grupo {row_num}")
-        name.bind("<FocusIn>", lambda event : event.widget.delete(0, END))
         name.grid(row=row_num, column=1)
 
         label_total = Label(results_frame, text=results[0][row_num-1])
@@ -344,10 +345,8 @@ btnImg['font'] = myFont
 btn3D = Button(btns_frame, text='3D', width=20, command=plot3d, cursor='arrow')
 btn3D['font'] = myFont
 
-num_of_cluster = Entry(btns_frame)
+num_of_cluster = EntryWithPlaceholder(btns_frame, "Número de clusters", 'gray')
 num_of_cluster['font'] = myFont
-num_of_cluster.insert(0, "Número de clusters")
-num_of_cluster.bind("<1>", lambda _ : num_of_cluster.delete(0,'end'))
 
 btnSplit = Button(btns_frame, text='Separar', width=20, command=split, cursor='arrow')
 btnSplit['font'] = myFont
