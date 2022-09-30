@@ -312,76 +312,9 @@ class gui():
 
     
 
-m = Tk()
-gg = gui(m)        
-m.mainloop()
-
-"""    
-
-# funcion para evento click sobre imagenes
-    
-
-def comingSoon():
-    messagebox.showinfo("Proximamente", message="En desarrollo")
-    
-
-# Inicializacion de ventana
-window = Tk()
-window.title("Cuantificador geologico")
-window.iconbitmap("icon.ico")
-window.config(cursor='plus')
-btns_frame = Frame(window)
-canvas_frame = Frame(window)
-cropped_image_frame = Frame(window)
-results_frame = Frame(window)
-btns_frame.grid(row=0, column=1, columnspan=3, padx=10, pady=10, sticky=NW)
-canvas_frame.grid(row=1, column=2, columnspan=2)
-cropped_image_frame.grid(row=1, column=1)
-results_frame.grid(row=2,column=1,sticky=S)
-
-# Arbol con imagenes
-img_tree = None
-
-# Tamaño de letra en botones
-myFont = font.Font(size=13)
-
-#Imagenes seleccionadas
-selected_images_indices = []
-#Imagen actual
-current_image = 0
-# variable globales
-org_img = None
-altWin = None
-
-btnImg = Button(btns_frame, text='Seleccionar imagen', width=20, command=show_img, cursor='arrow')
-btnImg.grid(row=0, column=0)
-btnImg['font'] = myFont
-
-btn3D = Button(btns_frame, text='3D', width=20, command=plot3d, cursor='arrow')
-btn3D['font'] = myFont
-
-num_of_cluster = EntryWithPlaceholder(btns_frame, "Número de clusters", 'gray')
-num_of_cluster['font'] = myFont
-
-btnSplit = Button(btns_frame, text='Separar', width=20, command=split, cursor='arrow')
-btnSplit['font'] = myFont
-btnMerge = Button(btns_frame, text='Combinar', width=20, command=merge, cursor='arrow')
-btnMerge['font'] = myFont
-btnSub = Button(btns_frame, text='Eliminar', width=20, command=delete, cursor='arrow')
-btnSub['font'] = myFont
-#boton para retroceder en las imagenes creadas con clusters
-btnUp = Button(btns_frame, text='up', width=20, command=up, cursor='arrow')
-btnUp['font'] = myFont
-#boton para avanzar en las imagenes creadas con clusters
-btnDown = Button(btns_frame, text='down', width=20, command=down, cursor='arrow')
-btnDown['font'] = myFont
-
-btnUndo = Button(btns_frame, text='undo', width=20, command=undo, cursor='arrow')
-btnUndo['font'] = myFont
-
-btnContour = Button(btns_frame, text='Segmentar', width=20, command=segmentate, cursor='arrow')
-btnContour['font'] = myFont
-
-mainloop()
-
-"""
+win = Tk()
+win.title("Cuantificador geologico")
+win.iconbitmap("icon.ico")
+win.config(cursor='plus')
+gg = gui(win)        
+win.mainloop()
