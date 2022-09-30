@@ -1,3 +1,4 @@
+import csv
 import refactor_gui
 from tkinter import messagebox, font
 import cv2
@@ -14,6 +15,9 @@ def update_screen():
     global cropped_image_frame, canvas_frame, img_tree, current_image
 
     for wget in canvas_frame.winfo_children():
+        wget.destroy()
+
+    for wget in results_frame.winfo_children():
         wget.destroy()
     
     # buscar una mejor manera resetear size del frame para imagenes
@@ -244,39 +248,63 @@ def segmentate():
     results = sc.generate_results(contour)
     fill_table(results)
 
-
 def fill_table(results):
-    table_canva = Canvas(results_frame)
-
-    label_color = Label(table_canva, text="Color")
+    label_color = Label(results_frame, text="Color")
     label_color.grid(row=0, column=0)
-    label_name = Label(table_canva, text="Grupo")
+    label_name = Label(results_frame, text="Grupo")
     label_name.grid(row=0, column=1)
-    label_total = Label(table_canva, text="Porcentaje Total")
+    label_total = Label(results_frame, text="Porcentaje Total")
     label_total.grid(row=0, column=2)
-    label_prom = Label(table_canva, text="Porcentaje Promedio")
+    label_prom = Label(results_frame, text="Porcentaje Promedio")
     label_prom.grid(row=0, column=3)
-
+    
     for row_num in range(1, len(results[0])+1):
         (b, g, r) = sc.COLORS[row_num-1]
         color = '#%02x%02x%02x' % (r, g, b)
-        label_color = Label(table_canva, bg=color, width=1, height=1)
+        label_color = Label(results_frame, bg=color, width=1, height=1, justify=CENTER)
         label_color.grid(row=row_num, column=0, sticky=W)
         
-        name = Entry(table_canva)
+        name = Entry(results_frame)
         name['font'] = myFont
         name.insert(0, f"Grupo {row_num}")
-        name.bind("<1>", lambda _ : name.delete(0,'end'))
+        name.bind("<FocusIn>", lambda event : event.widget.delete(0, END))
         name.grid(row=row_num, column=1)
 
-        label_total = Label(table_canva, text=results[0][row_num-1])
+        label_total = Label(results_frame, text=results[0][row_num-1])
         label_total.grid(row=row_num, column=2)
 
-        label_prom = Label(table_canva, text=results[1][row_num-1])
+        label_prom = Label(results_frame, text=results[1][row_num-1])
         label_prom.grid(row=row_num, column=3)
-    table_canva.grid()
 
-    
+    btnExport = Button(results_frame, text="Export to csv", width=15, command=table_to_csv, cursor='arrow')
+    btnExport['font'] = myFont
+    btnExport.grid(row=2, column=4)
+
+def table_to_csv():
+    wgets = results_frame.winfo_children()[:-1]
+    def wgetter(wget_arr):
+        ret_arr = []
+        for wget in wget_arr:
+            if isinstance(wget, Entry):
+                ret_arr.append(wget.get())
+            else:
+                if wget.cget('text') == '':
+                    ret_arr.append(wget.cget('bg'))
+                else:
+                    ret_arr.append(wget.cget('text'))
+        return ret_arr
+ 
+    rows = [wgetter(wgets[i:i+4]) for i in range(0, len(wgets), 4)]
+
+    print(rows)
+
+    with open('geo_data.csv', 'w', newline='') as f:
+        wrtr = csv.writer(f, delimiter=',')
+        for row in rows:
+            wrtr.writerow(row)
+
+
+
 def comingSoon():
     messagebox.showinfo("Proximamente", message="En desarrollo")
     

@@ -16,5 +16,5 @@ def fill_tube(image):
     tex = pv.numpy_to_texture(outRGB)
     # Create the tube and later load the image texture, to see it.
     surf = pv.read('.\scripts\\tubo.obj')
-    surf.plot(texture=tex, background="black")
+    surf.plot(texture=tex, background="black", cpos='xy')
     return True
