@@ -1,4 +1,6 @@
 import csv
+import datetime
+import os
 import refactor_gui
 from tkinter import messagebox, font
 import cv2
@@ -57,6 +59,9 @@ class gui():
         self.btnContour = Button(self.btns_fr, text='Segmentar', width=20, command=self.segmentate, cursor='arrow')
         self.btnContour['font'] = self.myFont
 
+        self.btnSave = Button(self.btns_fr, text='Guardar', width=20, command=self.save, cursor='arrow')
+        self.btnSave['font'] = self.myFont
+
         
     def split(self):
         n_childs = int(self.num_of_cluster.get())
@@ -106,7 +111,8 @@ class gui():
                 self.btnUp.grid(row=1, column=2)
                 self.btnDown.grid(row=1, column=3)
                 self.btnUndo.grid(row=1,column=0)
-                self.btnContour.grid(row = 1, column = 4)
+                self.btnContour.grid(row=1, column=4)
+                self.btnSave.grid(row=1, column=1)
         except:
             pass
         self.main_win.deiconify()
@@ -311,9 +317,11 @@ class gui():
                 wrtr.writerow(row)
     
     def save(self):
-        image_managers.save_image_from_path(self.img_tree.image, "img/saved/principal.png")
+        PATH = f"output/{datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')}"
+        os.makedirs(PATH)
+        image_managers.save_image_from_path(self.img_tree.image, f"{PATH}/original.png")
         for i in range(len(self.img_tree.childs)):
-            image_managers.save_image_from_path(self.img_tree.childs[i].image, f"img/saved/cluster_{i}.png")
+            image_managers.save_image_from_path(self.img_tree.childs[i].image, f"{PATH}/cluster_{i}.png")
         messagebox.showinfo("Guardado", message="Las imagenes se han guardado correctamente")
 
     
