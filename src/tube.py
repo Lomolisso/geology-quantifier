@@ -15,6 +15,6 @@ def fill_tube(image):
     outRGB = cv2.cvtColor(out, cv2.COLOR_BGR2RGB)
     tex = pv.numpy_to_texture(outRGB)
     # Create the tube and later load the image texture, to see it.
-    surf = pv.read('.\scripts\\tubo.obj')
+    surf = pv.read('.\src\\tubo.obj')
     surf.plot(texture=tex, background="black", cpos='xy')
     return True
