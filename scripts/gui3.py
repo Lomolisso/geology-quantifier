@@ -22,8 +22,8 @@ class gui():
         self.btns_fr = Frame(self.main_win)
         self.cropped_img_fr = Frame(self.main_win)
         self.img_container_fr = Frame(self.main_win)
-        self.img_container_canvas= Canvas(self.img_container_fr, width = 500, height =500)
-        self.canvas_fr = Frame(self.img_container_canvas,  width = 500, height =500)
+        self.img_container_canvas= Canvas(self.img_container_fr)
+        self.canvas_fr = Frame(self.img_container_canvas)
         self.img_tree = None
         self.selected_images_indices = []
         self.org_img = None
@@ -34,10 +34,12 @@ class gui():
         self.cropped_img_fr.grid(row=1, column=1)
         self.results_fr.grid(row=2,column=1,sticky=S)
         self.img_container_canvas.grid()
-        self.scrollbar.grid(row = 0, column=1, sticky=NS)
+        
         self.img_container_canvas.configure(yscrollcommand= self.scrollbar)
-        self.img_container_canvas.bind('<Configure>', lambda e: self.img_container_canvas.configure(scrollregion= self.img_container_canvas.bbox('all')))
+        self.scrollbar.grid(row = 0, column=1, sticky=NS)
+        
         self.img_container_canvas.create_window((0,0), window=self.canvas_fr, anchor=NW)
+        
         # self.canvas_fr.grid()
 
         self.btnImg = Button(self.btns_fr, text='Seleccionar imagen', width=20, command=self.show_img, cursor='arrow')
@@ -196,6 +198,10 @@ class gui():
             label.bind('<ButtonPress-1>', lambda event, image=child.image, key=i, canvas=canva: self.click(image, key, canvas))
             canva.grid(row=1+i//img_row_shape, column=i%img_row_shape)
             i+=1
+        try:
+            self.img_container_canvas.bind('<Configure>', lambda e: self.canvas_fr.configure(scrollregion= self.img_container_canvas.bbox('all')))
+        except:
+            pass
         # self.img_container_canvas.bind('<Configure>', lambda e: self.img_container_canvas.configure(scrollregion= self.img_container_canvas.bbox('all')))
         # # self.canvas_fr = Frame(self.img_container_canvas)
         # self.img_container_canvas.create_window((0,0), window=self.canvas_fr, anchor=NW)
