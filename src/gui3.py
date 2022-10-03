@@ -62,6 +62,9 @@ class gui():
         self.btnSave = Button(self.btns_fr, text='Guardar', width=20, command=self.save, cursor='arrow')
         self.btnSave['font'] = self.myFont
 
+        self.btnUpdate = Button(self.btns_fr, text='Actualizar', width=20, command=self.update_screen, cursor='arrow')
+        self.btnUpdate['font'] = self.myFont
+
         
     def split(self):
         n_childs = int(self.num_of_cluster.get())
@@ -108,11 +111,12 @@ class gui():
                 self.btnSplit.grid(row=0, column=3)
                 self.btnMerge.grid(row=0, column=4)
                 self.btnSub.grid(row=0, column=5)
+                self.btnUndo.grid(row=1,column=0)
+                self.btnSave.grid(row=1, column=1)
                 self.btnUp.grid(row=1, column=2)
                 self.btnDown.grid(row=1, column=3)
-                self.btnUndo.grid(row=1,column=0)
                 self.btnContour.grid(row=1, column=4)
-                self.btnSave.grid(row=1, column=1)
+                self.btnUpdate.grid(row=1, column=5)
         except:
             pass
         self.main_win.deiconify()
