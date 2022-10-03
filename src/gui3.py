@@ -7,7 +7,7 @@ import cv2
 from tkinter import *
 from PIL import Image, ImageTk
 import numpy as np
-import image_managers, sample_extraction, percent, tube, segmentacion_contorno as sc
+import image_managers, sample_extraction, percent, tube, resize, segmentacion_contorno as sc
 from utils import EntryWithPlaceholder
 
 CLUSTER_RESHAPE = 0.7
@@ -168,6 +168,10 @@ class gui():
         self.selected_images_indices = []
 
         # Set image for cropped image frame
+        win_height = self.main_win.winfo_height()
+        win_width = self.main_win.winfo_width()
+        resize_img = resize.resize_image(img, win_height * 7 // 12, win_width // 3)
+        img = resize_img
         canva = Canvas(self.cropped_img_fr, width=img.shape[1], height=img.shape[0])
         fix_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         _ = self.add_img_to_canvas(canva, fix_img)
@@ -176,7 +180,8 @@ class gui():
         img_row_shape = 2
         i = 0
         for child in self.img_tree.childs:
-            child_img = cv2.resize(child.image, (int(child.image.shape[1]*CLUSTER_RESHAPE), int(child.image.shape[0]*CLUSTER_RESHAPE)))
+            child_img = resize.resize_image(child.image, win_height * 7 // 12, win_width // 3)
+            child_img = cv2.resize(child.image, (int(child_img.shape[1]*CLUSTER_RESHAPE), int(child_img.shape[0]*CLUSTER_RESHAPE)))
             child_img = cv2.cvtColor(child_img, cv2.COLOR_BGR2RGB)
             canva = Canvas(self.canvas_fr, width=child_img.shape[1], height=child_img.shape[0])
             label = self.add_img_to_canvas(canva, child_img)
@@ -329,5 +334,8 @@ win = Tk()
 win.title("Cuantificador geologico")
 win.iconbitmap("icon.ico")
 win.config(cursor='plus')
+screen_width = win.winfo_screenwidth()
+screen_height = win.winfo_screenheight()
+win.geometry(f"{screen_width}x{screen_height-100}+0+0")
 gg = gui(win)        
 win.mainloop()
