@@ -18,15 +18,20 @@ class gui():
         self.main_win = master
         self.btns_fr = Frame(self.main_win)
         self.cropped_img_fr = Frame(self.main_win)
-        self.canvas_fr = Frame(self.main_win)
+        self.img_container_fr = Frame(self.main_win, height=20)
+        self.img_container_canvas= Canvas(self.img_container_fr)
+        self.canvas_fr = Frame(self.img_container_canvas)
         self.img_tree = None
         self.selected_images_indices = []
         self.org_img = None
         self.results_fr = Frame(self.main_win)
+        self.scrollbar = Scrollbar(self.img_container_fr, orient=VERTICAL, command = self.img_container_canvas.yview)
         self.btns_fr.grid(row=0, column=1, columnspan=3, padx=10, pady=10, sticky=NW)
-        self.canvas_fr.grid(row=1, column=2, columnspan=2)
+        # self.img_container_fr.grid(row=1, column=2, columnspan=2)
         self.cropped_img_fr.grid(row=1, column=1)
         self.results_fr.grid(row=2,column=1,sticky=S)
+        # self.img_container_canvas.grid()
+        # self.canvas_fr.grid()
 
         self.btnImg = Button(self.btns_fr, text='Seleccionar imagen', width=20, command=self.show_img, cursor='arrow')
         self.btnImg.grid(row=0, column=0)
@@ -125,9 +130,16 @@ class gui():
         self.cropped_img_fr.destroy()
         self.cropped_img_fr = Frame(self.main_win)
         self.cropped_img_fr.grid(row=1, column=1)
-        self.canvas_fr.destroy()
-        self.canvas_fr = Frame(self.main_win)
-        self.canvas_fr.grid(row=1, column=2, columnspan=2)
+        # self.img_container_fr.destroy()
+        # self.img_container_fr = Frame(self.main_win)
+        self.img_container_fr.grid(row=1, column=2, columnspan=2)
+
+        self.img_container_canvas.grid(row=0, column=0)
+        self.scrollbar.grid(row = 0, column=1, sticky=NS)
+        self.img_container_canvas.configure(yscrollcommand= self.scrollbar)
+        self.img_container_canvas.bind('<Configure>', lambda e: self.img_container_canvas.configure(scrollregion= self.img_container_canvas.bbox('all')))
+        # self.canvas_fr = Frame(self.img_container_canvas)
+        self.img_container_canvas.create_window((0,0), window=self.canvas_fr, anchor=NW)
     
     def add_img_to_canvas(self, canvas, img):
         photo_img = Image.fromarray(img)
