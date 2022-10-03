@@ -10,8 +10,7 @@ import numpy as np
 import image_managers, sample_extraction, percent, tube, resize, segmentacion_contorno as sc
 from utils import EntryWithPlaceholder
 
-CLUSTER_RESHAPE = 0.7
-IMAGE_RESHAPE = 0.7
+CLUSTER_RESHAPE = 0.5
     
 
 class gui():
@@ -47,13 +46,13 @@ class gui():
         self.btnSub = Button(self.btns_fr, text='Eliminar', width=20, command=self.delete, cursor='arrow')
         self.btnSub['font'] = self.myFont
         # #boton para retroceder en las imagenes creadas con clusters
-        self.btnUp = Button(self.btns_fr, text='up', width=20, command=self.up, cursor='arrow')
+        self.btnUp = Button(self.btns_fr, text='Subir', width=20, command=self.up, cursor='arrow')
         self.btnUp['font'] = self.myFont
         # #boton para avanzar en las imagenes creadas con clusters
-        self.btnDown = Button(self.btns_fr, text='down', width=20, command=self.down, cursor='arrow')
+        self.btnDown = Button(self.btns_fr, text='Bajar', width=20, command=self.down, cursor='arrow')
         self.btnDown['font'] = self.myFont
 
-        self.btnUndo = Button(self.btns_fr, text='undo', width=20, command=self.undo, cursor='arrow')
+        self.btnUndo = Button(self.btns_fr, text='Deshacer', width=20, command=self.undo, cursor='arrow')
         self.btnUndo['font'] = self.myFont
 
         self.btnContour = Button(self.btns_fr, text='Segmentar', width=20, command=self.segmentate, cursor='arrow')
