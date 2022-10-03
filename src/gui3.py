@@ -309,9 +309,14 @@ class gui():
             wrtr = csv.writer(f, delimiter=',')
             for row in rows:
                 wrtr.writerow(row)
+    
+    def save(self):
+        image_managers.save_image_from_path(self.img_tree.image, "img/saved/principal.png")
+        for i in range(len(self.img_tree.childs)):
+            image_managers.save_image_from_path(self.img_tree.childs[i].image, f"img/saved/cluster_{i}.png")
+        messagebox.showinfo("Guardado", message="Las imagenes se han guardado correctamente")
 
     
-
 win = Tk()
 win.title("Cuantificador geologico")
 win.iconbitmap("icon.ico")
