@@ -28,15 +28,15 @@ class gui():
         self.selected_images_indices = []
         self.org_img = None
         self.results_fr = Frame(self.main_win)
-        self.scrollbar = Scrollbar(self.img_container_fr, orient=VERTICAL, command = self.img_container_canvas.yview)
+        self.scrollbar = Scrollbar(self.img_container_fr, orient=HORIZONTAL, command = self.img_container_canvas.xview)
         self.btns_fr.grid(row=0, column=1, columnspan=3, padx=10, pady=10, sticky=NW)
         # self.img_container_fr.grid(row=1, column=2, columnspan=2)
         self.cropped_img_fr.grid(row=1, column=1)
         self.results_fr.grid(row=2,column=1,sticky=S)
         self.img_container_canvas.grid()
         
-        self.img_container_canvas.configure(yscrollcommand= self.scrollbar.set)
-        self.scrollbar.grid(row = 0, column=1, sticky=NS)
+        self.img_container_canvas.configure(xscrollcommand= self.scrollbar.set)
+        self.scrollbar.grid(row = 1, column=0, sticky=EW)
         self.canvas_fr.bind('<Enter>', self._bound_to_mousewheel)
         self.canvas_fr.bind('<Leave>', self._unbound_to_mousewheel)
 
@@ -80,7 +80,7 @@ class gui():
         self.img_container_canvas.unbind_all("<MouseWheel>")
 
     def _on_mousewheel(self, event):
-        self.img_container_canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+        self.img_container_canvas.xview_scroll(int(-1*(event.delta/120)), "units")
         
     def split(self):
         n_childs = int(self.num_of_cluster.get())
