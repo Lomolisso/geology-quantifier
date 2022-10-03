@@ -1,9 +1,9 @@
-import contorno_meanshift
+import color_segmentation
 import numpy as np
 import cv2
 
 def clustering(image, N):
-    return contorno_meanshift.gen_masks(image, N)
+    return color_segmentation.generate_clusters(image, N)
 
 def substract(image_1, image_2):
     return cv2.subtract(image_1, image_2)

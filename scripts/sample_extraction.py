@@ -105,7 +105,7 @@ def extract_sample(img):
 
     cv2.namedWindow('Sample Area')
     cv2.setMouseCallback('Sample Area', mouse)
-    instr = cv2.imread("./img/keyboard.png")
+    instr = cv2.imread("./img/GUI/keyboard.png")
     
     while True:
         
