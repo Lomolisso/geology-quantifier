@@ -35,9 +35,11 @@ class gui():
         self.results_fr.grid(row=2,column=1,sticky=S)
         self.img_container_canvas.grid()
         
-        self.img_container_canvas.configure(yscrollcommand= self.scrollbar)
+        self.img_container_canvas.configure(yscrollcommand= self.scrollbar.set)
         self.scrollbar.grid(row = 0, column=1, sticky=NS)
-        
+        self.canvas_fr.bind('<Enter>', self._bound_to_mousewheel)
+        self.canvas_fr.bind('<Leave>', self._unbound_to_mousewheel)
+
         self.img_container_canvas.create_window((0,0), window=self.canvas_fr, anchor=NW)
         
         # self.canvas_fr.grid()
@@ -71,6 +73,14 @@ class gui():
         self.btnContour = Button(self.btns_fr, text='Segmentar', width=20, command=self.segmentate, cursor='arrow')
         self.btnContour['font'] = self.myFont
 
+    def _bound_to_mousewheel(self, event):
+        self.img_container_canvas.bind_all("<MouseWheel>", self._on_mousewheel)
+
+    def _unbound_to_mousewheel(self, event):
+        self.img_container_canvas.unbind_all("<MouseWheel>")
+
+    def _on_mousewheel(self, event):
+        self.img_container_canvas.yview_scroll(int(-1*(event.delta/120)), "units")
         
     def split(self):
         n_childs = int(self.num_of_cluster.get())
@@ -90,25 +100,10 @@ class gui():
             image = image_managers.load_image_from_window()
             img = sample_extraction.extract_sample(image)
             #parámetros para resize
-            min_width = 600
-            min_heigth = 300
-            # MOVER ESTA FUNCIONALIDAD A OTRO LADO/FUNCION/METODO PARA TRABAJAR IMAGENES
-            #TODO resize the image to a common shape
-            # if img.shape[0] < 400:
-            #     img = cv2.resize(img, (int(img.shape[1] * min_width/img.shape[0]), min_width))
-            # if img.shape[1] < 200:      
-            #     img = cv2.resize(img, (min_heigth, int(img.shape[0] * min_heigth/img.shape[1])))
-            # else:
-            #     img = cv2.resize(img, (int(img.shape[1]*IMAGE_RESHAPE), int(img.shape[0]*IMAGE_RESHAPE)))
 
             self.org_img = img
             self.img_tree = refactor_gui.ImageNode(None, img)
             
-            # Guardar la imagen original en el diccionario de imagenes con cluster en la última posición
-            # y la posición como llave
-            # actual_len = len(list(images_with_clusters.keys()))
-            # images_with_clusters.update({actual_len: [img] })
-            # Set image for cropped image frame
             self.update_screen()
                     
             if isinstance(img, np.ndarray):
@@ -199,7 +194,7 @@ class gui():
             canva.grid(row=1+i//img_row_shape, column=i%img_row_shape)
             i+=1
         try:
-            self.img_container_canvas.bind('<Configure>', lambda e: self.canvas_fr.configure(scrollregion= self.img_container_canvas.bbox('all')))
+            self.canvas_fr.configure(scrollregion= self.img_container_canvas.bbox())
         except:
             pass
         # self.img_container_canvas.bind('<Configure>', lambda e: self.img_container_canvas.configure(scrollregion= self.img_container_canvas.bbox('all')))
