@@ -45,19 +45,19 @@ class SampleExtractor(object):
         """
         Draws the current selected area of the image.
         """
-        point_1, point_2, point_3, point_4 = [self.vertex_data[v] for v in self.vertex_data]
-        cv2.line(self.bg, point_1, point_2, BLACK)
-        cv2.line(self.bg, point_2, point_3, BLACK)
-        cv2.line(self.bg, point_4, point_3, BLACK)
-        cv2.line(self.bg, point_4, point_1, BLACK) 
-        cv2.circle(self.bg, point_1, self.radius, BLACK, -1) 
-        cv2.circle(self.bg, point_2, self.radius, BLACK, -1) 
-        cv2.circle(self.bg, point_4, self.radius, BLACK, -1) 
-        cv2.circle(self.bg, point_3, self.radius, BLACK, -1)
-        cv2.circle(self.bg, point_1, self.min_radius, LIGHTBLUE, -1) 
-        cv2.circle(self.bg, point_2, self.min_radius, LIGHTBLUE, -1) 
-        cv2.circle(self.bg, point_4, self.min_radius, LIGHTBLUE, -1) 
-        cv2.circle(self.bg, point_3, self.min_radius, LIGHTBLUE, -1)
+        vertex_1, vertex_2, vertex_3, vertex_4 = [self.vertex_data[v] for v in self.vertex_data]
+        cv2.line(self.bg, vertex_1, vertex_2, BLACK)
+        cv2.line(self.bg, vertex_2, vertex_3, BLACK)
+        cv2.line(self.bg, vertex_4, vertex_3, BLACK)
+        cv2.line(self.bg, vertex_4, vertex_1, BLACK)
+        cv2.circle(self.bg, vertex_1, self.radius, BLACK, -1)
+        cv2.circle(self.bg, vertex_2, self.radius, BLACK, -1) 
+        cv2.circle(self.bg, vertex_4, self.radius, BLACK, -1)
+        cv2.circle(self.bg, vertex_3, self.radius, BLACK, -1)
+        cv2.circle(self.bg, vertex_1, self.min_radius, LIGHTBLUE, -1) 
+        cv2.circle(self.bg, vertex_2, self.min_radius, LIGHTBLUE, -1) 
+        cv2.circle(self.bg, vertex_4, self.min_radius, LIGHTBLUE, -1) 
+        cv2.circle(self.bg, vertex_3, self.min_radius, LIGHTBLUE, -1)
 
     def __reset_vertexes_pos(self):
         """
@@ -143,17 +143,17 @@ class SampleExtractor(object):
 
             # if 's' is pressed, the img was cut in the rectangle area.
             elif k == ord("s"):
-                point_1, point_2, point_3, point_4 = [self.vertex_data[v] for v in self.vertex_data]
+                vertex_1, vertex_2, vertex_3, vertex_4 = [self.vertex_data[v] for v in self.vertex_data]
 
-                width_1 = np.linalg.norm(point_1 - point_4)
-                width_2 = np.linalg.norm(point_2 - point_3)
+                width_1 = np.linalg.norm(vertex_1 - vertex_4)
+                width_2 = np.linalg.norm(vertex_2 - vertex_3)
                 max_width = max(int(width_1), int(width_2))
 
-                height_1 = np.linalg.norm(point_1 - point_2)
-                height_2 = np.linalg.norm(point_3 - point_4)
+                height_1 = np.linalg.norm(vertex_1 - vertex_2)
+                height_2 = np.linalg.norm(vertex_3 - vertex_4)
                 max_height = max(int(height_1), int(height_2))
 
-                input_points = np.array([point_1, point_2, point_3, point_4], dtype=np.float32)
+                input_points = np.array([vertex_1, vertex_2, vertex_3, vertex_4], dtype=np.float32)
                 output_points = np.array([
                         [0, 0],
                         [0, max_height - 1],
