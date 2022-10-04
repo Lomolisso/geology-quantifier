@@ -104,16 +104,14 @@ class SampleExtractor(object):
             self.bg = self.original_image.copy()
             v1, v2, v3, v4 = [self.vertex_data[v] for v in self.vertex_data]
             cond_dict = {
-                "vertex_1": lambda x, y: x < min(v3[0], v4[0]) and y < min(v2[1], v4[1]),
-                "vertex_2": lambda x, y: x < min(v3[0], v4[0]) and y > max(v1[1], v3[1]),
-                "vertex_3": lambda x, y: x > max(v1[0], v2[0]) and y > max(v1[1], v3[1]),   
-                "vertex_4": lambda x, y: x > max(v1[0], v2[0]) and y < min(v2[1], v4[1]),
+                "vertex_1": lambda x, y: x < min(v4[0], v3[0]) and y < min(v2[1], v3[1]),
+                "vertex_2": lambda x, y: x < min(v4[0], v3[0]) and y > max(v1[1], v4[1]),
+                "vertex_3": lambda x, y: x > max(v1[0], v2[0]) and y > max(v1[1], v4[1]),   
+                "vertex_4": lambda x, y: x > max(v1[0], v2[0]) and y < min(v2[1], v3[1]),
             }
 
             if self.vertex_dirty is not None:
                 cond = cond_dict[self.vertex_dirty](x, y)
-                print(f"vertex_dirty is {self.vertex_dirty}")
-                print(f"cond is {cond}")
                 if cond:
                     self.vertex_data[self.vertex_dirty] = np.array((x, y))
 
