@@ -20,16 +20,34 @@ class gui():
         # self.main_win.maxsize(1300, 500)
         self.btns_fr = Frame(self.main_win)
         self.cropped_img_fr = Frame(self.main_win)
-        self.img_container_fr = Frame(self.main_win)
-        self.img_container_canvas= Canvas(self.img_container_fr)
-        self.canvas_fr = Frame(self.img_container_canvas)
         self.img_tree = None
         self.selected_images_indices = []
         self.org_img = None
         self.results_fr = Frame(self.main_win)
+        #Set scrollbar
+        self.img_container_fr = Frame(self.main_win)
+        self.img_container_canvas= Canvas(self.img_container_fr)
         self.scrollbar = Scrollbar(self.img_container_fr, orient=HORIZONTAL , command = self.img_container_canvas.xview)
+        self.canvas_fr = Frame(self.img_container_canvas)
+
+        self.canvas_fr.bind(
+            "<Configure>",
+            lambda e: self.img_container_canvas.configure(
+                scrollregion=self.img_container_canvas.bbox("all")
+            )
+        )
+
+        self.img_container_canvas.create_window((0, 0), window=self.canvas_fr, anchor="nw")
+
+        self.main_win.columnconfigure(2, weight=1)
+        self.main_win.rowconfigure(1, weight=1)
+
+        self.img_container_fr.columnconfigure(0, weight=1)
+        self.img_container_fr.rowconfigure(0, weight=1)
+        self.img_container_canvas.configure(xscrollcommand=self.scrollbar.set)
+
+
         self.btns_fr.grid(row=0, column=1, columnspan=3, padx=10, pady=10, sticky=NW)
-        # self.img_container_fr.grid(row=1, column=2, columnspan=2)
         self.cropped_img_fr.grid(row=1, column=1)
         self.results_fr.grid(row=2,column=1,sticky=S)
         self.img_container_canvas.grid()
@@ -39,8 +57,8 @@ class gui():
         self.canvas_fr.bind('<Leave>', self._unbound_to_mousewheel)
 
         self.img_container_canvas.configure(xscrollcommand= self.scrollbar.set)
-        self.scrollbar.grid(row = 1, column=0, sticky=EW)
-        self.canvas_fr.grid(row=0, column=0, sticky=NS)
+        self.scrollbar.grid(row = 1, column=0, sticky=N+EW)
+        self.img_container_canvas.grid(row=0, column=0, sticky=N+E+W+S)
         #self.img_container_canvas.create_window((0,0), window=self.canvas_fr, anchor=NW)
         
         # self.canvas_fr.grid()
@@ -135,7 +153,8 @@ class gui():
         self.cropped_img_fr.destroy()
         self.cropped_img_fr = Frame(self.main_win)
         self.cropped_img_fr.grid(row=1, column=1)
-        self.img_container_fr.grid(row=1, column=2, columnspan=2)
+        self.img_container_fr.grid(row=1, column=2, columnspan=2, sticky=N+E+W+S)
+
     
     def add_img_to_canvas(self, canvas, img):
         photo_img = Image.fromarray(img)
@@ -186,10 +205,6 @@ class gui():
             canva.grid(row=1+i%img_row_shape, column=i//img_row_shape)
             i+=1
         
-        try:
-            self.canvas_fr.configure(scrollregion= self.img_container_canvas.bbox('all'))
-        except:
-            pass
         # self.img_container_canvas.bind('<Configure>', lambda e: self.img_container_canvas.configure(scrollregion= self.img_container_canvas.bbox('all')))
         # # self.canvas_fr = Frame(self.img_container_canvas)
         # self.img_container_canvas.create_window((0,0), window=self.canvas_fr, anchor=NW)
