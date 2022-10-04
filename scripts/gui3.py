@@ -1,6 +1,5 @@
 import csv
 
-from click import command
 import refactor_gui
 from tkinter import messagebox, font
 import cv2
@@ -10,7 +9,7 @@ import numpy as np
 import image_managers, sample_extraction, percent, tube, segmentacion_contorno as sc
 from utils import EntryWithPlaceholder
 
-CLUSTER_RESHAPE = 0.7
+CLUSTER_RESHAPE = 0.5
 IMAGE_RESHAPE = 0.7
     
 
@@ -28,19 +27,21 @@ class gui():
         self.selected_images_indices = []
         self.org_img = None
         self.results_fr = Frame(self.main_win)
-        self.scrollbar = Scrollbar(self.img_container_fr, orient=HORIZONTAL, command = self.img_container_canvas.xview)
+        self.scrollbar = Scrollbar(self.img_container_fr, orient=HORIZONTAL , command = self.img_container_canvas.xview)
         self.btns_fr.grid(row=0, column=1, columnspan=3, padx=10, pady=10, sticky=NW)
         # self.img_container_fr.grid(row=1, column=2, columnspan=2)
         self.cropped_img_fr.grid(row=1, column=1)
         self.results_fr.grid(row=2,column=1,sticky=S)
         self.img_container_canvas.grid()
         
-        self.img_container_canvas.configure(xscrollcommand= self.scrollbar.set)
-        self.scrollbar.grid(row = 1, column=0, sticky=EW)
+        
         self.canvas_fr.bind('<Enter>', self._bound_to_mousewheel)
         self.canvas_fr.bind('<Leave>', self._unbound_to_mousewheel)
 
-        self.img_container_canvas.create_window((0,0), window=self.canvas_fr, anchor=NW)
+        self.img_container_canvas.configure(xscrollcommand= self.scrollbar.set)
+        self.scrollbar.grid(row = 1, column=0, sticky=EW)
+        self.canvas_fr.grid(row=0, column=0, sticky=NS)
+        #self.img_container_canvas.create_window((0,0), window=self.canvas_fr, anchor=NW)
         
         # self.canvas_fr.grid()
 
@@ -134,16 +135,7 @@ class gui():
         self.cropped_img_fr.destroy()
         self.cropped_img_fr = Frame(self.main_win)
         self.cropped_img_fr.grid(row=1, column=1)
-        # self.img_container_fr.destroy()
-        # self.img_container_fr = Frame(self.main_win)
         self.img_container_fr.grid(row=1, column=2, columnspan=2)
-
-        # self.img_container_canvas.grid(row=0, column=0)
-        # self.scrollbar.grid(row = 0, column=1, sticky=NS)
-        # self.img_container_canvas.configure(yscrollcommand= self.scrollbar)
-        # self.img_container_canvas.bind('<Configure>', lambda e: self.img_container_canvas.configure(scrollregion= self.img_container_canvas.bbox('all')))
-        # # self.canvas_fr = Frame(self.img_container_canvas)
-        # self.img_container_canvas.create_window((0,0), window=self.canvas_fr, anchor=NW)
     
     def add_img_to_canvas(self, canvas, img):
         photo_img = Image.fromarray(img)
@@ -191,10 +183,11 @@ class gui():
             canva = Canvas(self.canvas_fr, width=child_img.shape[1], height=child_img.shape[0])
             label = self.add_img_to_canvas(canva, child_img)
             label.bind('<ButtonPress-1>', lambda event, image=child.image, key=i, canvas=canva: self.click(image, key, canvas))
-            canva.grid(row=1+i//img_row_shape, column=i%img_row_shape)
+            canva.grid(row=1+i%img_row_shape, column=i//img_row_shape)
             i+=1
+        
         try:
-            self.canvas_fr.configure(scrollregion= self.img_container_canvas.bbox())
+            self.canvas_fr.configure(scrollregion= self.img_container_canvas.bbox('all'))
         except:
             pass
         # self.img_container_canvas.bind('<Configure>', lambda e: self.img_container_canvas.configure(scrollregion= self.img_container_canvas.bbox('all')))
