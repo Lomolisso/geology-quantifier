@@ -110,10 +110,8 @@ class SampleExtractor(object):
                 "vertex_4": lambda x, y: x > max(v1[0], v2[0]) and y < min(v2[1], v3[1]),
             }
 
-            if self.vertex_dirty is not None:
-                cond = cond_dict[self.vertex_dirty](x, y)
-                if cond:
-                    self.vertex_data[self.vertex_dirty] = np.array((x, y))
+            if self.vertex_dirty is not cond_dict[self.vertex_dirty](x, y):
+                self.vertex_data[self.vertex_dirty] = np.array((x, y))
 
             self.__draw_circles_and_lines()
         
