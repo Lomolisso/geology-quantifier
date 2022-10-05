@@ -82,9 +82,6 @@ class gui():
         try:
             image = image_managers.load_image_from_window()
             img = sample_extraction.extract_sample(image)
-            #parámetros para resize
-            min_width = 600
-            min_heigth = 300
             # MOVER ESTA FUNCIONALIDAD A OTRO LADO/FUNCION/METODO PARA TRABAJAR IMAGENES
             #TODO resize the image to a common shape
             # if img.shape[0] < 400:
@@ -158,11 +155,26 @@ class gui():
             self.selected_images_indices.append(key)
             canvas.configure(bg='red')
 
-            widgetP = Label(canvas, text=str(percent.percent(image)), fg='white', bg='black')
-            widgetP.grid(row = 1,column=0 )
+    def resize_img(self, img):
+        # Get actual window size
+        win_height = self.main_win.winfo_height()
+        win_width = self.main_win.winfo_width()
 
-            widgetC = Label(canvas, text=str(percent.contour(image)), fg='white', bg='black')
-            widgetC.grid(row = 2,column=0 )
+        resize_height = win_height * 1 // 2
+        resize_width = win_width * 2 // 5
+
+        # Height is related with img.shape[0]
+        if img.shape[0] > img.shape[1]:
+            resize_img = cv2.resize(img, ((int(img.shape[1] * resize_height / img.shape[0])), resize_height))
+            if resize_img.shape[1] > resize_width:
+                resize_img = cv2.resize(resize_img, (resize_width, int(resize_img.shape[0] * resize_width / resize_img.shape[1])))
+        # Width is relates with img.shape[1]
+        else:
+            resize_img = cv2.resize(img, (resize_width, int(img.shape[0] * resize_width / img.shape[1])))
+            if resize_img.shape[0] > resize_height:
+                resize_img = cv2.resize(resize_img,  ((int(resize_img.shape[1] * resize_height / resize_img.shape[0])), resize_height))
+
+        return resize_img
 
     def update_screen(self):
         self.clean_win()
@@ -171,10 +183,7 @@ class gui():
         self.selected_images_indices = []
 
         # Set image for cropped image frame
-        win_height = self.main_win.winfo_height()
-        win_width = self.main_win.winfo_width()
-        resize_img = resize.resize_image(img, win_height * 7 // 12, win_width // 3)
-        img = resize_img
+        img = self.resize_img(img)
         canva = Canvas(self.cropped_img_fr, width=img.shape[1], height=img.shape[0])
         fix_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         _ = self.add_img_to_canvas(canva, fix_img)
@@ -183,7 +192,7 @@ class gui():
         img_row_shape = 2
         i = 0
         for child in self.img_tree.childs:
-            child_img = resize.resize_image(child.image, win_height * 7 // 12, win_width // 3)
+            child_img = self.resize_img(child.image)
             child_img = cv2.resize(child.image, (int(child_img.shape[1]*CLUSTER_RESHAPE), int(child_img.shape[0]*CLUSTER_RESHAPE)))
             child_img = cv2.cvtColor(child_img, cv2.COLOR_BGR2RGB)
             canva = Canvas(self.canvas_fr, width=child_img.shape[1], height=child_img.shape[0])
@@ -264,6 +273,7 @@ class gui():
         contour = sc.contour_segmentation(self.img_tree.image) 
         sc.contour_agrupation(contour)
         segmentated = sc.cluster_segmentation(self.img_tree.image,contour)
+        segmentated = self.resize_img(segmentated)
         child_img = segmentated
         child_img = cv2.cvtColor(child_img, cv2.COLOR_BGR2RGB)
         canva = Canvas(self.canvas_fr, width=child_img.shape[1], height=child_img.shape[0])
@@ -339,6 +349,8 @@ win.iconbitmap("icon.ico")
 win.config(cursor='plus')
 screen_width = win.winfo_screenwidth()
 screen_height = win.winfo_screenheight()
-win.geometry(f"{screen_width}x{screen_height-100}+0+0")
+win.geometry(f"{screen_width * 19 // 20}x{screen_height * 17 // 20}+0+0")
+win.minsize(screen_width * 2 // 3, screen_height * 2 // 3)
+win.maxsize(screen_width, screen_height)
 gg = gui(win)        
 win.mainloop()
