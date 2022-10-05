@@ -3,9 +3,9 @@ Script to manualy cut the target sample of an image.
 You can do it calling extract_sample(img) passing the 
 image you want to cut.
 """
+from typing import Any
 import cv2
 import numpy as np
-import math
 
 IMG_RESIZE_SCALE = 0.2
 BLUE = [255,0,0]
@@ -21,7 +21,7 @@ class SampleExtractor(object):
     an area defined by the user.
     """
     
-    def __init__(self, img) -> None:
+    def __init__(self, img: cv2.Mat) -> None:
         """
         Class constructor, sets the main attributes of the
         instance acording to the input image.
@@ -37,11 +37,11 @@ class SampleExtractor(object):
         self.original_image = self.bg.copy()
         self.vertex_data = {}
         self.vertex_dirty = None
-        self.__reset_vertexes_pos()   
+        self.__reset_vertexes_pos()
         self.min_radius = 6
         self.radius = 7
 
-    def __draw_circles_and_lines(self):
+    def __draw_circles_and_lines(self) -> None:
         """
         Draws the current selected area of the image.
         """
@@ -59,7 +59,7 @@ class SampleExtractor(object):
         cv2.circle(self.bg, vertex_4, self.min_radius, LIGHTBLUE, -1) 
         cv2.circle(self.bg, vertex_3, self.min_radius, LIGHTBLUE, -1)
 
-    def __reset_vertexes_pos(self):
+    def __reset_vertexes_pos(self) -> None:
         """
         Resets the vertexes positions back to default.
         """
@@ -69,13 +69,13 @@ class SampleExtractor(object):
         self.vertex_data["vertex_3"] = np.array((bg_cols*3//4, bg_rows*3//4))
         self.vertex_data["vertex_4"] = np.array((bg_cols*3//4, bg_rows//4))
     
-    def __reset_vertex_dirty(self):
+    def __reset_vertex_dirty(self) -> None:
         """
         Resets the dirty vertex class attr. back to None.
         """
         self.vertex_dirty = None
 
-    def __check_circle_movement(self, x, y):
+    def __check_circle_movement(self, x: int, y: int) -> None:
         """
         Checks if a circle was moved, if it happend, sets the dirty attribute
         of it's vertex to True.
@@ -86,13 +86,13 @@ class SampleExtractor(object):
                 self.vertex_dirty = v
                 break
 
-    def __check_mouse_pos(self, x, y):
+    def __check_mouse_pos(self, x: int, y: int) -> bool:
         """
         Checks if the mouse position is contained in the image.
         """
         return x <= self.bg_size[1] and y <= self.bg_size[0] and x >= 0 and y>=0
 
-    def __handle_mouse(self, event, x, y, *args):
+    def __handle_mouse(self, event: Any, x: int, y: int, *_) -> None:
         """
         Handles the events related to the mouse, such as when a vertex of the 
         selection area is moved.
@@ -110,7 +110,7 @@ class SampleExtractor(object):
                 "vertex_4": lambda x, y: x > max(v1[0], v2[0]) and y < min(v2[1], v3[1]),
             }
 
-            if self.vertex_dirty is not cond_dict[self.vertex_dirty](x, y):
+            if self.vertex_dirty is not None and cond_dict[self.vertex_dirty](x, y):
                 self.vertex_data[self.vertex_dirty] = np.array((x, y))
 
             self.__draw_circles_and_lines()
@@ -120,7 +120,7 @@ class SampleExtractor(object):
             self.__draw_circles_and_lines()
             self.__reset_vertex_dirty()
 
-    def extract_sample(self):
+    def extract_sample(self) -> None | cv2.Mat:
         """
         Only public method of the class, in charge of conducting 
         the extraction of the sample.
@@ -139,7 +139,7 @@ class SampleExtractor(object):
             # if 'Esc' is pressed, the cuting stops.
             if k == 27 & 0xFF:
                 cv2.destroyAllWindows()
-                return
+                return np.array([]) # empty img
 
             # if 's' is pressed, the img was cut in the rectangle area.
             elif k == ord("s"):

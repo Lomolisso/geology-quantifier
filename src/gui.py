@@ -1,6 +1,7 @@
 import csv
 import datetime
 import os
+from typing import Any
 import image_tree
 import tkinter as tk
 import tkinter.font as tk_font
@@ -57,7 +58,7 @@ class GUI(object):
         self.btn_img['font'] = self.myFont
         self.btn_img.grid(row=0, column=0)
 
-        self.btn_3d = tk.Button(self.btns_fr, text='3D', width=20, command=self.plot3d, cursor='arrow')
+        self.btn_3d = tk.Button(self.btns_fr, text='3D', width=20, command=self.plot_3d, cursor='arrow')
         self.btn_3d['font'] = self.myFont
 
         self.btn_split = tk.Button(self.btns_fr, text='Separar', width=20, command=self.split, cursor='arrow')
@@ -88,7 +89,7 @@ class GUI(object):
         self.total_clusters = EntryWithPlaceholder(self.btns_fr, "Número de clusters", 'gray')
         self.total_clusters['font'] = self.myFont
         
-    def split(self):
+    def split(self) -> None:
         """
         Splits the current image by doing KMeans clustering on it. The number of clusters
         is given by the user by filling the 'total_clusters' entry.
@@ -108,34 +109,38 @@ class GUI(object):
         self.update_screen()
         self.selected_images_indices=[]
     
-    def show_img(self):
+    def show_img(self) -> None:
         """
         This method is called when a new image is uploaded. 
         """
         self.main_win.withdraw()
         
         image = image_managers.load_image_from_window()
-        e = SampleExtractor(image)
-        self.org_img = e.extract_sample()
+        self.org_img = SampleExtractor(image).extract_sample()
         self.img_tree = image_tree.ImageNode(None, self.org_img)
         self.update_screen()
                 
-        if isinstance(self.org_img, np.ndarray):
+        if self.org_img.size > 0:
+            # Set buttons positions
             self.btn_3d.grid(row=0, column=1)
             self.total_clusters.grid(row=0, column=2)
             self.btn_split.grid(row=0, column=3)
             self.btn_merge.grid(row=0, column=4)
-            self.btn_sub.grid(row=0, column=5)
+            self.btn_sub.grid(row=0, column=5)      
+            self.btn_undo.grid(row=1,column=0)
+            self.btn_save.grid(row=1, column=1)
             self.btn_up.grid(row=1, column=2)
             self.btn_down.grid(row=1, column=3)
-            self.btn_undo.grid(row=1,column=0)
             self.btn_contour.grid(row=1, column=4)
-            self.btn_save.grid(row=1, column=1)
         
         self.main_win.deiconify()
         
 
-    def clean_win(self):
+    def clean_win(self) -> None:
+        """
+        Destroy every tkinter instance on screen and
+        starts new ones.
+        """
         for wget in self.canvas_fr.winfo_children():
             wget.destroy()
 
@@ -152,7 +157,10 @@ class GUI(object):
         self.canvas_fr = tk.Frame(self.main_win)
         self.canvas_fr.grid(row=1, column=2, columnspan=2)
     
-    def add_img_to_canvas(self, canvas, img):
+    def add_img_to_canvas(self, canvas: tk.Canvas, img: cv2.Mat) -> None:
+        """
+        Adds an image to the canvas.
+        """
         photo_img = Image.fromarray(img)
         img_for_label = ImageTk.PhotoImage(photo_img)
         label_img = tk.Label(canvas, image=img_for_label)
@@ -160,14 +168,17 @@ class GUI(object):
         label_img.grid(row=0, column=0, padx=10, pady=10)
         return label_img
         
-    def click(self, image, key, canvas):
+    def click(self, image: cv2.Mat, key: Any, canvas: tk.Canvas) -> None:
+        """
+        Handles the clicks on screen, unselecting previous images if needed
+        or selecting new ones.
+        """
         if key in self.selected_images_indices:
             self.selected_images_indices.remove(key)
             canvas.configure(bg='white')
             for widget in canvas.winfo_children():
                 if widget.cget("text"):
                     widget.destroy()
-
         else:
             self.selected_images_indices.append(key)
             canvas.configure(bg='red')
@@ -178,11 +189,15 @@ class GUI(object):
             widgetC = tk.Label(canvas, text=str(percent.contour(image)), fg='white', bg='black')
             widgetC.grid(row = 2,column=0 )
 
-    def update_screen(self):
+    def update_screen(self) -> None:
+        """
+        Updates the screen, this method is called right after
+        the user interacts with the current image.
+        """
         self.clean_win()
-        # Imagen del nodo actual
-        img = self.img_tree.image
-        self.selected_images_indices = []
+
+        img = self.img_tree.image # image at the current node of the image_tree
+        self.selected_images_indices = [] # resets selected images
 
         # Set image for cropped image frame
         canva = tk.Canvas(self.cropped_img_fr, width=img.shape[1], height=img.shape[0])
@@ -190,6 +205,7 @@ class GUI(object):
         _ = self.add_img_to_canvas(canva, fix_img)
         canva.grid(row=1, column=1)
 
+        # draws image node childs
         img_row_shape = 2
         i = 0
         for child in self.img_tree.childs:
@@ -201,15 +217,21 @@ class GUI(object):
             canva.grid(row=1+i//img_row_shape, column=i%img_row_shape)
             i+=1
 
-    def merge(self):
+    def merge(self) -> None:
+        """
+        This method merges 2 or more clusters, updating the image tree.
+        """
         if len(self.selected_images_indices) < 2:
-            tk.messagebox.showwarning("Error", message="Por favor seleccionar más de una imagen.")
+            tk.messagebox.showwarning("Error", message="Por favor seleccionar 2 o más de una imagenes.")
             return
         self.img_tree.merge(self.selected_images_indices)
         self.update_screen()
         self.selected_images_indices=[]
 
-    def delete(self):
+    def delete(self) -> None:
+        """
+        This method deletes at least 1 cluster, updating the image tree.
+        """
         if len(self.selected_images_indices) == 0:
             tk.messagebox.showwarning("Error", message="Por favor seleccionar al menos una imagen.")
             return
@@ -217,11 +239,15 @@ class GUI(object):
         self.update_screen()
         self.selected_images_indices=[]
 
-    # plotear panoramica sobre cilindro 3D            
-    def plot3d(self):
+    def plot_3d(self) -> None:
+        """
+        This method plots the image of the current node of the image tree
+        in a 3D model of a cilinder.
+        """
+        
         img = self.img_tree.image
         # If there isn't an image available
-        if not isinstance(img, np.ndarray):
+        while img.size > 0:
             # Load image using OS file window
             raw_img = image_managers.load_image_from_window()
 
@@ -229,18 +255,26 @@ class GUI(object):
             img = sample_extraction.extract_sample(raw_img)
         
         cv2.destroyAllWindows()
-        if isinstance(img, np.ndarray):
-            # Use the loaded img to fill a 3D tube surface.
-            tube.fill_tube(img)
-            cv2.waitKey(0)
-            cv2.destroyAllWindows()
+
+        # Use the loaded img to fill a 3D tube surface.
+        tube.fill_tube(img)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
         
-    def undo(self):
+    def undo(self) -> None:
+        """
+        Resets the image tree back to it's original form.
+        """
         self.img_tree = image_tree.ImageNode(None,self.org_img)
         self.selected_images_indices = []
         self.update_screen()
 
-    def down(self):
+    def down(self) -> None:
+        """
+        Travels one level downwards in the image tree, this means that the GUI
+        will show a cluster as a main image and the user will be able to
+        call functions on it.
+        """
         if len(self.selected_images_indices) != 1:
             tk.messagebox.showwarning("Error", message="Por favor seleccionar una imagen.")
             return
@@ -248,7 +282,11 @@ class GUI(object):
         self.selected_images_indices = []
         self.update_screen()
 
-    def up(self):
+    def up(self) -> None:
+        """
+        Travels one level upwards in the image tree, updates the GUI showing all the data
+        related to the parent of the current node.
+        """
         if self.img_tree.parent == None:
             tk.messagebox.showwarning("Error", message="Esta es la imagen original.")
             return
@@ -257,7 +295,10 @@ class GUI(object):
         self.update_screen()
 
     
-    def segmentate(self):
+    def segmentate(self) -> None:
+        """
+        This method is in charge of the body detection at a cluster
+        """
         if len(self.selected_images_indices) > 1:
             tk.messagebox.showwarning("Error", message="Por favor seleccionar solo una imagen.")
             return
@@ -282,7 +323,11 @@ class GUI(object):
         results = sc.generate_results(contour)
         self.fill_table(results)
 
-    def fill_table(self, results):
+    def fill_table(self, results) -> None:
+        """
+        This method fills and shows a table at the GUI.
+        The data is given as an input.
+        """
         label_color = tk.Label(self.results_fr, text="Color")
         label_color.grid(row=0, column=0)
         label_name = tk.Label(self.results_fr, text="Grupo")
@@ -312,7 +357,11 @@ class GUI(object):
         self.btnExport['font'] = self.myFont
         self.btnExport.grid(row=2, column=4)
     
-    def table_to_csv(self):
+    def table_to_csv(self) -> None:
+        """
+        This method takes the data from a table at the GUI
+        and generates a csv with it.
+        """
         wgets = self.results_fr.winfo_children()[:-1]
         def wgetter(wget_arr):
             ret_arr = []
@@ -333,7 +382,10 @@ class GUI(object):
             for row in rows:
                 wrtr.writerow(row)
     
-    def save(self):
+    def save(self) -> None:
+        """
+        This method saves both the current image and it's clusters if they exist.
+        """
         PATH = f"output/{datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')}"
         os.makedirs(PATH)
         image_managers.save_image_from_path(self.img_tree.image, f"{PATH}/original.png")
