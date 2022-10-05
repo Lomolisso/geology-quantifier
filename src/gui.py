@@ -49,17 +49,13 @@ class GUI(object):
         self.img_container_canvas= tk.Canvas(self.img_container_fr)
 
         self.canvas_fr = tk.Frame(self.img_container_canvas)
-        self.canvas_fr.grid(row=1, column=2, columnspan=2)
+        #self.canvas_fr.grid(row=1, column=2, columnspan=2)
         
         self.cropped_img_fr = tk.Frame(self.main_win)
         self.cropped_img_fr.grid(row=1, column=1)
         
         self.results_fr = tk.Frame(self.main_win)
         self.results_fr.grid(row=2,column=1, sticky=tk.S)
-        
-        
-
-       
 
         # -- buttons --
         self.btn_img = tk.Button(self.btns_fr, text='Seleccionar imagen', width=20, command=self.show_img, cursor='arrow')
