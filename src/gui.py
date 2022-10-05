@@ -50,7 +50,7 @@ class GUI(object):
 
         self.canvas_fr = tk.Frame(self.img_container_canvas)
         #self.canvas_fr.grid(row=1, column=2, columnspan=2)
-        
+        self.set_up_scrollbar()
         self.cropped_img_fr = tk.Frame(self.main_win)
         self.cropped_img_fr.grid(row=1, column=1)
         
@@ -359,7 +359,7 @@ class GUI(object):
         child_img = cv2.cvtColor(child_img, cv2.COLOR_BGR2RGB)
         canva = tk.Canvas(self.canvas_fr, width=child_img.shape[1], height=child_img.shape[0])
         self.add_img_to_canvas(canva, child_img)
-        canva.grid()
+        canva.grid(row=1,column=0)
 
         results = sc.generate_results(contour)
         self.fill_table(results)
