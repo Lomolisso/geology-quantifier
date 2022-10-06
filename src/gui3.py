@@ -7,7 +7,7 @@ import cv2
 from tkinter import *
 from PIL import Image, ImageTk
 import numpy as np
-import image_managers, sample_extraction, percent, tube, resize, segmentacion_contorno as sc
+import image_managers, sample_extraction, tube, segmentacion_contorno as sc
 from utils import EntryWithPlaceholder
 
 CLUSTER_RESHAPE = 0.5
