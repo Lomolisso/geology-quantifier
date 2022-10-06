@@ -199,9 +199,6 @@ class GUI(object):
         self.principal_fr = tk.Frame(self.main_win)
         self.principal_fr.grid(row=1, column=1)
         self.img_container_fr.grid(row=1, column=2, columnspan=2, sticky=tk.N+tk.E+tk.W+tk.S)
-        self.canvas_fr.destroy()
-        self.canvas_fr = tk.Frame(self.main_win)
-        self.canvas_fr.grid(row=1, column=2, columnspan=2)
         self.results_fr = tk.Frame(self.canvas_fr)
     
     def add_img_to_canvas(self, canvas: tk.Canvas, img: cv2.Mat) -> None:
@@ -245,7 +242,7 @@ class GUI(object):
         win_height = self.main_win.winfo_height()
         win_width = self.main_win.winfo_width()
         # Define the desire height and width of the image
-        resize_height = win_height * 1 // 2
+        resize_height = win_height * 2 // 5
         resize_width = win_width * 2 // 5
 
         # If the larger size of the image is its height (type TUBE)
@@ -385,7 +382,7 @@ class GUI(object):
         self.clean_win()
         self.selected_images_indices = []
         
-        principal_image = self.img_tree.image
+        principal_image = self._resize_img(self.img_tree.image)
         principal_canva = tk.Canvas(self.principal_fr, width=principal_image.shape[1], height=principal_image.shape[0])
         self.add_img_to_canvas(principal_canva, principal_image)
         principal_canva.grid(row=0, column=0)
