@@ -8,13 +8,11 @@ import tkinter.font as tk_font
 
 import cv2
 from PIL import Image, ImageTk
-import numpy as np
 import image_managers, sample_extraction, percent, tube, segmentacion_contorno as sc
 from sample_extraction import SampleExtractor
 from utils import EntryWithPlaceholder
 
 CLUSTER_RESHAPE = 0.7
-IMAGE_RESHAPE = 0.7
     
 class GUI(object):
     """
@@ -85,6 +83,9 @@ class GUI(object):
 
         self.btn_save = tk.Button(self.btns_fr, text='Guardar', width=20, command=self.save, cursor='arrow')
         self.btn_save['font'] = self.myFont
+
+        self.btn_update = tk.Button(self.btns_fr, text='Actualizar', width=20, command=self.update_screen, cursor='arrow')
+        self.btn_update['font'] = self.myFont
 
         # -- entries --
         self.total_clusters = EntryWithPlaceholder(self.btns_fr, "Número de clusters", 'gray')
@@ -176,6 +177,7 @@ class GUI(object):
             self.btn_up.grid(row=1, column=2)
             self.btn_down.grid(row=1, column=3)
             self.btn_contour.grid(row=1, column=4)
+            self.btn_update.grid(row=1, column=5)
         
         self.main_win.deiconify()
         
@@ -231,6 +233,36 @@ class GUI(object):
             widgetC = tk.Label(canvas, text=str(percent.contour(image)), fg='white', bg='black')
             widgetC.grid(row = 2,column=0 )
 
+    def _resize_img(self, img):
+        """
+        Resize the image acording to the actual window size of the aplication.
+        """
+        # Get actual window size
+        win_height = self.main_win.winfo_height()
+        win_width = self.main_win.winfo_width()
+        # Define the desire height and width of the image
+        resize_height = win_height * 1 // 2
+        resize_width = win_width * 2 // 5
+
+        # If the larger size of the image is its height (type TUBE)
+        if img.shape[0] > img.shape[1]:
+            # Adjust image to the define height
+            resize_img = cv2.resize(img, ((int(img.shape[1] * resize_height / img.shape[0])), resize_height))
+            # If its new width exceed the define width
+            if resize_img.shape[1] > resize_width:
+                # Adjust image to the define width
+                resize_img = cv2.resize(resize_img, (resize_width, int(resize_img.shape[0] * resize_width / resize_img.shape[1])))
+        # If the larger size of the image is its width (type PANORAMIC)
+        else:
+            # Adjust image to the define width
+            resize_img = cv2.resize(img, (resize_width, int(img.shape[0] * resize_width / img.shape[1])))
+            # If its new height exceed the define height
+            if resize_img.shape[0] > resize_height:
+                # Adjust image to the define height
+                resize_img = cv2.resize(resize_img,  ((int(resize_img.shape[1] * resize_height / resize_img.shape[0])), resize_height))
+
+        return resize_img
+
     def update_screen(self) -> None:
         """
         Updates the screen, this method is called right after
@@ -238,7 +270,7 @@ class GUI(object):
         """
         self.clean_win()
 
-        img = self.img_tree.image # image at the current node of the image_tree
+        img = self._resize_img(self.img_tree.image) # image at the current node of the image_tree
         self.selected_images_indices = [] # resets selected images
 
         # Set image for cropped image frame
@@ -251,7 +283,8 @@ class GUI(object):
         img_row_shape = 2
         i = 0
         for child in self.img_tree.childs:
-            child_img = cv2.resize(child.image, (int(child.image.shape[1]*CLUSTER_RESHAPE), int(child.image.shape[0]*CLUSTER_RESHAPE)))
+            child_img = self._resize_img(child.image)
+            child_img = cv2.resize(child.image, (int(child_img.shape[1]*CLUSTER_RESHAPE), int(child_img.shape[0]*CLUSTER_RESHAPE)))
             child_img = cv2.cvtColor(child_img, cv2.COLOR_BGR2RGB)
             canva = tk.Canvas(self.canvas_fr, width=child_img.shape[1], height=child_img.shape[0])
             label = self.add_img_to_canvas(canva, child_img)
@@ -356,10 +389,10 @@ class GUI(object):
         contour = sc.contour_segmentation(self.img_tree.image) 
         sc.contour_agrupation(contour)
         segmentated = sc.cluster_segmentation(self.img_tree.image,contour)
-        child_img = segmentated
-        child_img = cv2.cvtColor(child_img, cv2.COLOR_BGR2RGB)
-        canva = tk.Canvas(self.canvas_fr, width=child_img.shape[1], height=child_img.shape[0])
-        self.add_img_to_canvas(canva, child_img)
+        segmentated = self._resize_img(segmentated)
+        segmentated = cv2.cvtColor(segmentated, cv2.COLOR_BGR2RGB)
+        canva = tk.Canvas(self.canvas_fr, width=segmentated.shape[1], height=segmentated.shape[0])
+        self.add_img_to_canvas(canva, segmentated)
         canva.grid(row=1,column=0)
 
         results = sc.generate_results(contour)
@@ -443,5 +476,13 @@ root = tk.Tk()
 root.title("Cuantificador geologico")
 root.iconbitmap("icon.ico")
 root.config(cursor='plus')
+# Get user screen size
+screen_width = root.winfo_screenwidth()
+screen_height = root.winfo_screenheight()
+# Open window smaller than user screen
+root.geometry(f"{screen_width * 19 // 20}x{screen_height * 17 // 20}+0+0")
+# Set min and max window size to avoid incorrect displays
+root.minsize(screen_width * 2 // 3, screen_height * 2 // 3)
+root.maxsize(screen_width, screen_height)
 gg = GUI(root)        
 root.mainloop()
