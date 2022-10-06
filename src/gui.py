@@ -36,7 +36,9 @@ class GUI(object):
         # --- interface parameters ---
         
         # -- fonts -- 
-        self.myFont = tk_font.Font(size=13)
+        self.my_font = tk_font.Font(size=13)
+        self.title_font = tk_font.Font(size=20)
+        self.data_font = tk_font.Font(size=16)
         
         # -- frames --
         self.btns_fr = tk.Frame(self.main_win)
@@ -54,42 +56,42 @@ class GUI(object):
 
         # -- buttons --
         self.btn_img = tk.Button(self.btns_fr, text='Seleccionar imagen', width=20, command=self.show_img, cursor='arrow')
-        self.btn_img['font'] = self.myFont
+        self.btn_img['font'] = self.my_font
         self.btn_img.grid(row=0, column=0)
 
         self.btn_3d = tk.Button(self.btns_fr, text='3D', width=20, command=self.plot_3d, cursor='arrow')
-        self.btn_3d['font'] = self.myFont
+        self.btn_3d['font'] = self.my_font
 
         self.btn_split = tk.Button(self.btns_fr, text='Separar', width=20, command=self.split, cursor='arrow')
-        self.btn_split['font'] = self.myFont
+        self.btn_split['font'] = self.my_font
 
         self.btn_merge = tk.Button(self.btns_fr, text='Combinar', width=20, command=self.merge, cursor='arrow')
-        self.btn_merge['font'] = self.myFont
+        self.btn_merge['font'] = self.my_font
         
         self.btn_sub = tk.Button(self.btns_fr, text='Eliminar', width=20, command=self.delete, cursor='arrow')
-        self.btn_sub['font'] = self.myFont
+        self.btn_sub['font'] = self.my_font
         
         self.btn_up = tk.Button(self.btns_fr, text='Subir', width=20, command=self.up, cursor='arrow')
-        self.btn_up['font'] = self.myFont
+        self.btn_up['font'] = self.my_font
         
         self.btn_down = tk.Button(self.btns_fr, text='Bajar', width=20, command=self.down, cursor='arrow')
-        self.btn_down['font'] = self.myFont
+        self.btn_down['font'] = self.my_font
 
         self.btn_undo = tk.Button(self.btns_fr, text='Deshacer', width=20, command=self.undo, cursor='arrow')
-        self.btn_undo['font'] = self.myFont
+        self.btn_undo['font'] = self.my_font
 
         self.btn_contour = tk.Button(self.btns_fr, text='Segmentar', width=20, command=self.segmentate, cursor='arrow')
-        self.btn_contour['font'] = self.myFont
+        self.btn_contour['font'] = self.my_font
 
         self.btn_save = tk.Button(self.btns_fr, text='Guardar', width=20, command=self.save, cursor='arrow')
-        self.btn_save['font'] = self.myFont
+        self.btn_save['font'] = self.my_font
 
         self.btn_update = tk.Button(self.btns_fr, text='Actualizar', width=20, command=self.update_screen, cursor='arrow')
-        self.btn_update['font'] = self.myFont
+        self.btn_update['font'] = self.my_font
 
         # -- entries --
         self.total_clusters = EntryWithPlaceholder(self.btns_fr, "Número de clusters", 'gray')
-        self.total_clusters['font'] = self.myFont
+        self.total_clusters['font'] = self.my_font
 
         # -- extras --
         self.set_up_scrollbar()
@@ -406,34 +408,40 @@ class GUI(object):
         This method fills and shows a table at the GUI.
         The data is given as an input.
         """
-        self.results_fr.grid(row=0,column=0)
+        self.results_fr.grid(row=0, column=0)
         label_color = tk.Label(self.results_fr, text="Color")
+        label_color['font'] = self.title_font
         label_color.grid(row=0, column=0)
         label_name = tk.Label(self.results_fr, text="Grupo")
+        label_name['font'] = self.title_font
         label_name.grid(row=0, column=1)
         label_total = tk.Label(self.results_fr, text="Porcentaje Total")
+        label_total['font'] = self.title_font
         label_total.grid(row=0, column=2)
         label_prom = tk.Label(self.results_fr, text="Porcentaje Promedio")
+        label_prom['font'] = self.title_font
         label_prom.grid(row=0, column=3)
         
         for row_num in range(1, len(results[0])+1):
             (b, g, r) = sc.COLORS[row_num-1]
             color = '#%02x%02x%02x' % (r, g, b)
-            label_color = tk.Label(self.results_fr, bg=color, width=1, height=1, justify=tk.CENTER)
+            label_color = tk.Label(self.results_fr, bg=color, width=1, height=1, justify=tk.CENTER) 
             label_color.grid(row=row_num, column=0, sticky=tk.W)
             
             name = EntryWithPlaceholder(self.results_fr, f"Grupo {row_num}")
-            name['font'] = self.myFont
+            name['font'] = self.my_font
             name.grid(row=row_num, column=1)
 
             label_total = tk.Label(self.results_fr, text=results[0][row_num-1])
+            label_total['font'] = self.data_font
             label_total.grid(row=row_num, column=2)
 
             label_prom = tk.Label(self.results_fr, text=results[1][row_num-1])
+            label_prom['font'] = self.data_font
             label_prom.grid(row=row_num, column=3)
 
         self.btnExport = tk.Button(self.results_fr, text="Export to csv", width=15, command=self.table_to_csv, cursor='arrow')
-        self.btnExport['font'] = self.myFont
+        self.btnExport['font'] = self.my_font
         self.btnExport.grid(row=2, column=4)
     
     def table_to_csv(self) -> None:
