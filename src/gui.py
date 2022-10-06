@@ -48,9 +48,6 @@ class GUI(object):
         
         self.img_container_canvas= tk.Canvas(self.img_container_fr)
 
-        self.canvas_fr = tk.Frame(self.img_container_canvas)
-        #self.canvas_fr.grid(row=1, column=2, columnspan=2)
-        self.set_up_scrollbar()
         self.cropped_img_fr = tk.Frame(self.main_win)
         self.cropped_img_fr.grid(row=1, column=1)
         
@@ -92,6 +89,10 @@ class GUI(object):
         # -- entries --
         self.total_clusters = EntryWithPlaceholder(self.btns_fr, "Número de clusters", 'gray')
         self.total_clusters['font'] = self.myFont
+
+        # -- extras --
+        self.canvas_fr = tk.Frame(self.img_container_canvas)
+        self.set_up_scrollbar()
     
     def set_up_scrollbar(self):
         
