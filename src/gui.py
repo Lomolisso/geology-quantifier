@@ -71,13 +71,13 @@ class GUI(object):
         self.btn_sub = tk.Button(self.btns_fr, text='Eliminar', width=20, command=self.delete, cursor='arrow')
         self.btn_sub['font'] = self.myFont
         
-        self.btn_up = tk.Button(self.btns_fr, text='up', width=20, command=self.up, cursor='arrow')
+        self.btn_up = tk.Button(self.btns_fr, text='Subir', width=20, command=self.up, cursor='arrow')
         self.btn_up['font'] = self.myFont
         
-        self.btn_down = tk.Button(self.btns_fr, text='down', width=20, command=self.down, cursor='arrow')
+        self.btn_down = tk.Button(self.btns_fr, text='Bajar', width=20, command=self.down, cursor='arrow')
         self.btn_down['font'] = self.myFont
 
-        self.btn_undo = tk.Button(self.btns_fr, text='undo', width=20, command=self.undo, cursor='arrow')
+        self.btn_undo = tk.Button(self.btns_fr, text='Deshacer', width=20, command=self.undo, cursor='arrow')
         self.btn_undo['font'] = self.myFont
 
         self.btn_contour = tk.Button(self.btns_fr, text='Segmentar', width=20, command=self.segmentate, cursor='arrow')
