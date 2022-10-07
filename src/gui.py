@@ -156,26 +156,41 @@ class GUI(object):
         This method is called when a new image is uploaded. 
         """
         self.main_win.withdraw()
-        
-        image = image_managers.load_image_from_window()
-        self.org_img = SampleExtractor(image).extract_sample()
-        self.img_tree = image_tree.ImageNode(None, self.org_img)
-        self.update_screen()
-                
-        if self.org_img.size > 0:
-            # Set buttons positions
-            self.btn_3d.grid(row=0, column=1)
-            self.total_clusters.grid(row=0, column=2)
-            self.btn_split.grid(row=0, column=3)
-            self.btn_merge.grid(row=0, column=4)
-            self.btn_sub.grid(row=0, column=5)      
-            self.btn_undo.grid(row=1,column=0)
-            self.btn_save.grid(row=1, column=1)
-            self.btn_up.grid(row=1, column=2)
-            self.btn_down.grid(row=1, column=3)
-            self.btn_contour.grid(row=1, column=4)
-            self.btn_update.grid(row=1, column=5)
-        
+        try:
+            image = image_managers.load_image_from_window()
+            self.org_img = SampleExtractor(image).extract_sample()
+            self.img_tree = image_tree.ImageNode(None, self.org_img)
+            self.update_screen()
+                    
+            if self.org_img.size > 0:
+                # Set buttons positions
+                self.btn_3d.grid(row=0, column=1)
+                self.total_clusters.grid(row=0, column=2)
+                self.btn_split.grid(row=0, column=3)
+                self.btn_merge.grid(row=0, column=4)
+                self.btn_sub.grid(row=0, column=5)      
+                self.btn_undo.grid(row=1,column=0)
+                self.btn_save.grid(row=1, column=1)
+                self.btn_up.grid(row=1, column=2)
+                self.btn_down.grid(row=1, column=3)
+                self.btn_contour.grid(row=1, column=4)
+                self.btn_update.grid(row=1, column=5)
+            
+        except:
+            self.img_tree = None
+            self.clean_win()
+            self.btn_3d.grid_forget()
+            self.total_clusters.grid_forget()
+            self.btn_split.grid_forget()
+            self.btn_merge.grid_forget()
+            self.btn_sub.grid_forget()      
+            self.btn_undo.grid_forget()
+            self.btn_save.grid_forget()
+            self.btn_up.grid_forget()
+            self.btn_down.grid_forget()
+            self.btn_contour.grid_forget()
+            self.btn_update.grid_forget()
+            
         self.main_win.deiconify()
         
 
@@ -316,15 +331,7 @@ class GUI(object):
         This method plots the image of the current node of the image tree
         in a 3D model of a cilinder.
         """
-        
         img = self.img_tree.image
-        # If there isn't an image available
-        while img.size > 0:
-            # Load image using OS file window
-            raw_img = image_managers.load_image_from_window()
-
-            # Cut the img to analize an specific part of it.
-            img = sample_extraction.extract_sample(raw_img)
         
         cv2.destroyAllWindows()
 
