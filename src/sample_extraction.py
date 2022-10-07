@@ -120,7 +120,7 @@ class SampleExtractor(object):
             self.__draw_circles_and_lines()
             self.__reset_vertex_dirty()
 
-    def extract_sample(self) -> None | cv2.Mat:
+    def extract_sample(self) -> None or cv2.Mat:
         """
         Only public method of the class, in charge of conducting 
         the extraction of the sample.

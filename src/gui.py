@@ -1,5 +1,6 @@
 import csv
 import datetime
+from email import utils
 import os
 from typing import Any
 import image_tree
@@ -8,13 +9,11 @@ import tkinter.font as tk_font
 
 import cv2
 from PIL import Image, ImageTk
-import numpy as np
 import image_managers, sample_extraction, percent, tube, segmentacion_contorno as sc
 from sample_extraction import SampleExtractor
-from utils import EntryWithPlaceholder
+from utils import EntryWithPlaceholder, generate_zip
 
 CLUSTER_RESHAPE = 0.7
-IMAGE_RESHAPE = 0.7
     
 class GUI(object):
     """
@@ -43,16 +42,17 @@ class GUI(object):
         # -- frames --
         self.btns_fr = tk.Frame(self.main_win)
         self.btns_fr.grid(row=0, column=1, columnspan=3, padx=10, pady=10, sticky=tk.NW)
+
+        self.img_container_fr = tk.Frame(self.main_win)
         
-        self.canvas_fr = tk.Frame(self.main_win)
-        self.canvas_fr.grid(row=1, column=2, columnspan=2)
-        
+        self.img_container_canvas= tk.Canvas(self.img_container_fr)
+
         self.cropped_img_fr = tk.Frame(self.main_win)
         self.cropped_img_fr.grid(row=1, column=1)
         
         self.results_fr = tk.Frame(self.main_win)
         self.results_fr.grid(row=2,column=1, sticky=tk.S)
-        
+
         # -- buttons --
         self.btn_img = tk.Button(self.btns_fr, text='Seleccionar imagen', width=20, command=self.show_img, cursor='arrow')
         self.btn_img['font'] = self.myFont
@@ -70,13 +70,13 @@ class GUI(object):
         self.btn_sub = tk.Button(self.btns_fr, text='Eliminar', width=20, command=self.delete, cursor='arrow')
         self.btn_sub['font'] = self.myFont
         
-        self.btn_up = tk.Button(self.btns_fr, text='up', width=20, command=self.up, cursor='arrow')
+        self.btn_up = tk.Button(self.btns_fr, text='Subir', width=20, command=self.up, cursor='arrow')
         self.btn_up['font'] = self.myFont
         
-        self.btn_down = tk.Button(self.btns_fr, text='down', width=20, command=self.down, cursor='arrow')
+        self.btn_down = tk.Button(self.btns_fr, text='Bajar', width=20, command=self.down, cursor='arrow')
         self.btn_down['font'] = self.myFont
 
-        self.btn_undo = tk.Button(self.btns_fr, text='undo', width=20, command=self.undo, cursor='arrow')
+        self.btn_undo = tk.Button(self.btns_fr, text='Deshacer', width=20, command=self.undo, cursor='arrow')
         self.btn_undo['font'] = self.myFont
 
         self.btn_contour = tk.Button(self.btns_fr, text='Segmentar', width=20, command=self.segmentate, cursor='arrow')
@@ -85,10 +85,56 @@ class GUI(object):
         self.btn_save = tk.Button(self.btns_fr, text='Guardar', width=20, command=self.save, cursor='arrow')
         self.btn_save['font'] = self.myFont
 
+        self.btn_update = tk.Button(self.btns_fr, text='Actualizar', width=20, command=self.update_screen, cursor='arrow')
+        self.btn_update['font'] = self.myFont
+
         # -- entries --
         self.total_clusters = EntryWithPlaceholder(self.btns_fr, "Número de clusters", 'gray')
         self.total_clusters['font'] = self.myFont
+
+        # -- extras --
+        self.canvas_fr = tk.Frame(self.img_container_canvas)
+        self.set_up_scrollbar()
+    
+    def set_up_scrollbar(self):
         
+        self.scrollbar = tk.Scrollbar(self.img_container_fr, orient=tk.HORIZONTAL , command = self.img_container_canvas.xview)
+
+        self.canvas_fr.bind(
+            "<Configure>",
+            lambda e: self.img_container_canvas.configure(
+                scrollregion=self.img_container_canvas.bbox("all")
+            )
+        )
+
+        self.img_container_canvas.create_window((0, 0), window=self.canvas_fr, anchor="nw")
+
+        self.main_win.columnconfigure(2, weight=1)
+        self.main_win.rowconfigure(1, weight=1)
+
+        self.img_container_fr.columnconfigure(0, weight=1)
+        self.img_container_fr.rowconfigure(0, weight=1)
+        self.img_container_canvas.configure(xscrollcommand=self.scrollbar.set)
+
+        self.img_container_canvas.grid()
+        
+        
+        self.canvas_fr.bind('<Enter>', self._bound_to_mousewheel)
+        self.canvas_fr.bind('<Leave>', self._unbound_to_mousewheel)
+
+        self.img_container_canvas.configure(xscrollcommand= self.scrollbar.set)
+        self.scrollbar.grid(row = 1, column=0, sticky=tk.N+tk.EW)
+        self.img_container_canvas.grid(row=0, column=0, sticky=tk.N+tk.E+tk.W+tk.S)
+
+    def _bound_to_mousewheel(self, event):
+        self.img_container_canvas.bind_all("<MouseWheel>", self._on_mousewheel)
+
+    def _unbound_to_mousewheel(self, event):
+        self.img_container_canvas.unbind_all("<MouseWheel>")
+
+    def _on_mousewheel(self, event):
+        self.img_container_canvas.xview_scroll(int(-1*(event.delta/120)), "units")
+
     def split(self) -> None:
         """
         Splits the current image by doing KMeans clustering on it. The number of clusters
@@ -132,6 +178,7 @@ class GUI(object):
             self.btn_up.grid(row=1, column=2)
             self.btn_down.grid(row=1, column=3)
             self.btn_contour.grid(row=1, column=4)
+            self.btn_update.grid(row=1, column=5)
         
         self.main_win.deiconify()
         
@@ -153,9 +200,7 @@ class GUI(object):
         self.cropped_img_fr.destroy()
         self.cropped_img_fr = tk.Frame(self.main_win)
         self.cropped_img_fr.grid(row=1, column=1)
-        self.canvas_fr.destroy()
-        self.canvas_fr = tk.Frame(self.main_win)
-        self.canvas_fr.grid(row=1, column=2, columnspan=2)
+        self.img_container_fr.grid(row=1, column=2, columnspan=2, sticky=tk.N+tk.E+tk.W+tk.S)
     
     def add_img_to_canvas(self, canvas: tk.Canvas, img: cv2.Mat) -> None:
         """
@@ -189,6 +234,36 @@ class GUI(object):
             widgetC = tk.Label(canvas, text=str(percent.contour(image)), fg='white', bg='black')
             widgetC.grid(row = 2,column=0 )
 
+    def _resize_img(self, img):
+        """
+        Resize the image acording to the actual window size of the aplication.
+        """
+        # Get actual window size
+        win_height = self.main_win.winfo_height()
+        win_width = self.main_win.winfo_width()
+        # Define the desire height and width of the image
+        resize_height = win_height * 1 // 2
+        resize_width = win_width * 2 // 5
+
+        # If the larger size of the image is its height (type TUBE)
+        if img.shape[0] > img.shape[1]:
+            # Adjust image to the define height
+            resize_img = cv2.resize(img, ((int(img.shape[1] * resize_height / img.shape[0])), resize_height))
+            # If its new width exceed the define width
+            if resize_img.shape[1] > resize_width:
+                # Adjust image to the define width
+                resize_img = cv2.resize(resize_img, (resize_width, int(resize_img.shape[0] * resize_width / resize_img.shape[1])))
+        # If the larger size of the image is its width (type PANORAMIC)
+        else:
+            # Adjust image to the define width
+            resize_img = cv2.resize(img, (resize_width, int(img.shape[0] * resize_width / img.shape[1])))
+            # If its new height exceed the define height
+            if resize_img.shape[0] > resize_height:
+                # Adjust image to the define height
+                resize_img = cv2.resize(resize_img,  ((int(resize_img.shape[1] * resize_height / resize_img.shape[0])), resize_height))
+
+        return resize_img
+
     def update_screen(self) -> None:
         """
         Updates the screen, this method is called right after
@@ -196,7 +271,7 @@ class GUI(object):
         """
         self.clean_win()
 
-        img = self.img_tree.image # image at the current node of the image_tree
+        img = self._resize_img(self.img_tree.image) # image at the current node of the image_tree
         self.selected_images_indices = [] # resets selected images
 
         # Set image for cropped image frame
@@ -209,12 +284,13 @@ class GUI(object):
         img_row_shape = 2
         i = 0
         for child in self.img_tree.childs:
-            child_img = cv2.resize(child.image, (int(child.image.shape[1]*CLUSTER_RESHAPE), int(child.image.shape[0]*CLUSTER_RESHAPE)))
+            child_img = self._resize_img(child.image)
+            child_img = cv2.resize(child.image, (int(child_img.shape[1]*CLUSTER_RESHAPE), int(child_img.shape[0]*CLUSTER_RESHAPE)))
             child_img = cv2.cvtColor(child_img, cv2.COLOR_BGR2RGB)
             canva = tk.Canvas(self.canvas_fr, width=child_img.shape[1], height=child_img.shape[0])
             label = self.add_img_to_canvas(canva, child_img)
             label.bind('<ButtonPress-1>', lambda event, image=child.image, key=i, canvas=canva: self.click(image, key, canvas))
-            canva.grid(row=1+i//img_row_shape, column=i%img_row_shape)
+            canva.grid(row=1+i%img_row_shape, column=i//img_row_shape)
             i+=1
 
     def merge(self) -> None:
@@ -314,14 +390,15 @@ class GUI(object):
         contour = sc.contour_segmentation(self.img_tree.image) 
         sc.contour_agrupation(contour)
         segmentated = sc.cluster_segmentation(self.img_tree.image,contour)
-        child_img = segmentated
-        child_img = cv2.cvtColor(child_img, cv2.COLOR_BGR2RGB)
-        canva = tk.Canvas(self.canvas_fr, width=child_img.shape[1], height=child_img.shape[0])
-        self.add_img_to_canvas(canva, child_img)
-        canva.grid()
+        segmentated = self._resize_img(segmentated)
+        segmentated = cv2.cvtColor(segmentated, cv2.COLOR_BGR2RGB)
+        canva = tk.Canvas(self.canvas_fr, width=segmentated.shape[1], height=segmentated.shape[0])
+        self.add_img_to_canvas(canva, segmentated)
+        canva.grid(row=1,column=0)
 
         results = sc.generate_results(contour)
         self.fill_table(results)
+
 
     def fill_table(self, results) -> None:
         """
@@ -386,17 +463,35 @@ class GUI(object):
         """
         This method saves both the current image and it's clusters if they exist.
         """
-        PATH = f"output/{datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')}"
+        PATH = f"output/{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
         os.makedirs(PATH)
         image_managers.save_image_from_path(self.img_tree.image, f"{PATH}/original.png")
         for i in range(len(self.img_tree.childs)):
             image_managers.save_image_from_path(self.img_tree.childs[i].image, f"{PATH}/cluster_{i}.png")
         tk.messagebox.showinfo("Guardado", message="Las imagenes se han guardado correctamente")
+        files = []
+        for folderName, subfolders, filenames in os.walk(PATH):
+            for filename in filenames:
+            #create complete filepath of file in directory
+                filePath = os.path.join(folderName, filename)
+                files.append(filePath)
+        
+        generate_zip(files)
+    
+
 
     
 root = tk.Tk()
 root.title("Cuantificador geologico")
 root.iconbitmap("icon.ico")
 root.config(cursor='plus')
+# Get user screen size
+screen_width = root.winfo_screenwidth()
+screen_height = root.winfo_screenheight()
+# Open window smaller than user screen
+root.geometry(f"{screen_width * 19 // 20}x{screen_height * 17 // 20}+0+0")
+# Set min and max window size to avoid incorrect displays
+root.minsize(screen_width * 2 // 3, screen_height * 2 // 3)
+root.maxsize(screen_width, screen_height)
 gg = GUI(root)        
 root.mainloop()
