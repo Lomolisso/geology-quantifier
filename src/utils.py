@@ -5,6 +5,7 @@ Utility functions/classes of the project.
 
 import tkinter as tk
 from zipfile import ZipFile
+import cv2
 
 class EntryWithPlaceholder(tk.Entry):
     """
@@ -61,6 +62,9 @@ def generate_zip(files) -> None:
             ("all files", ".*")
         )
     )
-    zipObj = ZipFile(filepath, 'w')
+    zipObj = ZipFile(f'{filepath}.zip', 'w')
+    i = 0
     for file in files:
-        zipObj.write(file)
+        _, buf = cv2.imencode('.png', file)
+        zipObj.writestr(str(i)+'.png', buf)
+        i+=1

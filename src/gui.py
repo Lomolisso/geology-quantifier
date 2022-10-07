@@ -1,12 +1,8 @@
 import csv
-import datetime
-from email import utils
-import os
 from typing import Any
 import image_tree
 import tkinter as tk
 import tkinter.font as tk_font
-
 import cv2
 from PIL import Image, ImageTk
 import image_managers, sample_extraction, percent, tube, shape_detection as sc
@@ -47,11 +43,12 @@ class GUI(object):
         
         self.img_container_canvas= tk.Canvas(self.img_container_fr)
 
-        self.cropped_img_fr = tk.Frame(self.main_win)
-        self.cropped_img_fr.grid(row=1, column=1)
+        self.canvas_fr = tk.Frame(self.img_container_canvas)
+
+        self.principal_fr = tk.Frame(self.main_win)
+        self.principal_fr.grid(row=1, column=1)
         
-        self.results_fr = tk.Frame(self.main_win)
-        self.results_fr.grid(row=2,column=1, sticky=tk.S)
+        self.results_fr = tk.Frame(self.canvas_fr)
 
         # -- buttons --
         self.btn_img = tk.Button(self.btns_fr, text='Seleccionar imagen', width=20, command=self.show_img, cursor='arrow')
@@ -93,7 +90,6 @@ class GUI(object):
         self.total_clusters['font'] = self.myFont
 
         # -- extras --
-        self.canvas_fr = tk.Frame(self.img_container_canvas)
         self.set_up_scrollbar()
     
     def set_up_scrollbar(self):
@@ -188,25 +184,27 @@ class GUI(object):
         Destroy every tkinter instance on screen and
         starts new ones.
         """
-        for wget in self.canvas_fr.winfo_children():
-            wget.destroy()
-
         for wget in self.results_fr.winfo_children():
             wget.destroy()
-        
-        for wget in self.cropped_img_fr.winfo_children():
+
+        for wget in self.canvas_fr.winfo_children():
             wget.destroy()
         
-        self.cropped_img_fr.destroy()
-        self.cropped_img_fr = tk.Frame(self.main_win)
-        self.cropped_img_fr.grid(row=1, column=1)
-        self.img_container_fr.grid(row=1, column=2, columnspan=2, sticky=tk.N+tk.E+tk.W+tk.S)
+        for wget in self.principal_fr.winfo_children():
+            wget.destroy()
+        
+        self.principal_fr.destroy()
+        self.principal_fr = tk.Frame(self.main_win)
+        self.principal_fr.grid(row=1, column=1)
+        self.results_fr = tk.Frame(self.canvas_fr)
+        self.img_container_fr.grid(row=1, column=2, sticky=tk.N+tk.E+tk.W+tk.S)
     
     def add_img_to_canvas(self, canvas: tk.Canvas, img: cv2.Mat) -> None:
         """
         Adds an image to the canvas.
         """
-        photo_img = Image.fromarray(img)
+        photo_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        photo_img = Image.fromarray(photo_img)
         img_for_label = ImageTk.PhotoImage(photo_img)
         label_img = tk.Label(canvas, image=img_for_label)
         label_img.image = img_for_label
@@ -275,10 +273,9 @@ class GUI(object):
         self.selected_images_indices = [] # resets selected images
 
         # Set image for cropped image frame
-        canva = tk.Canvas(self.cropped_img_fr, width=img.shape[1], height=img.shape[0])
-        fix_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        _ = self.add_img_to_canvas(canva, fix_img)
-        canva.grid(row=1, column=1)
+        canva = tk.Canvas(self.principal_fr, width=img.shape[1], height=img.shape[0])
+        _ = self.add_img_to_canvas(canva, img)
+        canva.grid(row=0, column=0)
 
         # draws image node childs
         img_row_shape = 2
@@ -286,11 +283,10 @@ class GUI(object):
         for child in self.img_tree.childs:
             child_img = self._resize_img(child.image)
             child_img = cv2.resize(child.image, (int(child_img.shape[1]*CLUSTER_RESHAPE), int(child_img.shape[0]*CLUSTER_RESHAPE)))
-            child_img = cv2.cvtColor(child_img, cv2.COLOR_BGR2RGB)
             canva = tk.Canvas(self.canvas_fr, width=child_img.shape[1], height=child_img.shape[0])
             label = self.add_img_to_canvas(canva, child_img)
             label.bind('<ButtonPress-1>', lambda event, image=child.image, key=i, canvas=canva: self.click(image, key, canvas))
-            canva.grid(row=1+i%img_row_shape, column=i//img_row_shape)
+            canva.grid(row=i%img_row_shape, column=i//img_row_shape)
             i+=1
 
     def merge(self) -> None:
@@ -381,21 +377,26 @@ class GUI(object):
         if len(self.selected_images_indices) == 1:
             self.img_tree = self.img_tree.childs[self.selected_images_indices[0]]
 
-        self.update_screen()
-        for wget in self.canvas_fr.winfo_children():
-            wget.destroy()
+        self.clean_win()
         self.selected_images_indices = []
         
+        principal_image = self.img_tree.image
+        principal_image = self._resize_img(principal_image)
+        principal_canva = tk.Canvas(self.principal_fr, width=principal_image.shape[1], height=principal_image.shape[0])
+        self.add_img_to_canvas(principal_canva, principal_image)
+        principal_canva.grid(row=0, column=0)
 
-        contour = sc.contour_segmentation(self.img_tree.image) 
+        contour = sc.contour_segmentation(principal_image) 
         sc.contour_agrupation(contour)
-        segmentated = sc.cluster_segmentation(self.img_tree.image,contour)
+        segmentated = sc.cluster_segmentation(principal_image,contour)
         segmentated = self._resize_img(segmentated)
-        segmentated = cv2.cvtColor(segmentated, cv2.COLOR_BGR2RGB)
-        canva = tk.Canvas(self.canvas_fr, width=segmentated.shape[1], height=segmentated.shape[0])
-        self.add_img_to_canvas(canva, segmentated)
-        canva.grid(row=1,column=0)
-
+        child_img = segmentated
+        canva = tk.Canvas(self.principal_fr, width=child_img.shape[1], height=child_img.shape[0])
+        self.add_img_to_canvas(canva, child_img)
+        if child_img.shape[0] > child_img.shape[1]:
+            canva.grid(row=0, column=1)
+        else:
+            canva.grid(row=1, column=0)
         results = sc.generate_results(contour)
         self.fill_table(results)
 
@@ -405,6 +406,8 @@ class GUI(object):
         This method fills and shows a table at the GUI.
         The data is given as an input.
         """
+        self.results_fr.grid(row=0,column=0)
+        self.img_container_canvas.xview('moveto', 0)
         label_color = tk.Label(self.results_fr, text="Color")
         label_color.grid(row=0, column=0)
         label_name = tk.Label(self.results_fr, text="Grupo")
@@ -463,21 +466,14 @@ class GUI(object):
         """
         This method saves both the current image and it's clusters if they exist.
         """
-        PATH = f"output/{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
-        os.makedirs(PATH)
-        image_managers.save_image_from_path(self.img_tree.image, f"{PATH}/original.png")
-        for i in range(len(self.img_tree.childs)):
-            image_managers.save_image_from_path(self.img_tree.childs[i].image, f"{PATH}/cluster_{i}.png")
-        tk.messagebox.showinfo("Guardado", message="Las imagenes se han guardado correctamente")
-        files = []
-        for folderName, subfolders, filenames in os.walk(PATH):
-            for filename in filenames:
-            #create complete filepath of file in directory
-                filePath = os.path.join(folderName, filename)
-                files.append(filePath)
+        files = [self.img_tree.image]
+        
+        for child in self.img_tree.childs:
+            files.append(child.image)
         
         generate_zip(files)
-    
+        tk.messagebox.showinfo("Guardado", message="Las imagenes se han guardado correctamente")
+        
 
 
     
