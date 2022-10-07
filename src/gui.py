@@ -1,5 +1,6 @@
 import csv
 import datetime
+from email import utils
 import os
 from typing import Any
 import image_tree
@@ -10,7 +11,7 @@ import cv2
 from PIL import Image, ImageTk
 import image_managers, sample_extraction, percent, tube, segmentacion_contorno as sc
 from sample_extraction import SampleExtractor
-from utils import EntryWithPlaceholder
+from utils import EntryWithPlaceholder, generate_zip
 
 CLUSTER_RESHAPE = 0.7
     
@@ -462,12 +463,20 @@ class GUI(object):
         """
         This method saves both the current image and it's clusters if they exist.
         """
-        PATH = f"output/{datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')}"
+        PATH = f"output/{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
         os.makedirs(PATH)
         image_managers.save_image_from_path(self.img_tree.image, f"{PATH}/original.png")
         for i in range(len(self.img_tree.childs)):
             image_managers.save_image_from_path(self.img_tree.childs[i].image, f"{PATH}/cluster_{i}.png")
         tk.messagebox.showinfo("Guardado", message="Las imagenes se han guardado correctamente")
+        files = []
+        for folderName, subfolders, filenames in os.walk(PATH):
+            for filename in filenames:
+            #create complete filepath of file in directory
+                filePath = os.path.join(folderName, filename)
+                files.append(filePath)
+        
+        generate_zip(files)
     
 
 

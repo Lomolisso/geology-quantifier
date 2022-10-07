@@ -1,4 +1,5 @@
 import tkinter as tk
+from zipfile import ZipFile
 
 class EntryWithPlaceholder(tk.Entry):
     def __init__(self, master=None, placeholder="PLACEHOLDER", color='black'):
@@ -25,3 +26,16 @@ class EntryWithPlaceholder(tk.Entry):
     def foc_out(self, *args):
         if not self.get():
             self.put_placeholder()
+
+def generate_zip(files):
+    filepath = tk.filedialog.asksaveasfilename(
+        initialdir="../img",
+        title="Save as",
+        filetypes=(
+            ('Zip File', '*.zip'),
+            ("all files", ".*")
+        )
+    )
+    zipObj = ZipFile(filepath, 'w')
+    for file in files:
+        zipObj.write(file)
