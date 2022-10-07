@@ -1,18 +1,47 @@
+"""
+Shape detection implementation for
+the geology-cuantifier project.
+"""
+
 import cv2, numpy as np
 import percent
 
-class Contour():
+COLORS = [(255,0,0), (0,255,0), (0,0,255)]
+
+
+class ContourData(object):
+    """
+    This class is in charge of holding
+    relevant data of a contour, such as 
+    It's bounding rectangle and a mask
+    with only the pixels in that region.
+    """
+
     def __init__(self, img, r) -> None:
+        """
+        Class constructor, instantiates class
+        params. such as the bounding rect. of a contour
+        and It's mask.
+        """
         self.img = img
         self.r = r
 
-    def aspect_ratio(self):
-        _,_,w,h = self.r
+    def aspect_ratio(self) -> float:
+        """
+        When called, this function returns
+        the aspect ratio of the bounding rect
+        of the contour.
+        """
+        _, _, w, h = self.r
         return w/h
 
-
 def contour_segmentation(img):
-    masks = []
+    """
+    Finds the contours of the image, for each computes
+    It's bounding rect and mask. Then draws the contours 
+    and returns a list with all the data.
+    """
+    data = []
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     (_, threshInv) = cv2.threshold(gray, 1, 255,cv2.THRESH_BINARY)
 
@@ -24,12 +53,14 @@ def contour_segmentation(img):
         masked = cv2.bitwise_and(img,img, mask = mask)
         x,y,w,h = r
         masked = masked[y:y+h, x:x+w]
-        masks.append(Contour(masked,r))
-    return masks
-
- 
+        data.append(ContourData(masked,r))
+    return data
 
 def contour_agrupation(contours):
+    """
+    Runs a basic agrupation by comparing the aspect ratio
+    of each contour's bounding rect.
+    """
     for c in contours:
         asp_rat = c.aspect_ratio()
         if asp_rat > 1.2:
@@ -39,8 +70,14 @@ def contour_agrupation(contours):
         else:
             c.group = 2
 
-COLORS = [(255,0,0), (0,255,0), (0,0,255)]
 def cluster_segmentation(cluster, contours):
+    """
+    Once each CountourData instance is successfully 
+    agrupated, this function draws each bounding rect.
+    
+    The rectangle colour will be given by the group of the 
+    ContourData instance.
+    """
     im = np.copy(cluster)
     for c in contours:
         color = COLORS[c.group]
@@ -48,6 +85,9 @@ def cluster_segmentation(cluster, contours):
     return im
 
 def generate_results(contours):
+    """
+    Calculate statistics for each group.
+    """
     total_percentages = [0,0,0]
     prom_percentages = [0,0,0]
     num_of_contors = [0,0,0]

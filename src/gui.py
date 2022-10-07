@@ -9,7 +9,7 @@ import tkinter.font as tk_font
 
 import cv2
 from PIL import Image, ImageTk
-import image_managers, sample_extraction, percent, tube, segmentacion_contorno as sc
+import image_managers, sample_extraction, percent, tube, shape_detection as sc
 from sample_extraction import SampleExtractor
 from utils import EntryWithPlaceholder, generate_zip
 
