@@ -8,7 +8,7 @@ import cv2
 from PIL import Image, ImageTk
 import image_managers, sample_extraction, percent, tube, shape_detection as sc
 from sample_extraction import SampleExtractor
-from utils import EntryWithPlaceholder, generate_zip
+from utils import EntryWithPlaceholder, generate_zip, get_path
 
 CLUSTER_RESHAPE = 0.7
     
@@ -193,7 +193,7 @@ class GUI(object):
         self.sample_extractor.reset_vertex_dirty()
 
 
-    def cortar(self, image):
+    def crop(self, image):
         self.sample_extractor = SampleExtractor(image)
         self.sample_extractor.draw_circles_and_lines()
         #se ingresa en un canvas
@@ -208,7 +208,7 @@ class GUI(object):
     def select_img(self):
         try:
             image = image_managers.load_image_from_window()
-            self.cortar(image)
+            self.crop(image)
         except:
             pass
 
@@ -397,13 +397,13 @@ class GUI(object):
         in a 3D model of a cilinder.
         """
         img = self.img_tree.image
-        
-        cv2.destroyAllWindows()
+        print('PIJAAAAAAAAAAAAAAAAAAAAAAAA')
+        # cv2.destroyAllWindows()
 
         # Use the loaded img to fill a 3D tube surface.
         tube.fill_tube(img)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
+        # cv2.waitKey(0)
+        # cv2.destroyAllWindows()
         
     def undo(self) -> None:
         """
@@ -545,13 +545,11 @@ class GUI(object):
         
         generate_zip(files)
         tk.messagebox.showinfo("Guardado", message="Las imagenes se han guardado correctamente")
-        
 
 
-    
 root = tk.Tk()
 root.title("Cuantificador geologico")
-root.iconbitmap("icon.ico")
+root.wm_iconbitmap(get_path('icon.ico'))
 root.config(cursor='plus')
 # Get user screen size
 screen_width = root.winfo_screenwidth()
