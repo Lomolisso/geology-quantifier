@@ -3,6 +3,7 @@ from typing import Any
 import image_tree
 import tkinter as tk
 import tkinter.font as tk_font
+import numpy as np
 import cv2
 from PIL import Image, ImageTk
 import image_managers, sample_extraction, percent, tube, shape_detection as sc
@@ -29,7 +30,8 @@ class GUI(object):
         self.img_tree = None
         self.selected_images_indices = []
         self.main_win = root
-
+        self.key_pressed = ""
+        self.clicked_pos = (0,0)
         # --- interface parameters ---
         
         # -- fonts -- 
@@ -51,7 +53,7 @@ class GUI(object):
         self.results_fr = tk.Frame(self.canvas_fr)
 
         # -- buttons --
-        self.btn_img = tk.Button(self.btns_fr, text='Seleccionar imagen', width=20, command=self.show_img, cursor='arrow')
+        self.btn_img = tk.Button(self.btns_fr, text='Seleccionar imagen', width=20, command=self.select_img, cursor='arrow')
         self.btn_img['font'] = self.myFont
         self.btn_img.grid(row=0, column=0)
 
@@ -151,14 +153,78 @@ class GUI(object):
         self.update_screen()
         self.selected_images_indices=[]
     
+    def click_check(self, event):
+        self.sample_extractor.check_circle_movement(event.x, event.y)
+    
+    def click_pos(self, event):
+        self.sample_extractor.bg = self.sample_extractor.original_image.copy()
+        v1, v2, v3, v4 = [self.sample_extractor.vertex_data[v] for v in self.sample_extractor.vertex_data]
+        cond_dict = {
+            "vertex_1": lambda x, y: x < min(v4[0], v3[0]) and y < min(v2[1], v3[1]),
+            "vertex_2": lambda x, y: x < min(v4[0], v3[0]) and y > max(v1[1], v4[1]),
+            "vertex_3": lambda x, y: x > max(v1[0], v2[0]) and y > max(v1[1], v4[1]),   
+            "vertex_4": lambda x, y: x > max(v1[0], v2[0]) and y < min(v2[1], v3[1]),
+        }
+        if self.sample_extractor.vertex_dirty is not None and cond_dict[self.sample_extractor.vertex_dirty](event.x, event.y):
+            self.sample_extractor.vertex_data[self.sample_extractor.vertex_dirty] = np.array((event.x, event.y))
+
+        self.sample_extractor.draw_circles_and_lines()
+        photo_img = cv2.cvtColor(self.sample_extractor.get_image(), cv2.COLOR_BGR2RGB)
+        photo_img = Image.fromarray(photo_img)
+        img_for_label = ImageTk.PhotoImage(photo_img)
+        self.label_extractor.configure(image=img_for_label)
+        self.label_extractor.image = img_for_label
+        self.label_extractor.grid(row=0, column=0, padx=10, pady=10)
+
+    def key_press(self, event):
+        if event.char == "s":
+            self.org_img = self.sample_extractor.cut()
+            self.main_win.unbind('<Key>')
+            self.show_img()
+        elif event.char == "r":
+            self.sample_extractor.reset_vertexes_pos()
+        elif event.char == "x":
+            self.clean_win()
+            self.main_win.unbind('<Key>')
+    
+    def release_click(self, event):
+        self.sample_extractor.bg = self.sample_extractor.original_image.copy()
+        self.sample_extractor.draw_circles_and_lines()
+        self.sample_extractor.reset_vertex_dirty()
+
+
+    def cortar(self, image):
+        self.sample_extractor = SampleExtractor(image)
+        self.sample_extractor.draw_circles_and_lines()
+        #se ingresa en un canvas
+        canvas_extractor = tk.Canvas(self.principal_fr)
+        self.label_extractor = self.add_img_to_canvas(canvas_extractor, self.sample_extractor.get_image())
+        self.label_extractor.bind('<1>', self.click_check)
+        self.label_extractor.bind('<B1-Motion>',self.click_pos)
+        self.label_extractor.bind('<ButtonRelease-1>', self.release_click)
+        self.main_win.bind('<Key>',self.key_press)
+        canvas_extractor.grid(row=0, column=0)
+
+    def select_img(self):
+        try:
+            image = image_managers.load_image_from_window()
+            self.cortar(image)
+        except:
+            pass
+
     def show_img(self) -> None:
         """
         This method is called when a new image is uploaded. 
         """
-        self.main_win.withdraw()
         try:
-            image = image_managers.load_image_from_window()
-            self.org_img = SampleExtractor(image).extract_sample()
+            #se le ingresan los circulos
+            
+            #detecta el mouse en el canvas (click y pos)
+
+            #se detectan teclas en la ventana
+
+            #self.org_img = self.sample_extractor.get_image() #.extract_sample()
+            self.clean_win()
             self.img_tree = image_tree.ImageNode(None, self.org_img)
             self.update_screen()
                     
@@ -191,7 +257,6 @@ class GUI(object):
             self.btn_contour.grid_forget()
             self.btn_update.grid_forget()
             
-        self.main_win.deiconify()
         
 
     def clean_win(self) -> None:
