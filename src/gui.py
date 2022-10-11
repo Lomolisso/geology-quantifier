@@ -91,6 +91,7 @@ class GUI(object):
 
         # -- extras --
         self.set_up_scrollbar()
+        self.btn_fr_size = 200
     
     def set_up_scrollbar(self):
         
@@ -254,9 +255,10 @@ class GUI(object):
         # Get actual window size
         win_height = self.main_win.winfo_height()
         win_width = self.main_win.winfo_width()
+        padding_size = 10
         # Define the desire height and width of the image
-        resize_height = win_height * 1 // 2
-        resize_width = win_width * 2 // 5
+        resize_height = int((win_height - self.btn_fr_size - padding_size) * 1 // 2)
+        resize_width = int((win_width - padding_size / 2) * 1 // 3)
 
         # If the larger size of the image is its height (type TUBE)
         if img.shape[0] > img.shape[1]:
@@ -388,9 +390,9 @@ class GUI(object):
         self.selected_images_indices = []
         
         principal_image = self.img_tree.image
-        principal_image = self._resize_img(principal_image)
-        principal_canva = tk.Canvas(self.principal_fr, width=principal_image.shape[1], height=principal_image.shape[0])
-        self.add_img_to_canvas(principal_canva, principal_image)
+        principal_image_res = self._resize_img(principal_image)
+        principal_canva = tk.Canvas(self.principal_fr, width=principal_image_res.shape[1], height=principal_image_res.shape[0])
+        self.add_img_to_canvas(principal_canva, principal_image_res)
         principal_canva.grid(row=0, column=0)
 
         contour = sc.contour_segmentation(principal_image) 
