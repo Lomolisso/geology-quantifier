@@ -407,8 +407,7 @@ class GUI(object):
         else:
             canva.grid(row=1, column=0)
         results = sc.generate_results(contour)
-        aggregated_results = self.aggregate(results)
-        self.fill_table(aggregated_results)
+        self.fill_table(results, contour)
 
     def aggregate(self, results) -> List:
         agg_results = []
@@ -434,11 +433,12 @@ class GUI(object):
                     agg_results[i][j] /= color_count[i]
         return agg_results
 
-    def fill_table(self, results) -> None:
+    def fill_table(self, results, contour) -> None:
         """
         This method fills and shows a table at the GUI.
         The data is given as an input.
         """
+        aggregated_results = self.aggregate(results)
         self.results_fr.grid(row=0,column=0)
         self.img_container_canvas.xview('moveto', 0)
         label_color = tk.Label(self.results_fr, text="Color")
@@ -449,7 +449,7 @@ class GUI(object):
             label =  tk.Label(self.results_fr, text=sc.STATISTICS[i])
             label.grid(row=0, column=i+2)
         
-        for row_num in range(len(results)):
+        for row_num in range(len(aggregated_results)):
             (b, g, r) = sc.COLORS[row_num]
             color = '#%02x%02x%02x' % (r, g, b)
             label_color = tk.Label(self.results_fr, bg=color, width=1, height=1, justify=tk.CENTER)
@@ -460,36 +460,38 @@ class GUI(object):
             name.grid(row=row_num+1, column=1)
 
             for col_num in range(len(sc.STATISTICS)):
-                label = tk.Label(self.results_fr, text=results[row_num][col_num])
+                label = tk.Label(self.results_fr, text=aggregated_results[row_num][col_num])
                 label.grid(row=row_num+1, column=col_num+2)
 
-        self.btnExport = tk.Button(self.results_fr, text="Export to csv", width=15, command=self.table_to_csv, cursor='arrow')
+        self.btnExport = tk.Button(self.results_fr, text="Export to csv", width=15, command=lambda : self.table_to_csv(results, contour), cursor='arrow')
         self.btnExport['font'] = self.myFont
         self.btnExport.grid(row=len(results) + 1, column=len(sc.STATISTICS) // 2 + 1)
     
-    def table_to_csv(self) -> None:
+    def table_to_csv(self, results, contour) -> None:
         """
         This method takes the data from a table at the GUI
         and generates a csv with it.
         """
+        # Get the names the user set
+        names = []
         wgets = self.results_fr.winfo_children()[:-1]
-        def wgetter(wget_arr):
-            ret_arr = []
-            for wget in wget_arr:
-                if isinstance(wget, tk.Entry):
-                    ret_arr.append(wget.get())
-                else:
-                    if wget.cget('text') == '':
-                        ret_arr.append(wget.cget('bg'))
-                    else:
-                        ret_arr.append(wget.cget('text'))
-            return ret_arr
-    
-        rows = [wgetter(wgets[i:i+4]) for i in range(0, len(wgets), 4)]
+        entrys = [wgets[i+1] for i in range(len(sc.STATISTICS)+2, len(wgets), len(sc.STATISTICS)+2)]
+        for entry in entrys:
+            names.append(entry.get())
 
+        header_row = ["Nombre Mineral", "Nombre imagen", *sc.STATISTICS]
+        image_name = 0
         with open('geo_data.csv', 'w', newline='') as f:
             wrtr = csv.writer(f, delimiter=',')
-            for row in rows:
+            wrtr.writerow(header_row)
+            for i in range(len(results)):
+                row = []
+                row.append(names[results[i][0]])
+                image_managers.save_image_from_path(contour[i].img, f"{image_name}.jpg")
+                image_name += 1
+                row.append(f"{image_name}.jpg")
+                for j in range(len(sc.STATISTICS)):
+                    row.append(results[i][j+1])
                 wrtr.writerow(row)
     
     def save(self) -> None:
