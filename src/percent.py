@@ -1,68 +1,41 @@
 """
-Script to detect the percent of pixels that aren't black
-in an image.
+Script to detect the percent of pixels that aren't black in an image.
 You need to call percent(img) passing the target image to count
 it's non black pixels.
 """
+
 import cv2
 import numpy as np
 
+BLACK = [0, 0, 0]
+DIFF = 0
+SCALE_RATIO = 1
+
 def percent(image):
-    img = image
-    # Here, you define your target color as
-    # a tuple of three values: RGB
-    black = [0, 0, 0]
+    """
+    Calculates the percentage of colored pixels in a 
+    given image. 
+    """
+    
+    # detection interval, note that it is on BGR.
+    lower, upper = (
+        np.array([BLACK[2]-DIFF, BLACK[1]-DIFF, BLACK[0]-DIFF], dtype=np.uint8),
+        np.array([BLACK[2]+DIFF, BLACK[1]+DIFF, BLACK[0]+DIFF], dtype=np.uint8)
+    )
 
-    # You define an interval that covers the values
-    # in the tuple and are below and above them by 20
-    diff = 0
+    # calculate the new dimensions
+    s_width, s_height = int(image.shape[1] * SCALE_RATIO), int(image.shape[0] * SCALE_RATIO)
 
-    # Be aware that opencv loads image in BGR format,
-    # that's why the color values have been adjusted here:
-    boundaries = ([black[2]-diff, black[1]-diff, black[0]-diff],
-               [black[2]+diff, black[1]+diff, black[0]+diff])
+    # resize the image:
+    img = cv2.resize(image, (s_width, s_height), None, None, None, cv2.INTER_AREA)
 
-    # Scale your BIG image into a small one:
-    scalePercent = 1
+    # apply binarization of the image using the interval (lower, upper)
+    mask = cv2.inRange(img, lower, upper)   # 3 channel img
 
-    # Calculate the new dimensions
-    width = int(img.shape[1] * scalePercent)
-    height = int(img.shape[0] * scalePercent)
-    newSize = (width, height)
+    # calculate the ratio of black pixels in mask
+    black_pixels_ratio = cv2.countNonZero(mask) / (img.size/3)
 
-    # Resize the image:
-    img = cv2.resize(img, newSize, None, None, None, cv2.INTER_AREA)
-
-    # for each range in your boundary list:
-    (lower, upper) = boundaries
-
-    # You get the lower and upper part of the interval:
-    lower = np.array(lower, dtype=np.uint8)
-    upper = np.array(upper, dtype=np.uint8)
-
-    # cv2.inRange is used to binarize (i.e., render in white/black) an image
-    # All the pixels that fall inside your interval [lower, uipper] will be white
-    # All the pixels that do not fall inside this interval will
-    # be rendered in black, for all three channels:
-    mask = cv2.inRange(img, lower, upper)
-
-    # You can use the mask to count the number of white pixels.
-    # Remember that the white pixels in the mask are those that
-    # fall in your defined range, that is, every white pixel corresponds
-    # to a black pixel. Divide by the image size and you got the
-    # percentage of black pixels in the original image:
-    ratio_black = cv2.countNonZero(mask)/(img.size/3)
-
-    # This is the color percent calculation, considering the resize I did earlier.
-    colorPercent = (ratio_black * 100) / scalePercent
-    colorPercent = 100 - colorPercent
-    # Print the color percent, use 2 figures past the decimal point
-    return np.round(colorPercent, 2)
-
-def contour(img):
-
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    (_, threshInv) = cv2.threshold(gray, 1, 255,cv2.THRESH_BINARY)
-    contours, _ = cv2.findContours(threshInv, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
-    return len(contours)
+    # calculate the color percent
+    black_percent = (black_pixels_ratio * 100) / SCALE_RATIO
+    color_percent = 100 - black_percent
+    return np.round(color_percent, 2)

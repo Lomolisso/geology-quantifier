@@ -242,11 +242,9 @@ class GUI(object):
             self.selected_images_indices.append(key)
             canvas.configure(bg='red')
 
-            widgetP = tk.Label(canvas, text=str(percent.percent(image)), fg='white', bg='black')
+            color_percent = percent.percent(image)
+            widgetP = tk.Label(canvas, text=f"Porcentaje de pixeles: {color_percent}%", fg='white', bg='black')
             widgetP.grid(row = 1,column=0 )
-
-            widgetC = tk.Label(canvas, text=str(percent.contour(image)), fg='white', bg='black')
-            widgetC.grid(row = 2,column=0 )
 
     def _resize_img(self, img):
         """
