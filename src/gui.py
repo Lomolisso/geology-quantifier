@@ -1,5 +1,5 @@
 import csv
-from typing import Any
+from typing import Any, List, Tuple
 import image_tree
 import tkinter as tk
 import tkinter.font as tk_font
@@ -407,8 +407,32 @@ class GUI(object):
         else:
             canva.grid(row=1, column=0)
         results = sc.generate_results(contour)
-        self.fill_table(results)
+        aggregated_results = self.aggregate(results)
+        self.fill_table(aggregated_results)
 
+    def aggregate(self, results) -> List:
+        agg_results = []
+        color_count = []
+        # Results list initialization
+        for i in range(len(sc.COLORS)):
+            agg_results.append([])
+            color_count.append(0)
+            for _ in sc.STATISTICS:
+                agg_results[i].append(0)
+        for res in results:
+            # res[0] = c.group
+            color_count[res[0]] += 1
+            for i in range(len(sc.STATISTICS)):
+                # i is the statistic to aggregate
+                # i+1 is the position of the statistic
+                # in the res list
+                agg_results[res[0]][i] += res[i+1]
+        
+        for i in range(len(agg_results)):
+            for j in range(len(sc.STATISTICS)):
+                if color_count[i] != 0:
+                    agg_results[i][j] /= color_count[i]
+        return agg_results
 
     def fill_table(self, results) -> None:
         """
@@ -421,26 +445,23 @@ class GUI(object):
         label_color.grid(row=0, column=0)
         label_name = tk.Label(self.results_fr, text="Grupo")
         label_name.grid(row=0, column=1)
-        label_total = tk.Label(self.results_fr, text="Porcentaje Total")
-        label_total.grid(row=0, column=2)
-        label_prom = tk.Label(self.results_fr, text="Porcentaje Promedio")
-        label_prom.grid(row=0, column=3)
+        for i in range(len(sc.STATISTICS)):
+            label =  tk.Label(self.results_fr, text=sc.STATISTICS[i])
+            label.grid(row=0, column=i+2)
         
-        for row_num in range(1, len(results[0])+1):
-            (b, g, r) = sc.COLORS[row_num-1]
+        for row_num in range(len(results)):
+            (b, g, r) = sc.COLORS[row_num]
             color = '#%02x%02x%02x' % (r, g, b)
             label_color = tk.Label(self.results_fr, bg=color, width=1, height=1, justify=tk.CENTER)
-            label_color.grid(row=row_num, column=0, sticky=tk.W)
+            label_color.grid(row=row_num+1, column=0, sticky=tk.W)
             
             name = EntryWithPlaceholder(self.results_fr, f"Grupo {row_num}")
             name['font'] = self.myFont
-            name.grid(row=row_num, column=1)
+            name.grid(row=row_num+1, column=1)
 
-            label_total = tk.Label(self.results_fr, text=results[0][row_num-1])
-            label_total.grid(row=row_num, column=2)
-
-            label_prom = tk.Label(self.results_fr, text=results[1][row_num-1])
-            label_prom.grid(row=row_num, column=3)
+            for col_num in range(len(sc.STATISTICS)):
+                label = tk.Label(self.results_fr, text=results[row_num][col_num])
+                label.grid(row=row_num+1, column=col_num+2)
 
         self.btnExport = tk.Button(self.results_fr, text="Export to csv", width=15, command=self.table_to_csv, cursor='arrow')
         self.btnExport['font'] = self.myFont
