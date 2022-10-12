@@ -443,7 +443,7 @@ class GUI(object):
         self.img_container_canvas.xview('moveto', 0)
         label_color = tk.Label(self.results_fr, text="Color")
         label_color.grid(row=0, column=0)
-        label_name = tk.Label(self.results_fr, text="Grupo")
+        label_name = tk.Label(self.results_fr, text="Mineral")
         label_name.grid(row=0, column=1)
         for i in range(len(sc.STATISTICS)):
             label =  tk.Label(self.results_fr, text=sc.STATISTICS[i])
@@ -455,7 +455,7 @@ class GUI(object):
             label_color = tk.Label(self.results_fr, bg=color, width=1, height=1, justify=tk.CENTER)
             label_color.grid(row=row_num+1, column=0, sticky=tk.W)
             
-            name = EntryWithPlaceholder(self.results_fr, f"Grupo {row_num}")
+            name = EntryWithPlaceholder(self.results_fr, f"Mineral {row_num}")
             name['font'] = self.myFont
             name.grid(row=row_num+1, column=1)
 
