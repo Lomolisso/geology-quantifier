@@ -49,19 +49,29 @@ class EntryWithPlaceholder(tk.Entry):
         if not self.get():
             self.put_placeholder()
 
-def generate_zip(files) -> None:
+def get_filepath() -> str:
+    """
+    Request the user to select where to store
+    a file (or files)
+    """
+    filepath = tk.filedialog.askdirectory(
+        initialdir=".",
+        title='Elige donde guardar los resultados')
+    return filepath
+
+def generate_zip(filepath, files) -> None:
     """
     Generates a ZIP file that contains a list 
     of files given as an input.
     """
-    filepath = tk.filedialog.asksaveasfilename(
-        initialdir="../img",
-        title="Save as",
-        filetypes=(
-            ('Zip File', '*.zip'),
-            ("all files", ".*")
-        )
-    )
+    # filepath = tk.filedialog.asksaveasfilename(
+    #     initialdir="../img",
+    #     title="Save as",
+    #     filetypes=(
+    #         ('Zip File', '*.zip'),
+    #         ("all files", ".*")
+    #     )
+    # )
     zipObj = ZipFile(f'{filepath}.zip', 'w')
     i = 0
     for file in files:

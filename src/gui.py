@@ -1,13 +1,13 @@
 import csv
-from typing import Any, List, Tuple
+from typing import Any, List
 import image_tree
 import tkinter as tk
 import tkinter.font as tk_font
 import cv2
 from PIL import Image, ImageTk
-import image_managers, sample_extraction, percent, tube, shape_detection as sc
+import image_managers, percent, tube, shape_detection as sc
 from sample_extraction import SampleExtractor
-from utils import EntryWithPlaceholder, generate_zip
+from utils import EntryWithPlaceholder, get_filepath, generate_zip
 
 CLUSTER_RESHAPE = 0.7
     
@@ -465,13 +465,16 @@ class GUI(object):
 
         self.btnExport = tk.Button(self.results_fr, text="Export to csv", width=15, command=lambda : self.table_to_csv(results, contour), cursor='arrow')
         self.btnExport['font'] = self.myFont
-        self.btnExport.grid(row=len(results) + 1, column=len(sc.STATISTICS) // 2 + 1)
+        self.btnExport.grid(row=len(aggregated_results) + 1, column=len(sc.STATISTICS) // 2 + 1)
     
     def table_to_csv(self, results, contour) -> None:
         """
         This method takes the data from a table at the GUI
         and generates a csv with it.
         """
+        # Get user location of results
+        filepath = get_filepath() + "/"
+
         # Get the names the user set
         names = []
         wgets = self.results_fr.winfo_children()[:-1]
@@ -480,19 +483,21 @@ class GUI(object):
             names.append(entry.get())
 
         header_row = ["Nombre Mineral", "Nombre imagen", *sc.STATISTICS]
-        image_name = 0
-        with open('geo_data.csv', 'w', newline='') as f:
+        images = []
+        with open(f'{filepath}geo_data.csv', 'w', newline='') as f:
             wrtr = csv.writer(f, delimiter=',')
             wrtr.writerow(header_row)
             for i in range(len(results)):
                 row = []
                 row.append(names[results[i][0]])
-                image_managers.save_image_from_path(contour[i].img, f"{image_name}.jpg")
-                image_name += 1
-                row.append(f"{image_name}.jpg")
+                images.append(contour[i].img)
+                row.append(f"{i}.jpg")
                 for j in range(len(sc.STATISTICS)):
                     row.append(results[i][j+1])
                 wrtr.writerow(row)
+        
+        generate_zip(f'{filepath}images', images)
+        tk.messagebox.showinfo("Guardado", message="Los resultados se han guardado correctamente")
     
     def save(self) -> None:
         """
@@ -503,7 +508,9 @@ class GUI(object):
         for child in self.img_tree.childs:
             files.append(child.image)
         
-        generate_zip(files)
+
+        filepath = get_filepath()
+        generate_zip(filepath, files)
         tk.messagebox.showinfo("Guardado", message="Las imagenes se han guardado correctamente")
         
 
