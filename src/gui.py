@@ -30,6 +30,7 @@ class GUI(object):
         self.img_tree = None
         self.selected_images_indices = []
         self.main_win = root
+        self.main_win.bind("<1>", self.focus_win)
         self.key_pressed = ""
         self.clicked_pos = (0,0)
         # --- interface parameters ---
@@ -94,6 +95,10 @@ class GUI(object):
         # -- extras --
         self.set_up_scrollbar()
     
+    def focus_win(self, event):
+        if event.widget == self.main_win:
+            self.main_win.focus()
+
     def set_up_scrollbar(self):
         
         self.scrollbar = tk.Scrollbar(self.img_container_fr, orient=tk.HORIZONTAL , command = self.img_container_canvas.xview)
@@ -157,18 +162,8 @@ class GUI(object):
         self.sample_extractor.check_circle_movement(event.x, event.y)
     
     def click_pos(self, event):
-        self.sample_extractor.bg = self.sample_extractor.original_image.copy()
-        v1, v2, v3, v4 = [self.sample_extractor.vertex_data[v] for v in self.sample_extractor.vertex_data]
-        cond_dict = {
-            "vertex_1": lambda x, y: x < min(v4[0], v3[0]) and y < min(v2[1], v3[1]),
-            "vertex_2": lambda x, y: x < min(v4[0], v3[0]) and y > max(v1[1], v4[1]),
-            "vertex_3": lambda x, y: x > max(v1[0], v2[0]) and y > max(v1[1], v4[1]),   
-            "vertex_4": lambda x, y: x > max(v1[0], v2[0]) and y < min(v2[1], v3[1]),
-        }
-        if self.sample_extractor.vertex_dirty is not None and cond_dict[self.sample_extractor.vertex_dirty](event.x, event.y):
-            self.sample_extractor.vertex_data[self.sample_extractor.vertex_dirty] = np.array((event.x, event.y))
+        self.sample_extractor.move_vertex(event.x, event.y)
 
-        self.sample_extractor.draw_circles_and_lines()
         photo_img = cv2.cvtColor(self.sample_extractor.get_image(), cv2.COLOR_BGR2RGB)
         photo_img = Image.fromarray(photo_img)
         img_for_label = ImageTk.PhotoImage(photo_img)
@@ -183,19 +178,19 @@ class GUI(object):
             self.show_img()
         elif event.char == "r":
             self.sample_extractor.reset_vertexes_pos()
-        elif event.char == "x":
-            self.clean_win()
-            self.main_win.unbind('<Key>')
+            self.sample_extractor.refresh_image()
+            photo_img = cv2.cvtColor(self.sample_extractor.get_image(), cv2.COLOR_BGR2RGB)
+            photo_img = Image.fromarray(photo_img)
+            img_for_label = ImageTk.PhotoImage(photo_img)
+            self.label_extractor.configure(image=img_for_label)
+            self.label_extractor.image = img_for_label
+            self.label_extractor.grid(row=0, column=0, padx=10, pady=10)
     
     def release_click(self, event):
-        self.sample_extractor.bg = self.sample_extractor.original_image.copy()
-        self.sample_extractor.draw_circles_and_lines()
-        self.sample_extractor.reset_vertex_dirty()
-
+        self.sample_extractor.refresh_image()
 
     def crop(self, image):
-        self.sample_extractor = SampleExtractor(image)
-        self.sample_extractor.draw_circles_and_lines()
+        self.sample_extractor = SampleExtractor(self._resize_img(image))
         #se ingresa en un canvas
         canvas_extractor = tk.Canvas(self.principal_fr)
         self.label_extractor = self.add_img_to_canvas(canvas_extractor, self.sample_extractor.get_image())
@@ -206,60 +201,45 @@ class GUI(object):
         canvas_extractor.grid(row=0, column=0)
 
     def select_img(self):
-        try:
-            image = image_managers.load_image_from_window()
-            self.crop(image)
-        except:
-            pass
+        # try:
+        image = image_managers.load_image_from_window()
+        self.clean_frames()
+        self.clean_btns()
+        self.crop(image)
+        # except Exception as e:
+        #     print(e)
 
     def show_img(self) -> None:
         """
         This method is called when a new image is uploaded. 
         """
-        try:
-            #se le ingresan los circulos
-            
-            #detecta el mouse en el canvas (click y pos)
+        self.clean_frames()
+        self.img_tree = image_tree.ImageNode(None, self.org_img)
+        self.update_screen()
+                
+        # Set buttons positions
+        self.create_btns()
 
-            #se detectan teclas en la ventana
+    def clean_btns(self) -> None:
+        for wget in self.btns_fr.winfo_children():
+            wget.grid_forget()
+        self.btn_img.grid(row=0, column=0)
 
-            #self.org_img = self.sample_extractor.get_image() #.extract_sample()
-            self.clean_win()
-            self.img_tree = image_tree.ImageNode(None, self.org_img)
-            self.update_screen()
-                    
-            if self.org_img.size > 0:
-                # Set buttons positions
-                self.btn_3d.grid(row=0, column=1)
-                self.total_clusters.grid(row=0, column=2)
-                self.btn_split.grid(row=0, column=3)
-                self.btn_merge.grid(row=0, column=4)
-                self.btn_sub.grid(row=0, column=5)      
-                self.btn_undo.grid(row=1,column=0)
-                self.btn_save.grid(row=1, column=1)
-                self.btn_up.grid(row=1, column=2)
-                self.btn_down.grid(row=1, column=3)
-                self.btn_contour.grid(row=1, column=4)
-                self.btn_update.grid(row=1, column=5)
-            
-        except:
-            self.img_tree = None
-            self.clean_win()
-            self.btn_3d.grid_forget()
-            self.total_clusters.grid_forget()
-            self.btn_split.grid_forget()
-            self.btn_merge.grid_forget()
-            self.btn_sub.grid_forget()      
-            self.btn_undo.grid_forget()
-            self.btn_save.grid_forget()
-            self.btn_up.grid_forget()
-            self.btn_down.grid_forget()
-            self.btn_contour.grid_forget()
-            self.btn_update.grid_forget()
-            
-        
+    def create_btns(self) -> None:
+        # Set buttons positions
+        self.btn_3d.grid(row=0, column=1)
+        self.total_clusters.grid(row=0, column=2)
+        self.btn_split.grid(row=0, column=3)
+        self.btn_merge.grid(row=0, column=4)
+        self.btn_sub.grid(row=0, column=5)      
+        self.btn_undo.grid(row=1,column=0)
+        self.btn_save.grid(row=1, column=1)
+        self.btn_up.grid(row=1, column=2)
+        self.btn_down.grid(row=1, column=3)
+        self.btn_contour.grid(row=1, column=4)
+        self.btn_update.grid(row=1, column=5)
 
-    def clean_win(self) -> None:
+    def clean_frames(self) -> None:
         """
         Destroy every tkinter instance on screen and
         starts new ones.
@@ -347,7 +327,7 @@ class GUI(object):
         Updates the screen, this method is called right after
         the user interacts with the current image.
         """
-        self.clean_win()
+        self.clean_frames()
 
         img = self._resize_img(self.img_tree.image) # image at the current node of the image_tree
         self.selected_images_indices = [] # resets selected images
@@ -397,13 +377,8 @@ class GUI(object):
         in a 3D model of a cilinder.
         """
         img = self.img_tree.image
-        print('PIJAAAAAAAAAAAAAAAAAAAAAAAA')
-        # cv2.destroyAllWindows()
-
         # Use the loaded img to fill a 3D tube surface.
         tube.fill_tube(img)
-        # cv2.waitKey(0)
-        # cv2.destroyAllWindows()
         
     def undo(self) -> None:
         """
@@ -437,7 +412,6 @@ class GUI(object):
         self.img_tree = self.img_tree.parent
         self.selected_images_indices = []
         self.update_screen()
-
     
     def segmentate(self) -> None:
         """
@@ -449,7 +423,7 @@ class GUI(object):
         if len(self.selected_images_indices) == 1:
             self.img_tree = self.img_tree.childs[self.selected_images_indices[0]]
 
-        self.clean_win()
+        self.clean_frames()
         self.selected_images_indices = []
         
         principal_image = self.img_tree.image
@@ -471,7 +445,6 @@ class GUI(object):
             canva.grid(row=1, column=0)
         results = sc.generate_results(contour)
         self.fill_table(results)
-
 
     def fill_table(self, results) -> None:
         """

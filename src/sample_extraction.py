@@ -3,11 +3,9 @@ Script to manualy cut the target sample of an image.
 You can do it calling extract_sample(img) passing the 
 image you want to cut.
 """
-from typing import Any
 import cv2
 import numpy as np
 
-IMG_RESIZE_SCALE = 0.2
 BLUE = [255,0,0]
 RED = [0, 0, 255]
 GREEN = [0, 255, 0]
@@ -26,25 +24,40 @@ class SampleExtractor(object):
         Class constructor, sets the main attributes of the
         instance acording to the input image.
         """
-        img_rows, img_cols, *_ = img.shape
-        self.bg = cv2.resize(img, 
-            (
-                int(img_cols * IMG_RESIZE_SCALE),
-                int(img_rows * IMG_RESIZE_SCALE)
-            )
-        )
+        self.bg = img
         self.bg_size = self.bg.shape
         self.original_image = self.bg.copy()
         self.vertex_data = {}
         self.vertex_dirty = None
-        self.reset_vertexes_pos()
         self.min_radius = 6
         self.radius = 7
+
+        self.reset_vertexes_pos()
+        self.__draw_circles_and_lines()
     
     def get_image(self):
         return self.bg
+    
+    def refresh_image(self):
+        self.bg = self.original_image.copy()
+        self.__draw_circles_and_lines()
+        self.__reset_vertex_dirty()
 
-    def draw_circles_and_lines(self) -> None:
+    def move_vertex(self, x, y):
+        self.bg = self.original_image.copy()
+        v1, v2, v3, v4 = [self.vertex_data[v] for v in self.vertex_data]
+        cond_dict = {
+            "vertex_1": lambda x, y: x < min(v4[0], v3[0]) and y < min(v2[1], v3[1]),
+            "vertex_2": lambda x, y: x < min(v4[0], v3[0]) and y > max(v1[1], v4[1]),
+            "vertex_3": lambda x, y: x > max(v1[0], v2[0]) and y > max(v1[1], v4[1]),   
+            "vertex_4": lambda x, y: x > max(v1[0], v2[0]) and y < min(v2[1], v3[1]),
+        }
+        if self.vertex_dirty is not None and cond_dict[self.vertex_dirty](x, y):
+            self.vertex_data[self.vertex_dirty] = np.array((x, y))
+
+        self.__draw_circles_and_lines()
+
+    def __draw_circles_and_lines(self) -> None:
         """
         Draws the current selected area of the image.
         """
@@ -72,7 +85,7 @@ class SampleExtractor(object):
         self.vertex_data["vertex_3"] = np.array((bg_cols*3//4, bg_rows*3//4))
         self.vertex_data["vertex_4"] = np.array((bg_cols*3//4, bg_rows//4))
     
-    def reset_vertex_dirty(self) -> None:
+    def __reset_vertex_dirty(self) -> None:
         """
         Resets the dirty vertex class attr. back to None.
         """
@@ -88,40 +101,6 @@ class SampleExtractor(object):
             if dist <= self.radius:
                 self.vertex_dirty = v
                 break
-
-    def __check_mouse_pos(self, x: int, y: int) -> bool:
-        """
-        Checks if the mouse position is contained in the image.
-        """
-        return x <= self.bg_size[1] and y <= self.bg_size[0] and x >= 0 and y>=0
-
-    def __handle_mouse(self, event: Any, x: int, y: int, *_) -> None:
-        """
-        Handles the events related to the mouse, such as when a vertex of the 
-        selection area is moved.
-        """
-        if event == cv2.EVENT_LBUTTONDOWN:
-            self.check_circle_movement(x, y)
-
-        elif event == cv2.EVENT_MOUSEMOVE and self.__check_mouse_pos(x, y):
-            self.bg = self.original_image.copy()
-            v1, v2, v3, v4 = [self.vertex_data[v] for v in self.vertex_data]
-            cond_dict = {
-                "vertex_1": lambda x, y: x < min(v4[0], v3[0]) and y < min(v2[1], v3[1]),
-                "vertex_2": lambda x, y: x < min(v4[0], v3[0]) and y > max(v1[1], v4[1]),
-                "vertex_3": lambda x, y: x > max(v1[0], v2[0]) and y > max(v1[1], v4[1]),   
-                "vertex_4": lambda x, y: x > max(v1[0], v2[0]) and y < min(v2[1], v3[1]),
-            }
-    
-            if self.vertex_dirty is not None and cond_dict[self.vertex_dirty](x, y):
-                self.vertex_data[self.vertex_dirty] = np.array((x, y))
-
-            self.draw_circles_and_lines()
-        
-        elif event == cv2.EVENT_LBUTTONUP:
-            self.bg = self.original_image.copy()
-            self.draw_circles_and_lines()
-            self.reset_vertex_dirty()
 
     def cut(self):
         vertex_1, vertex_2, vertex_3, vertex_4 = [self.vertex_data[v] for v in self.vertex_data]
