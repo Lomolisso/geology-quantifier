@@ -94,12 +94,15 @@ class GUI(object):
         self.btn_fr_size = 200
     
     def set_up_scrollbar(self):
-        
+        """
+        Sets up the scrollbar of the gui, instantiating tk.Scrollbar
+        and positioning it.
+        """
         self.scrollbar = tk.Scrollbar(self.img_container_fr, orient=tk.HORIZONTAL , command = self.img_container_canvas.xview)
 
         self.canvas_fr.bind(
             "<Configure>",
-            lambda e: self.img_container_canvas.configure(
+            lambda _: self.img_container_canvas.configure(
                 scrollregion=self.img_container_canvas.bbox("all")
             )
         )
@@ -124,12 +127,21 @@ class GUI(object):
         self.img_container_canvas.grid(row=0, column=0, sticky=tk.N+tk.E+tk.W+tk.S)
 
     def _bound_to_mousewheel(self, event):
+        """
+       Private method, handles the binding of the mouse wheel
+        """
         self.img_container_canvas.bind_all("<MouseWheel>", self._on_mousewheel)
 
     def _unbound_to_mousewheel(self, event):
+        """
+        Private method, handles the unbinding of the mouse wheel
+        """
         self.img_container_canvas.unbind_all("<MouseWheel>")
 
     def _on_mousewheel(self, event):
+        """
+        Private method, handles scrollbar mouse wheel scrolling
+        """
         self.img_container_canvas.xview_scroll(int(-1*(event.delta/120)), "units")
 
     def split(self) -> None:
