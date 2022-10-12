@@ -1,7 +1,18 @@
+"""
+This module contains the implementation 
+of the color segmentation used in the
+app.
+"""
+
 import cv2
 import numpy as np
 
 def run_histogram_equalization(rgb_img):
+    """
+    Applies histogram equalization to an image,
+    enhancing some colors and dimming others.
+    """
+
     # convert from RGB color-space to YCrCb
     ycrcb_img = cv2.cvtColor(rgb_img, cv2.COLOR_BGR2YCrCb)
 
@@ -12,6 +23,11 @@ def run_histogram_equalization(rgb_img):
     return cv2.cvtColor(ycrcb_img, cv2.COLOR_YCrCb2BGR)
 
 def generate_clusters(img, cluster_num):
+    """
+    Runs a clustering algorithm (kmeans) over the pixels
+    of an image. The pixels contains 3 color components that
+    the algorithm uses to separate them.
+    """
     # List of the output masks
     output_masks = []
 
