@@ -63,9 +63,10 @@ def contour_agrupation(contours):
     """
     for c in contours:
         asp_rat = c.aspect_ratio()
-        if asp_rat > 1.2:
+        if asp_rat <= 1.2 and asp_rat >= 0.8:
+            # Square like rectangles
             c.group = 0
-        elif asp_rat < 0.8:
+        elif asp_rat <= 1.5 and asp_rat >= 0.5:
             c.group = 1
         else:
             c.group = 2
