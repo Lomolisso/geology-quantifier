@@ -5,7 +5,6 @@ the geology-cuantifier project.
 
 from typing import List, Tuple
 import cv2, numpy as np
-import percent
 
 COLORS = [(255,0,0), (0,255,0), (0,0,255)]
 STATISTICS = ["Area", "Radio Equiv", "Largo Equiv", "Punto Medio X", "Punto Medio Y"]
@@ -18,14 +17,15 @@ class ContourData(object):
     with only the pixels in that region.
     """
 
-    def __init__(self, img, r) -> None:
+    def __init__(self, img, contour) -> None:
         """
         Class constructor, instantiates class
         params. such as the bounding rect. of a contour
         and It's mask.
         """
         self.img = img
-        self.r = r
+        self.contour = contour
+        self.r = cv2.boundingRect(contour)
         self.group = None # TO BE determined
 
     def aspect_ratio(self) -> float:
@@ -40,18 +40,15 @@ class ContourData(object):
     def get_area(self) -> float:
         """
         When called, this function returns
-        the total area of the bounding rect
-        of the contour.
+        the total area of the contour.
         """
-        _, _, w, h = self.r
-        return w*h
+        return cv2.contourArea(self.contour)
     
     def get_equiv_radius(self) -> float:
         """
         When called, this function returns
         the equivalent radius associated to 
-        the area of the bounding rect of 
-        the contour.
+        the area of the contour.
         """
         return np.sqrt(self.get_area()/np.pi)
     
@@ -59,8 +56,7 @@ class ContourData(object):
         """
         When called, this function returns
         the equivalent lenght associated to 
-        the area of the bounding rect of 
-        the contour.
+        the area of the contour.
         """
         return np.sqrt(self.get_area()/self.aspect_ratio())
 
@@ -106,7 +102,7 @@ def contour_segmentation(img):
         masked = cv2.bitwise_and(img,img, mask = mask)
         x,y,w,h = r
         masked = masked[y:y+h, x:x+w]
-        data.append(ContourData(masked,r))
+        data.append(ContourData(masked,cnt))
     return data
 
 def contour_agrupation(contours):
