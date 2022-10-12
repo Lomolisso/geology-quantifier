@@ -26,7 +26,7 @@ class ContourData(object):
         self.img = img
         self.contour = contour
         self.r = cv2.boundingRect(contour)
-        self.group = None # TO BE determined
+        self.group = None
 
     def aspect_ratio(self) -> float:
         """

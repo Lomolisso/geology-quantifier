@@ -64,14 +64,6 @@ def generate_zip(filepath, files) -> None:
     Generates a ZIP file that contains a list 
     of files given as an input.
     """
-    # filepath = tk.filedialog.asksaveasfilename(
-    #     initialdir="../img",
-    #     title="Save as",
-    #     filetypes=(
-    #         ('Zip File', '*.zip'),
-    #         ("all files", ".*")
-    #     )
-    # )
     zipObj = ZipFile(f'{filepath}.zip', 'w')
     i = 0
     for file in files:
