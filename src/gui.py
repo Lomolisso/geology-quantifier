@@ -465,7 +465,7 @@ class GUI(object):
 
         self.btnExport = tk.Button(self.results_fr, text="Export to csv", width=15, command=self.table_to_csv, cursor='arrow')
         self.btnExport['font'] = self.myFont
-        self.btnExport.grid(row=2, column=4)
+        self.btnExport.grid(row=len(results) + 1, column=len(sc.STATISTICS) // 2 + 1)
     
     def table_to_csv(self) -> None:
         """
