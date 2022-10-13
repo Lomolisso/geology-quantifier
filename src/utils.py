@@ -6,6 +6,8 @@ Utility functions/classes of the project.
 import tkinter as tk
 from zipfile import ZipFile
 import cv2
+import sys
+import os
 
 class EntryWithPlaceholder(tk.Entry):
     """
@@ -68,3 +70,9 @@ def generate_zip(files) -> None:
         _, buf = cv2.imencode('.png', file)
         zipObj.writestr(str(i)+'.png', buf)
         i+=1
+
+def get_path(filename):
+    if hasattr(sys, "_MEIPASS"):
+        return os.path.join(sys._MEIPASS, filename)
+    else:
+        return filename
