@@ -390,9 +390,11 @@ class GUI(object):
         This method plots the image of the current node of the image tree
         in a 3D model of a cilinder.
         """
-        img = self.img_tree.image
-        # Use the loaded img to fill a 3D tube surface.
-        tube.fill_tube(img)
+        tk.messagebox.showinfo("Proximamente", message="Esta funcionalidad estará disponible proximamente.")
+
+        # img = self.img_tree.image
+        # # Use the loaded img to fill a 3D tube surface.
+        # tube.fill_tube(img)
         
     def undo(self) -> None:
         """
@@ -534,20 +536,20 @@ class GUI(object):
         for entry in entrys:
             names.append(entry.get())
 
-        header_row = ["Nombre Mineral", "Nombre imagen", *sc.STATISTICS]
-        images = []
+        header_row = ["Nombre Mineral", "ID imagen", *sc.STATISTICS]
+        # images = []
         with open(f'{filepath}geo_data.csv', 'w', newline='') as f:
             wrtr = csv.writer(f, delimiter=',')
             wrtr.writerow(header_row)
             for i in range(len(results)):
                 row = []
                 row.append(names[results[i][0]])
-                images.append(contour[i].img)
-                row.append(f"{i}.jpg")
+                # images.append(contour[i].img)
+                row.append(str(i))
                 for j in range(len(sc.STATISTICS)):
                     row.append(results[i][j+1])
                 wrtr.writerow(row)
-        
+        images = sc.image_agrupation(contour,3)
         generate_zip(f'{filepath}images', images)
         tk.messagebox.showinfo("Guardado", message="Los resultados se han guardado correctamente")
     

@@ -100,8 +100,8 @@ def contour_segmentation(img):
         r = cv2.boundingRect(cnt)
         cv2.drawContours(mask, [cnt],-1, (255,255,255),-1)
         masked = cv2.bitwise_and(img,img, mask = mask)
-        x,y,w,h = r
-        masked = masked[y:y+h, x:x+w]
+        # x,y,w,h = r
+        # masked = masked[y:y+h, x:x+w]
         data.append(ContourData(masked,cnt))
     return data
 
@@ -142,3 +142,24 @@ def generate_results(contours):
     for c in contours:
         final_results.append(c.get_all_statistics())
     return final_results
+
+def image_agrupation(contours,groups):
+    """
+    Agrupate all images of the contours in one image for each group
+    """
+    shape = contours[0].img.shape
+    masks = [np.zeros(shape, dtype="uint8")]*groups
+    for i in range(len(contours)):
+        group = contours[i].group
+        # img_r = np.resize(masks[group],shape)
+        masks[group] =  cv2.add(contours[i].img, masks[group])
+    for i in range(len(contours)):
+        group = contours[i].group
+        x, y, w, h =contours[i].r
+        position = (x,y)
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        font_size = 0.3
+        font_color = (221,82,196)
+        font_thickness = 1
+        cv2.putText(masks[group],str(i), position, font, font_size, font_color, font_thickness)
+    return masks
