@@ -56,7 +56,7 @@ class GUI(object):
         self.results_fr = tk.Frame(self.canvas_fr)
 
         # -- buttons --
-        self.btn_img = tk.Button(self.btns_fr, text='Seleccionar imagen', width=20, command=self.show_img, cursor='arrow')
+        self.btn_img = tk.Button(self.btns_fr, text='Seleccionar imagen', width=20, command=self.select_img, cursor='arrow')
         self.btn_img['font'] = self.my_font
         self.btn_img.grid(row=0, column=0)
 
