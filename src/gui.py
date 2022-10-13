@@ -1,16 +1,13 @@
 import csv
-import datetime
-import os
 from typing import Any
 import image_tree
 import tkinter as tk
 import tkinter.font as tk_font
-
 import cv2
 from PIL import Image, ImageTk
-import image_managers, sample_extraction, percent, tube, segmentacion_contorno as sc
+import image_managers, sample_extraction, percent, tube, shape_detection as sc
 from sample_extraction import SampleExtractor
-from utils import EntryWithPlaceholder
+from utils import EntryWithPlaceholder, generate_zip
 
 CLUSTER_RESHAPE = 0.7
     
@@ -47,8 +44,9 @@ class GUI(object):
         self.img_container_fr = tk.Frame(self.main_win)
         
         self.img_container_canvas= tk.Canvas(self.img_container_fr)
+
         self.canvas_fr = tk.Frame(self.img_container_canvas)
-        
+
         self.principal_fr = tk.Frame(self.main_win)
         self.principal_fr.grid(row=1, column=1)
         
@@ -95,14 +93,18 @@ class GUI(object):
 
         # -- extras --
         self.set_up_scrollbar()
+        self.btn_fr_size = 200
     
     def set_up_scrollbar(self):
-        
+        """
+        Sets up the scrollbar of the gui, instantiating tk.Scrollbar
+        and positioning it.
+        """
         self.scrollbar = tk.Scrollbar(self.img_container_fr, orient=tk.HORIZONTAL , command = self.img_container_canvas.xview)
 
         self.canvas_fr.bind(
             "<Configure>",
-            lambda e: self.img_container_canvas.configure(
+            lambda _: self.img_container_canvas.configure(
                 scrollregion=self.img_container_canvas.bbox("all")
             )
         )
@@ -127,12 +129,21 @@ class GUI(object):
         self.img_container_canvas.grid(row=0, column=0, sticky=tk.N+tk.E+tk.W+tk.S)
 
     def _bound_to_mousewheel(self, event):
+        """
+       Private method, handles the binding of the mouse wheel
+        """
         self.img_container_canvas.bind_all("<MouseWheel>", self._on_mousewheel)
 
     def _unbound_to_mousewheel(self, event):
+        """
+        Private method, handles the unbinding of the mouse wheel
+        """
         self.img_container_canvas.unbind_all("<MouseWheel>")
 
     def _on_mousewheel(self, event):
+        """
+        Private method, handles scrollbar mouse wheel scrolling
+        """
         self.img_container_canvas.xview_scroll(int(-1*(event.delta/120)), "units")
 
     def split(self) -> None:
@@ -160,26 +171,41 @@ class GUI(object):
         This method is called when a new image is uploaded. 
         """
         self.main_win.withdraw()
-        
-        image = image_managers.load_image_from_window()
-        self.org_img = SampleExtractor(image).extract_sample()
-        self.img_tree = image_tree.ImageNode(None, self.org_img)
-        self.update_screen()
-                
-        if self.org_img.size > 0:
-            # Set buttons positions
-            self.btn_3d.grid(row=0, column=1)
-            self.total_clusters.grid(row=0, column=2)
-            self.btn_split.grid(row=0, column=3)
-            self.btn_merge.grid(row=0, column=4)
-            self.btn_sub.grid(row=0, column=5)      
-            self.btn_undo.grid(row=1,column=0)
-            self.btn_save.grid(row=1, column=1)
-            self.btn_up.grid(row=1, column=2)
-            self.btn_down.grid(row=1, column=3)
-            self.btn_contour.grid(row=1, column=4)
-            self.btn_update.grid(row=1, column=5)
-        
+        try:
+            image = image_managers.load_image_from_window()
+            self.org_img = SampleExtractor(image).extract_sample()
+            self.img_tree = image_tree.ImageNode(None, self.org_img)
+            self.update_screen()
+                    
+            if self.org_img.size > 0:
+                # Set buttons positions
+                self.btn_3d.grid(row=0, column=1)
+                self.total_clusters.grid(row=0, column=2)
+                self.btn_split.grid(row=0, column=3)
+                self.btn_merge.grid(row=0, column=4)
+                self.btn_sub.grid(row=0, column=5)      
+                self.btn_undo.grid(row=1,column=0)
+                self.btn_save.grid(row=1, column=1)
+                self.btn_up.grid(row=1, column=2)
+                self.btn_down.grid(row=1, column=3)
+                self.btn_contour.grid(row=1, column=4)
+                self.btn_update.grid(row=1, column=5)
+            
+        except:
+            self.img_tree = None
+            self.clean_win()
+            self.btn_3d.grid_forget()
+            self.total_clusters.grid_forget()
+            self.btn_split.grid_forget()
+            self.btn_merge.grid_forget()
+            self.btn_sub.grid_forget()      
+            self.btn_undo.grid_forget()
+            self.btn_save.grid_forget()
+            self.btn_up.grid_forget()
+            self.btn_down.grid_forget()
+            self.btn_contour.grid_forget()
+            self.btn_update.grid_forget()
+            
         self.main_win.deiconify()
         
 
@@ -190,7 +216,7 @@ class GUI(object):
         """
         for wget in self.results_fr.winfo_children():
             wget.destroy()
-        
+
         for wget in self.canvas_fr.winfo_children():
             wget.destroy()
         
@@ -200,8 +226,8 @@ class GUI(object):
         self.principal_fr.destroy()
         self.principal_fr = tk.Frame(self.main_win)
         self.principal_fr.grid(row=1, column=1)
-        self.img_container_fr.grid(row=1, column=2, columnspan=2, sticky=tk.N+tk.E+tk.W+tk.S)
         self.results_fr = tk.Frame(self.canvas_fr)
+        self.img_container_fr.grid(row=1, column=2, sticky=tk.N+tk.E+tk.W+tk.S)
     
     def add_img_to_canvas(self, canvas: tk.Canvas, img: cv2.Mat) -> None:
         """
@@ -230,11 +256,9 @@ class GUI(object):
             self.selected_images_indices.append(key)
             canvas.configure(bg='red')
 
-            widgetP = tk.Label(canvas, text=str(percent.percent(image)), fg='white', bg='black')
+            color_percent = percent.percent(image)
+            widgetP = tk.Label(canvas, text=f"Porcentaje de pixeles: {color_percent}%", fg='white', bg='black')
             widgetP.grid(row = 1,column=0 )
-
-            widgetC = tk.Label(canvas, text=str(percent.contour(image)), fg='white', bg='black')
-            widgetC.grid(row = 2,column=0 )
 
     def _resize_img(self, img):
         """
@@ -243,9 +267,10 @@ class GUI(object):
         # Get actual window size
         win_height = self.main_win.winfo_height()
         win_width = self.main_win.winfo_width()
+        padding_size = 10
         # Define the desire height and width of the image
-        resize_height = win_height * 2 // 5
-        resize_width = win_width * 2 // 5
+        resize_height = int((win_height - self.btn_fr_size - padding_size) * 1 // 2)
+        resize_width = int((win_width - padding_size / 2) * 1 // 3)
 
         # If the larger size of the image is its height (type TUBE)
         if img.shape[0] > img.shape[1]:
@@ -290,7 +315,7 @@ class GUI(object):
             canva = tk.Canvas(self.canvas_fr, width=child_img.shape[1], height=child_img.shape[0])
             label = self.add_img_to_canvas(canva, child_img)
             label.bind('<ButtonPress-1>', lambda event, image=child.image, key=i, canvas=canva: self.click(image, key, canvas))
-            canva.grid(row=1+i%img_row_shape, column=i//img_row_shape)
+            canva.grid(row=i%img_row_shape, column=i//img_row_shape)
             i+=1
 
     def merge(self) -> None:
@@ -320,15 +345,7 @@ class GUI(object):
         This method plots the image of the current node of the image tree
         in a 3D model of a cilinder.
         """
-        
         img = self.img_tree.image
-        # If there isn't an image available
-        while img.size > 0:
-            # Load image using OS file window
-            raw_img = image_managers.load_image_from_window()
-
-            # Cut the img to analize an specific part of it.
-            img = sample_extraction.extract_sample(raw_img)
         
         cv2.destroyAllWindows()
 
@@ -384,18 +401,20 @@ class GUI(object):
         self.clean_win()
         self.selected_images_indices = []
         
-        principal_image = self._resize_img(self.img_tree.image)
-        principal_canva = tk.Canvas(self.principal_fr, width=principal_image.shape[1], height=principal_image.shape[0])
-        self.add_img_to_canvas(principal_canva, principal_image)
+        principal_image = self.img_tree.image
+        principal_image_res = self._resize_img(principal_image)
+        principal_canva = tk.Canvas(self.principal_fr, width=principal_image_res.shape[1], height=principal_image_res.shape[0])
+        self.add_img_to_canvas(principal_canva, principal_image_res)
         principal_canva.grid(row=0, column=0)
 
         contour = sc.contour_segmentation(principal_image) 
         sc.contour_agrupation(contour)
         segmentated = sc.cluster_segmentation(principal_image,contour)
         segmentated = self._resize_img(segmentated)
-        canva = tk.Canvas(self.principal_fr, width=segmentated.shape[1], height=segmentated.shape[0])
-        self.add_img_to_canvas(canva, segmentated)
-        if segmentated.shape[0] > segmentated.shape[1]:
+        child_img = segmentated
+        canva = tk.Canvas(self.principal_fr, width=child_img.shape[1], height=child_img.shape[0])
+        self.add_img_to_canvas(canva, child_img)
+        if child_img.shape[0] > child_img.shape[1]:
             canva.grid(row=0, column=1)
         else:
             canva.grid(row=1, column=0)
@@ -408,7 +427,8 @@ class GUI(object):
         This method fills and shows a table at the GUI.
         The data is given as an input.
         """
-        self.results_fr.grid(row=0, column=0)
+        self.results_fr.grid(row=0,column=0)
+        self.img_container_canvas.xview('moveto', 0)
         label_color = tk.Label(self.results_fr, text="Color")
         label_color['font'] = self.title_font
         label_color.grid(row=0, column=0)
@@ -473,13 +493,14 @@ class GUI(object):
         """
         This method saves both the current image and it's clusters if they exist.
         """
-        PATH = f"output/{datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')}"
-        os.makedirs(PATH)
-        image_managers.save_image_from_path(self.img_tree.image, f"{PATH}/original.png")
-        for i in range(len(self.img_tree.childs)):
-            image_managers.save_image_from_path(self.img_tree.childs[i].image, f"{PATH}/cluster_{i}.png")
+        files = [self.img_tree.image]
+        
+        for child in self.img_tree.childs:
+            files.append(child.image)
+        
+        generate_zip(files)
         tk.messagebox.showinfo("Guardado", message="Las imagenes se han guardado correctamente")
-    
+        
 
 
     
