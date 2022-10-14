@@ -33,15 +33,15 @@ class SampleExtractor(object):
         self.radius = 7
 
         self.reset_vertexes_pos()
-        self.__draw_circles_and_lines()
+        self._draw_circles_and_lines()
     
     def get_image(self):
         return self.bg
     
     def refresh_image(self):
         self.bg = self.original_image.copy()
-        self.__draw_circles_and_lines()
-        self.__reset_vertex_dirty()
+        self._draw_circles_and_lines()
+        self._reset_vertex_dirty()
 
     def move_vertex(self, x, y):
         self.bg = self.original_image.copy()
@@ -55,9 +55,9 @@ class SampleExtractor(object):
         if self.vertex_dirty is not None and cond_dict[self.vertex_dirty](x, y):
             self.vertex_data[self.vertex_dirty] = np.array((x, y))
 
-        self.__draw_circles_and_lines()
+        self._draw_circles_and_lines()
 
-    def __draw_circles_and_lines(self) -> None:
+    def _draw_circles_and_lines(self) -> None:
         """
         Draws the current selected area of the image.
         """
@@ -85,7 +85,7 @@ class SampleExtractor(object):
         self.vertex_data["vertex_3"] = np.array((bg_cols*3//4, bg_rows*3//4))
         self.vertex_data["vertex_4"] = np.array((bg_cols*3//4, bg_rows//4))
     
-    def __reset_vertex_dirty(self) -> None:
+    def _reset_vertex_dirty(self) -> None:
         """
         Resets the dirty vertex class attr. back to None.
         """

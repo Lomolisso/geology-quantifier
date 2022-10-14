@@ -53,7 +53,7 @@ class ImageNode(object):
         self.image = image
         self.childs = []
 
-    def __propagate_delete(self, deleted_component):
+    def _propagate_delete(self, deleted_component):
         """
         Private method, once a cluster image is deleted from
         a childs list of a given node. The deletion should
@@ -62,9 +62,9 @@ class ImageNode(object):
         """
         self.image = substract(self.image, deleted_component)
         if self.parent != None:
-            self.parent.__propagate_delete(deleted_component)
+            self.parent._propagate_delete(deleted_component)
 
-    def __collapse_image_nodes(self, indices):
+    def _collapse_image_nodes(self, indices):
         """
         Combines a list of ImageNodes, the resulting image 
         is the addition of the images of the input list.
@@ -82,15 +82,15 @@ class ImageNode(object):
         Deletes one or more ImageNodes and propagates 
         the deletion to the ancestors nodes.
         """
-        acc = self.__collapse_image_nodes(indices)
-        self.__propagate_delete(acc)
+        acc = self._collapse_image_nodes(indices)
+        self._propagate_delete(acc)
     
     def merge(self, indices: list[int]) -> None:
         """
         Merges a list of ImageNodes into one, note that
         they must be brothers, i.e., have the same father.
         """
-        acc = self.__collapse_image_nodes(indices)
+        acc = self._collapse_image_nodes(indices)
         self.childs.append(ImageNode(self, acc))
         
     def split(self, n_childs: int) -> None:

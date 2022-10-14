@@ -386,7 +386,7 @@ class GUI(object):
         This method merges 2 or more clusters, updating the image tree.
         """
         if len(self.selected_images_indices) < 2:
-            tk.messagebox.showwarning("Error", message="Por favor seleccionar 2 o más de una imagenes.")
+            tk.messagebox.showwarning("Error", message="Por favor seleccionar 2 o más imágenes.")
             return
         self.img_tree.merge(self.selected_images_indices)
         self.update_screen()
@@ -397,7 +397,7 @@ class GUI(object):
         This method deletes at least 1 cluster, updating the image tree.
         """
         if len(self.selected_images_indices) == 0:
-            tk.messagebox.showwarning("Error", message="Por favor seleccionar al menos una imagen.")
+            tk.messagebox.showwarning("Error", message="Por favor, seleccione al menos una imagen.")
             return
         self.img_tree.delete(self.selected_images_indices)
         self.update_screen()
@@ -429,7 +429,7 @@ class GUI(object):
         call functions on it.
         """
         if len(self.selected_images_indices) != 1:
-            tk.messagebox.showwarning("Error", message="Por favor seleccionar una imagen.")
+            tk.messagebox.showwarning("Error", message="Por favor, seleccione una imagen.")
             return
         self.img_tree = self.img_tree.childs[self.selected_images_indices[0]]
         self.selected_images_indices = []
@@ -452,7 +452,7 @@ class GUI(object):
         This method is in charge of the body detection at a cluster
         """
         if len(self.selected_images_indices) > 1:
-            tk.messagebox.showwarning("Error", message="Por favor seleccionar solo una imagen.")
+            tk.messagebox.showwarning("Error", message="Por favor, seleccione solo una imagen.")
             return
         if len(self.selected_images_indices) == 1:
             self.img_tree = self.img_tree.childs[self.selected_images_indices[0]]
