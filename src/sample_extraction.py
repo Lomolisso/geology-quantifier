@@ -12,6 +12,8 @@ GREEN = [0, 255, 0]
 LIGHTBLUE = [230, 216, 173]
 BLACK = [0, 0, 0]
 
+
+
 class SampleExtractor(object):
     """
     This class is in charge of extracting a sub-image
@@ -49,13 +51,22 @@ class SampleExtractor(object):
         cond_dict = {
             "vertex_1": lambda x, y: x < min(v4[0], v3[0]) and y < min(v2[1], v3[1]),
             "vertex_2": lambda x, y: x < min(v4[0], v3[0]) and y > max(v1[1], v4[1]),
-            "vertex_3": lambda x, y: x > max(v1[0], v2[0]) and y > max(v1[1], v4[1]),   
+            "vertex_3": lambda x, y: x > max(v1[0], v2[0]) and y > max(v1[1], v4[1]),  
             "vertex_4": lambda x, y: x > max(v1[0], v2[0]) and y < min(v2[1], v3[1]),
         }
-        if self.vertex_dirty is not None and cond_dict[self.vertex_dirty](x, y):
+
+        if self.vertex_dirty is not None and cond_dict[self.vertex_dirty](x, y) and self._margin_conditions(x, y):
             self.vertex_data[self.vertex_dirty] = np.array((x, y))
 
         self._draw_circles_and_lines()
+
+    def _margin_conditions(self, x, y):
+        if x < 0 or y < 0:
+            return False
+        if self.bg_size[1] < x or self.bg_size[0] < y:
+            return False
+        return True
+
 
     def _draw_circles_and_lines(self) -> None:
         """
