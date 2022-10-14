@@ -145,11 +145,8 @@ def image_agrupation(img_org,contours,groups):
     for i in range(len(contours)):
         group = contours[i].group
         conts[group].append(contours[i].contour)
-    print(conts)
     for i in range(groups):
         cv2.drawContours(masks[i], conts[i],-1, (255,255,255),-1)
-        cv2.imshow("contor", masks[i])
-        cv2.waitKey(0)
         masks[i] = cv2.bitwise_and(img_org,img_org, mask = masks[i])
     for i in range(len(contours)):
         group = contours[i].group
