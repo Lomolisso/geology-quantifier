@@ -61,12 +61,9 @@ class SampleExtractor(object):
         self._draw_circles_and_lines()
 
     def _margin_conditions(self, x, y):
-        if x < 0 or y < 0:
-            return False
-        if self.bg_size[1] < x or self.bg_size[0] < y:
-            return False
-        return True
-
+        min_margins = x > 0 and y > 0
+        max_margins = x < self.bg_size[1] and y < self.bg_size[0]
+        return min_margins and max_margins 
 
     def _draw_circles_and_lines(self) -> None:
         """
