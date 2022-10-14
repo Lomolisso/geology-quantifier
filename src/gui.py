@@ -166,7 +166,7 @@ class GUI(object):
         selected_imgs = len(self.selected_images_indices)
         
         if selected_imgs > 1:
-            tk.messagebox.showwarning("Error", message="Por favor selecciona solo una imagen.")
+            tk.messagebox.showwarning("Error", message="Por favor, seleccione solo una imagen.")
             return
         
         if selected_imgs == 1:
@@ -386,7 +386,7 @@ class GUI(object):
         This method merges 2 or more clusters, updating the image tree.
         """
         if len(self.selected_images_indices) < 2:
-            tk.messagebox.showwarning("Error", message="Por favor seleccionar 2 o más imágenes.")
+            tk.messagebox.showwarning("Error", message="Por favor, seleccione 2 o más imágenes.")
             return
         self.img_tree.merge(self.selected_images_indices)
         self.update_screen()
