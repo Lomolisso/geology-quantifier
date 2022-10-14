@@ -128,3 +128,47 @@ class SampleExtractor(object):
         out = cv2.warpPerspective(self.original_image, M,(max_width, max_height), flags=cv2.INTER_LINEAR)
         cv2.destroyAllWindows()
         return out
+    
+    def get_vertex_data(self):
+        """
+        Get vertex
+        """
+        return self.vertex_data
+
+def cut_image_from_vertex(img, sample_extractor):
+    """
+    Cut the same part of imagen of the sample extractor,
+    but in a different version of the image.
+    """
+    vertex_data = sample_extractor.get_vertex_data()
+    resize_image = sample_extractor.get_image()
+    rs_shape = resize_image.shape
+    org_shape = img.shape
+    ratio = org_shape[0]/rs_shape[0]
+    vertex = []
+    for value in vertex_data.values():
+        vertex.append(value*ratio)
+    vertex_1, vertex_2, vertex_3, vertex_4 = [v for v in vertex]
+
+    width_1 = np.linalg.norm(vertex_1 - vertex_4)
+    width_2 = np.linalg.norm(vertex_2 - vertex_3)
+    max_width = max(int(width_1), int(width_2))
+
+    height_1 = np.linalg.norm(vertex_1 - vertex_2)
+    height_2 = np.linalg.norm(vertex_3 - vertex_4)
+    max_height = max(int(height_1), int(height_2))
+
+    output_points = np.array([
+            [0, 0],
+            [0, max_height - 1],
+            [max_width - 1, max_height - 1],
+            [max_width - 1, 0]
+        ], 
+        dtype=np.float32
+    )
+    input_points = np.array(vertex, dtype=np.float32)    
+    M = cv2.getPerspectiveTransform(input_points, output_points)
+    out = cv2.warpPerspective(img, M,(max_width, max_height), flags=cv2.INTER_LINEAR)
+
+    return out
+            

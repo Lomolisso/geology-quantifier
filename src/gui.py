@@ -7,10 +7,13 @@ import numpy as np
 import cv2
 from PIL import Image, ImageTk
 import image_managers, percent, tube, shape_detection as sc
-from sample_extraction import SampleExtractor
+from sample_extraction import SampleExtractor, cut_image_from_vertex
 from utils import EntryWithPlaceholder, generate_zip, get_path, get_filepath
 
 CLUSTER_RESHAPE = 0.7
+ROOT = tk.Tk()
+SCREEN_WIDTH = ROOT.winfo_screenwidth()
+SCREEN_HEIGHT = ROOT.winfo_screenheight()
     
 class GUI(object):
     """
@@ -99,7 +102,7 @@ class GUI(object):
         self.btn_fr_size = 200
     
     def focus_win(self, event):
-        if event.widget == self.main_win:
+        if not isinstance( event.widget, tk.Entry):
             self.main_win.focus()
 
     def set_up_scrollbar(self):
@@ -188,7 +191,7 @@ class GUI(object):
 
     def key_press(self, event):
         if event.char == "s":
-            self.org_img = self.sample_extractor.cut()
+            self.org_img = cut_image_from_vertex(self.org_img, self.sample_extractor)
             self.main_win.unbind('<Key>')
             self.show_img()
         elif event.char == "r":
@@ -217,10 +220,25 @@ class GUI(object):
 
     def select_img(self):
         # try:
-        image = image_managers.load_image_from_window()
+        img = image_managers.load_image_from_window()
+        #set max resolution
+        #TODO: Move to another module
+        resize_height = SCREEN_HEIGHT
+        resize_width = SCREEN_WIDTH
+        resize_img = img
+        if img.shape[0] > resize_height:
+            # Adjust image to the define height
+            resize_img = cv2.resize(img, ((int(img.shape[1] * resize_height / img.shape[0])), resize_height))
+            # If its new width exceed the define width
+        if resize_img.shape[1] > resize_width:
+            # Adjust image to the define width
+            resize_img = cv2.resize(resize_img, (resize_width, int(resize_img.shape[0] * resize_width / resize_img.shape[1])))
+
+        self.org_img = resize_img
         self.clean_frames()
         self.clean_btns()
-        self.crop(image)
+        self.crop(resize_img)
+        
         # except Exception as e:
         #     print(e)
 
@@ -549,7 +567,7 @@ class GUI(object):
                 for j in range(len(sc.STATISTICS)):
                     row.append(results[i][j+1])
                 wrtr.writerow(row)
-        images = sc.image_agrupation(contour,3)
+        images = sc.image_agrupation(self.org_img,contour,3)
         generate_zip(f'{filepath}images', images)
         tk.messagebox.showinfo("Guardado", message="Los resultados se han guardado correctamente")
     
@@ -568,17 +586,16 @@ class GUI(object):
         tk.messagebox.showinfo("Guardado", message="Las imagenes se han guardado correctamente")
 
 
-root = tk.Tk()
-root.title("Cuantificador geologico")
-root.wm_iconbitmap(get_path('icon.ico'))
-root.config(cursor='plus')
+
+ROOT.title("Cuantificador geologico")
+ROOT.wm_iconbitmap(get_path('icon.ico'))
+ROOT.config(cursor='plus')
 # Get user screen size
-screen_width = root.winfo_screenwidth()
-screen_height = root.winfo_screenheight()
+
 # Open window smaller than user screen
-root.geometry(f"{screen_width * 19 // 20}x{screen_height * 17 // 20}+0+0")
+ROOT.geometry(f"{SCREEN_WIDTH * 19 // 20}x{SCREEN_HEIGHT * 17 // 20}+0+0")
 # Set min and max window size to avoid incorrect displays
-root.minsize(screen_width * 2 // 3, screen_height * 2 // 3)
-root.maxsize(screen_width, screen_height)
-gg = GUI(root)        
-root.mainloop()
+ROOT.minsize(SCREEN_WIDTH * 2 // 3, SCREEN_HEIGHT * 2 // 3)
+ROOT.maxsize(SCREEN_WIDTH, SCREEN_HEIGHT)
+gg = GUI(ROOT)        
+ROOT.mainloop()
