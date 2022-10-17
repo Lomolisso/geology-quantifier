@@ -489,7 +489,6 @@ class GUI(object):
             for _ in sc.STATISTICS:
                 agg_results[i].append(0)
         for res in results:
-            # res[0] = c.group
             color_count[res[0]] += 1
             for i in range(len(sc.STATISTICS)):
                 # i is the statistic to aggregate
@@ -501,7 +500,7 @@ class GUI(object):
             for j in range(len(sc.STATISTICS)):
                 if color_count[i] != 0:
                     agg_results[i][j] /= color_count[i]
-                    agg_results[i][j] = np.round(agg_results[i][j], 1)
+                    agg_results[i][j] = np.round(agg_results[i][j], 2)
         return agg_results
 
     def fill_table(self, results, contour) -> None:

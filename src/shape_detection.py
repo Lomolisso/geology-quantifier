@@ -7,7 +7,7 @@ from typing import List, Tuple
 import cv2, numpy as np
 
 COLORS = [(255,0,0), (0,255,0), (0,0,255)]
-STATISTICS = ["Area", "Radio Equiv", "Largo Equiv", "Punto Medio X", "Punto Medio Y"]
+STATISTICS = ["Rel. de Aspecto", "Area", "Radio Equiv", "Largo Equiv", "Punto Medio X", "Punto Medio Y"]
 
 class ContourData(object):
     """
@@ -34,7 +34,10 @@ class ContourData(object):
         of the contour.
         """
         _, _, w, h = self.r
-        return w/h
+        asp_rat = w/h
+        if asp_rat < 1:
+            asp_rat = 1 / asp_rat
+        return np.round(asp_rat, 2)
     
     def get_area(self) -> float:
         """
@@ -76,6 +79,7 @@ class ContourData(object):
         """
         return [
             self.group,
+            self.aspect_ratio(),
             self.get_area(), 
             self.get_equiv_radius(), 
             self.get_equiv_lenght(), 
@@ -104,10 +108,10 @@ def contour_agrupation(contours):
     """
     for c in contours:
         asp_rat = c.aspect_ratio()
-        if asp_rat <= 1.2 and asp_rat >= 0.8:
+        if asp_rat <= 1.2:
             # Square like rectangles
             c.group = 0
-        elif asp_rat <= 1.5 and asp_rat >= 0.5:
+        elif asp_rat <= 1.5:
             c.group = 1
         else:
             c.group = 2
