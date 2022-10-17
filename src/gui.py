@@ -120,7 +120,7 @@ class GUI(object):
             )
         )
 
-        self.img_container_canvas.create_window((0, 0), window=self.canvas_fr, anchor="nw")
+        self.img_container_canvas.create_window((0,0), window=self.canvas_fr, anchor="center")
 
         self.main_win.columnconfigure(2, weight=1)
         self.main_win.rowconfigure(1, weight=1)
@@ -137,7 +137,7 @@ class GUI(object):
 
         self.img_container_canvas.configure(xscrollcommand= self.scrollbar.set)
         self.scrollbar.grid(row = 1, column=0, sticky=tk.N+tk.EW)
-        self.img_container_canvas.grid(row=0, column=0, sticky=tk.N+tk.E+tk.W+tk.S)
+        self.img_container_canvas.grid(row=0, column=0, sticky=tk.N+tk.S+tk.E+tk.W)
 
     def _bound_to_mousewheel(self, event):
         """
@@ -534,7 +534,6 @@ class GUI(object):
         self.results_fr.grid(row=0,column=0)
         self.img_container_canvas.xview('moveto', 0)
         label_color = tk.Label(self.results_fr, text="Color")
-        label_color['font'] = self.title_font
         label_color.grid(row=0, column=0)
         label_name = tk.Label(self.results_fr, text="Mineral")
         label_name.grid(row=0, column=1)
