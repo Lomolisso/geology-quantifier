@@ -17,13 +17,12 @@ class ContourData(object):
     with only the pixels in that region.
     """
 
-    def __init__(self, img, contour) -> None:
+    def __init__(self, contour) -> None:
         """
         Class constructor, instantiates class
         params. such as the bounding rect. of a contour
         and It's mask.
         """
-        self.img = img
         self.contour = contour
         self.r = cv2.boundingRect(contour)
         self.group = None
@@ -90,19 +89,12 @@ def contour_segmentation(img):
     It's bounding rect and mask. Then draws the contours 
     and returns a list with all the data.
     """
-    data = []
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     (_, threshInv) = cv2.threshold(gray, 1, 255,cv2.THRESH_BINARY)
 
     contours, _ = cv2.findContours(threshInv, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    for cnt in contours:
-        mask = np.zeros(img.shape[:2], dtype="uint8")
-        r = cv2.boundingRect(cnt)
-        cv2.drawContours(mask, [cnt],-1, (255,255,255),-1)
-        masked = cv2.bitwise_and(img,img, mask = mask)
-        x,y,w,h = r
-        masked = masked[y:y+h, x:x+w]
-        data.append(ContourData(masked,cnt))
+
+    data = [ContourData(cnt) for cnt in contours]
     return data
 
 def contour_agrupation(contours):
@@ -142,3 +134,27 @@ def generate_results(contours):
     for c in contours:
         final_results.append(c.get_all_statistics())
     return final_results
+
+def image_agrupation(img_org,contours,groups):
+    """
+    Agrupate all images of the contours in one image for each group
+    """
+    shape = img_org.shape
+    masks = [np.zeros(shape[:2], dtype="uint8") for _ in range(groups)]
+    conts = [[] for _ in range(groups)]
+    for i in range(len(contours)):
+        group = contours[i].group
+        conts[group].append(contours[i].contour)
+    for i in range(groups):
+        cv2.drawContours(masks[i], conts[i],-1, (255,255,255),-1)
+        masks[i] = cv2.bitwise_and(img_org,img_org, mask = masks[i])
+    for i in range(len(contours)):
+        group = contours[i].group
+        x, y, _, _ =contours[i].r
+        position = (x,y)
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        font_size = 0.5
+        font_color = (221,82,196)
+        font_thickness = 1
+        cv2.putText(masks[group],str(i), position, font, font_size, font_color, font_thickness)
+    return masks

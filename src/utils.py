@@ -69,6 +69,7 @@ def generate_zip(filepath, files) -> None:
     zipObj = ZipFile(f'{filepath}.zip', 'w')
     i = 0
     for file in files:
+        # file = cv2.resize(file,(file.shape[1]*2,file.shape[0]*2))
         _, buf = cv2.imencode('.png', file)
         zipObj.writestr(str(i)+'.png', buf)
         i+=1

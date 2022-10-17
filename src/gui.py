@@ -7,10 +7,13 @@ import numpy as np
 import cv2
 from PIL import Image, ImageTk
 import image_managers, percent, tube, shape_detection as sc
-from sample_extraction import SampleExtractor
+from sample_extraction import SampleExtractor, cut_image_from_vertex
 from utils import EntryWithPlaceholder, generate_zip, get_path, get_filepath
 
 CLUSTER_RESHAPE = 0.7
+ROOT = tk.Tk()
+SCREEN_WIDTH = ROOT.winfo_screenwidth()
+SCREEN_HEIGHT = ROOT.winfo_screenheight()
     
 class GUI(object):
     """
@@ -99,7 +102,7 @@ class GUI(object):
         self.btn_fr_size = 200
     
     def focus_win(self, event):
-        if event.widget == self.main_win:
+        if not isinstance( event.widget, tk.Entry):
             self.main_win.focus()
 
     def set_up_scrollbar(self):
@@ -163,7 +166,7 @@ class GUI(object):
         selected_imgs = len(self.selected_images_indices)
         
         if selected_imgs > 1:
-            tk.messagebox.showwarning("Error", message="Por favor selecciona solo una imagen.")
+            tk.messagebox.showwarning("Error", message="Por favor, seleccione solo una imagen.")
             return
         
         if selected_imgs == 1:
@@ -188,7 +191,7 @@ class GUI(object):
 
     def key_press(self, event):
         if event.char == "s":
-            self.org_img = self.sample_extractor.cut()
+            self.org_img = cut_image_from_vertex(self.org_img, self.sample_extractor)
             self.main_win.unbind('<Key>')
             self.show_img()
         elif event.char == "r":
@@ -217,10 +220,25 @@ class GUI(object):
 
     def select_img(self):
         # try:
-        image = image_managers.load_image_from_window()
+        img = image_managers.load_image_from_window()
+        #set max resolution
+        #TODO: Move to another module
+        resize_height = SCREEN_HEIGHT
+        resize_width = SCREEN_WIDTH
+        resize_img = img
+        if img.shape[0] > resize_height:
+            # Adjust image to the define height
+            resize_img = cv2.resize(img, ((int(img.shape[1] * resize_height / img.shape[0])), resize_height))
+            # If its new width exceed the define width
+        if resize_img.shape[1] > resize_width:
+            # Adjust image to the define width
+            resize_img = cv2.resize(resize_img, (resize_width, int(resize_img.shape[0] * resize_width / resize_img.shape[1])))
+
+        self.org_img = resize_img
         self.clean_frames()
         self.clean_btns()
-        self.crop(image)
+        self.crop(resize_img)
+        
         # except Exception as e:
         #     print(e)
 
@@ -368,7 +386,7 @@ class GUI(object):
         This method merges 2 or more clusters, updating the image tree.
         """
         if len(self.selected_images_indices) < 2:
-            tk.messagebox.showwarning("Error", message="Por favor seleccionar 2 o más de una imagenes.")
+            tk.messagebox.showwarning("Error", message="Por favor, seleccione 2 o más imágenes.")
             return
         self.img_tree.merge(self.selected_images_indices)
         self.update_screen()
@@ -379,7 +397,7 @@ class GUI(object):
         This method deletes at least 1 cluster, updating the image tree.
         """
         if len(self.selected_images_indices) == 0:
-            tk.messagebox.showwarning("Error", message="Por favor seleccionar al menos una imagen.")
+            tk.messagebox.showwarning("Error", message="Por favor, seleccione al menos una imagen.")
             return
         self.img_tree.delete(self.selected_images_indices)
         self.update_screen()
@@ -390,9 +408,11 @@ class GUI(object):
         This method plots the image of the current node of the image tree
         in a 3D model of a cilinder.
         """
-        img = self.img_tree.image
-        # Use the loaded img to fill a 3D tube surface.
-        tube.fill_tube(img)
+        tk.messagebox.showinfo("Proximamente", message="Esta funcionalidad estará disponible proximamente.")
+
+        # img = self.img_tree.image
+        # # Use the loaded img to fill a 3D tube surface.
+        # tube.fill_tube(img)
         
     def undo(self) -> None:
         """
@@ -409,7 +429,7 @@ class GUI(object):
         call functions on it.
         """
         if len(self.selected_images_indices) != 1:
-            tk.messagebox.showwarning("Error", message="Por favor seleccionar una imagen.")
+            tk.messagebox.showwarning("Error", message="Por favor, seleccione una imagen.")
             return
         self.img_tree = self.img_tree.childs[self.selected_images_indices[0]]
         self.selected_images_indices = []
@@ -432,7 +452,7 @@ class GUI(object):
         This method is in charge of the body detection at a cluster
         """
         if len(self.selected_images_indices) > 1:
-            tk.messagebox.showwarning("Error", message="Por favor seleccionar solo una imagen.")
+            tk.messagebox.showwarning("Error", message="Por favor, seleccione solo una imagen.")
             return
         if len(self.selected_images_indices) == 1:
             self.img_tree = self.img_tree.childs[self.selected_images_indices[0]]
@@ -534,20 +554,20 @@ class GUI(object):
         for entry in entrys:
             names.append(entry.get())
 
-        header_row = ["Nombre Mineral", "Nombre imagen", *sc.STATISTICS]
-        images = []
+        header_row = ["Nombre Mineral", "ID imagen", *sc.STATISTICS]
+        # images = []
         with open(f'{filepath}geo_data.csv', 'w', newline='') as f:
             wrtr = csv.writer(f, delimiter=',')
             wrtr.writerow(header_row)
             for i in range(len(results)):
                 row = []
                 row.append(names[results[i][0]])
-                images.append(contour[i].img)
-                row.append(f"{i}.jpg")
+                # images.append(contour[i].img)
+                row.append(str(i))
                 for j in range(len(sc.STATISTICS)):
                     row.append(results[i][j+1])
                 wrtr.writerow(row)
-        
+        images = sc.image_agrupation(self.org_img,contour,3)
         generate_zip(f'{filepath}images', images)
         tk.messagebox.showinfo("Guardado", message="Los resultados se han guardado correctamente")
     
@@ -566,17 +586,16 @@ class GUI(object):
         tk.messagebox.showinfo("Guardado", message="Las imagenes se han guardado correctamente")
 
 
-root = tk.Tk()
-root.title("Cuantificador geologico")
-root.wm_iconbitmap(get_path('icon.ico'))
-root.config(cursor='plus')
+
+ROOT.title("Cuantificador geologico")
+ROOT.wm_iconbitmap(get_path('icon.ico'))
+ROOT.config(cursor='plus')
 # Get user screen size
-screen_width = root.winfo_screenwidth()
-screen_height = root.winfo_screenheight()
+
 # Open window smaller than user screen
-root.geometry(f"{screen_width * 19 // 20}x{screen_height * 17 // 20}+0+0")
+ROOT.geometry(f"{SCREEN_WIDTH * 19 // 20}x{SCREEN_HEIGHT * 17 // 20}+0+0")
 # Set min and max window size to avoid incorrect displays
-root.minsize(screen_width * 2 // 3, screen_height * 2 // 3)
-root.maxsize(screen_width, screen_height)
-gg = GUI(root)        
-root.mainloop()
+ROOT.minsize(SCREEN_WIDTH * 2 // 3, SCREEN_HEIGHT * 2 // 3)
+ROOT.maxsize(SCREEN_WIDTH, SCREEN_HEIGHT)
+gg = GUI(ROOT)        
+ROOT.mainloop()
