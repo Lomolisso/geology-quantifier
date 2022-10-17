@@ -501,6 +501,7 @@ class GUI(object):
             for j in range(len(sc.STATISTICS)):
                 if color_count[i] != 0:
                     agg_results[i][j] /= color_count[i]
+                    agg_results[i][j] = np.round(agg_results[i][j], 1)
         return agg_results
 
     def fill_table(self, results, contour) -> None:

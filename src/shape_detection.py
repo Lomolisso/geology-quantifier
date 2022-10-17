@@ -41,7 +41,7 @@ class ContourData(object):
         When called, this function returns
         the total area of the contour.
         """
-        return cv2.contourArea(self.contour)
+        return np.round(cv2.contourArea(self.contour), 2)
     
     def get_equiv_radius(self) -> float:
         """
@@ -49,7 +49,7 @@ class ContourData(object):
         the equivalent radius associated to 
         the area of the contour.
         """
-        return np.sqrt(self.get_area()/np.pi)
+        return np.round(np.sqrt(self.get_area()/np.pi), 1)
     
     def get_equiv_lenght(self) -> float:
         """
@@ -57,7 +57,7 @@ class ContourData(object):
         the equivalent lenght associated to 
         the area of the contour.
         """
-        return np.sqrt(self.get_area()/self.aspect_ratio())
+        return np.round(np.sqrt(self.get_area()/self.aspect_ratio()), 1)
 
     def get_middle_point(self) -> Tuple[float, float]:
         """
@@ -66,7 +66,7 @@ class ContourData(object):
         of the contour.
         """
         x, y, w, h = self.r
-        return (x+w/2, y+h/2)
+        return (np.round(x+w/2,0), np.round(y+h/2,0))
     
     def get_all_statistics(self) -> List:
         """
