@@ -201,13 +201,13 @@ class GUI(object):
         canvas_extractor.grid(row=0, column=0)
 
     def select_img(self):
-        # try:
-        image = image_managers.load_image_from_window()
-        self.clean_frames()
-        self.clean_btns()
-        self.crop(image)
-        # except Exception as e:
-        #     print(e)
+        try:
+            image = image_managers.load_image_from_window()
+            self.clean_frames()
+            self.clean_btns()
+            self.crop(image)
+        except:
+            pass
 
     def show_img(self) -> None:
         """
