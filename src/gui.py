@@ -219,28 +219,27 @@ class GUI(object):
         canvas_extractor.grid(row=0, column=0)
 
     def select_img(self):
-        # try:
-        img = image_managers.load_image_from_window()
-        #set max resolution
-        #TODO: Move to another module
-        resize_height = SCREEN_HEIGHT
-        resize_width = SCREEN_WIDTH
-        resize_img = img
-        if img.shape[0] > resize_height:
-            # Adjust image to the define height
-            resize_img = cv2.resize(img, ((int(img.shape[1] * resize_height / img.shape[0])), resize_height))
-            # If its new width exceed the define width
-        if resize_img.shape[1] > resize_width:
-            # Adjust image to the define width
-            resize_img = cv2.resize(resize_img, (resize_width, int(resize_img.shape[0] * resize_width / resize_img.shape[1])))
+        try:
+            img = image_managers.load_image_from_window()
+            #set max resolution
+            #TODO: Move to another module
+            resize_height = SCREEN_HEIGHT
+            resize_width = SCREEN_WIDTH
+            resize_img = img
+            if img.shape[0] > resize_height:
+                # Adjust image to the define height
+                resize_img = cv2.resize(img, ((int(img.shape[1] * resize_height / img.shape[0])), resize_height))
+                # If its new width exceed the define width
+            if resize_img.shape[1] > resize_width:
+                # Adjust image to the define width
+                resize_img = cv2.resize(resize_img, (resize_width, int(resize_img.shape[0] * resize_width / resize_img.shape[1])))
 
-        self.org_img = resize_img
-        self.clean_frames()
-        self.clean_btns()
-        self.crop(resize_img)
-        
-        # except Exception as e:
-        #     print(e)
+            self.org_img = resize_img
+            self.clean_frames()
+            self.clean_btns()
+            self.crop(resize_img)
+        except:
+            pass
 
     def show_img(self) -> None:
         """
