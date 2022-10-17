@@ -525,6 +525,11 @@ class GUI(object):
                     agg_results[i][j] = np.round(agg_results[i][j], 2)
         return agg_results
 
+    def create_label(self, name, row, col):
+        label = tk.Label(self.results_fr, text=name, highlightthickness=1, highlightbackground="black")
+        label.grid(row=row, column=col, sticky=tk.N+tk.S+tk.E+tk.W)
+        return label
+
     def fill_table(self, results) -> None:
         """
         This method fills and shows a table at the GUI.
@@ -533,29 +538,26 @@ class GUI(object):
         aggregated_results = self.aggregate(results)
         self.results_fr.grid(row=0,column=0)
         self.img_container_canvas.xview('moveto', 0)
-        label_color = tk.Label(self.results_fr, text="Color")
-        label_color.grid(row=0, column=0)
-        label_name = tk.Label(self.results_fr, text="Mineral")
-        label_name.grid(row=0, column=1)
+        self.create_label("Color", 0, 0)
+        self.create_label("MIneral", 0, 1)
         for i in range(len(sc.STATISTICS)):
-            label =  tk.Label(self.results_fr, text=sc.STATISTICS[i])
-            label.grid(row=0, column=i+2)
+            self.create_label(sc.STATISTICS[i], 0, i+2)
         
         for row_num in range(len(aggregated_results)):
             (b, g, r) = sc.COLORS[row_num]
             color = '#%02x%02x%02x' % (r, g, b)
-            label_color = tk.Label(self.results_fr, bg=color, width=1, height=1, justify=tk.CENTER)
-            label_color.grid(row=row_num+1, column=0, sticky=tk.W)
+            label_color = self.create_label("", row_num+1, 0)
+            label_color.config(bg=color, width=1, height=1, justify=tk.CENTER)
             
             name = EntryWithPlaceholder(self.results_fr, f"Mineral {row_num}")
+            name.config(highlightthickness=1, highlightbackground="black")
             name['font'] = self.my_font
-            name.grid(row=row_num+1, column=1)
+            name.grid(row=row_num+1, column=1, sticky=tk.W+tk.E)
 
             for col_num in range(len(sc.STATISTICS)):
-                label = tk.Label(self.results_fr, text=aggregated_results[row_num][col_num])
-                label.grid(row=row_num+1, column=col_num+2)
+                self.create_label(aggregated_results[row_num][col_num], row_num+1, col_num+2)
 
-        self.btnExport = tk.Button(self.results_fr, text="Export to csv", width=15, command=lambda : self.table_to_csv(results) , cursor='arrow')
+        self.btnExport = tk.Button(self.results_fr, text="Descargar", width=15, command=lambda : self.table_to_csv(results) , cursor='arrow')
         self.btnExport['font'] = self.my_font
         self.btnExport.grid(row=len(aggregated_results) + 1, column=len(sc.STATISTICS) // 2 + 1)
     
