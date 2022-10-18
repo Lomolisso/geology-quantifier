@@ -8,7 +8,7 @@ import cv2
 from PIL import Image, ImageTk
 import image_managers, percent, tube, shape_detection as sc
 from sample_extraction import SampleExtractor, cut_image_from_vertex
-from utils import EntryWithPlaceholder, generate_zip, get_file_filepath, get_path, get_directory_filepath
+from utils import EntryWithPlaceholder, generate_zip, get_file_filepath, get_path, get_results_filepath
 
 CLUSTER_RESHAPE = 0.7
 ROOT = tk.Tk()
@@ -570,8 +570,10 @@ class GUI(object):
         and generates a csv with it.
         """
         # Get user location of results
-        filepath = get_directory_filepath() + "/"
-
+        filepath = get_results_filepath()
+        if not filepath:
+            return
+        
         # Get the names the user set
         names = []
         wgets = self.results_fr.winfo_children()[:-1]
@@ -581,7 +583,7 @@ class GUI(object):
 
         header_row = ["Nombre Mineral", "ID imagen", *sc.STATISTICS]
         # images = []
-        with open(f'{filepath}geo_data.csv', 'w', newline='') as f:
+        with open(f'{filepath}_data.csv', 'w', newline='') as f:
             wrtr = csv.writer(f, delimiter=',')
             wrtr.writerow(header_row)
             for i in range(len(results)):
@@ -593,7 +595,7 @@ class GUI(object):
                     row.append(results[i][j+1])
                 wrtr.writerow(row)
         images = sc.image_agrupation(self.org_img,self.contour,3)
-        generate_zip(f'{filepath}images', images)
+        generate_zip(f'{filepath}_images', images)
         tk.messagebox.showinfo("Guardado", message="Los resultados se han guardado correctamente")
     
     def save(self) -> None:

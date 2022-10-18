@@ -51,14 +51,20 @@ class EntryWithPlaceholder(tk.Entry):
         if not self.get():
             self.put_placeholder()
 
-def get_directory_filepath() -> str:
+def get_results_filepath() -> str:
     """
     Request the user to select where to store
-    a file (or files)
+    the results and with which name
     """
-    filepath = tk.filedialog.askdirectory(
+    filepath = tk.filedialog.asksaveasfilename(
         initialdir=".",
-        title='Elige donde guardar los resultados')
+        title="Elige donde guardar los resultados",
+        filetypes=(
+            ("all files", ".*"),
+            ('Zip File', '*.zip'),
+            ('CSV File', '*.csv')
+        )
+    )
     return filepath
 
 def get_file_filepath() -> str:
