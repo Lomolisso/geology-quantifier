@@ -609,6 +609,9 @@ class GUI(object):
         
 
         filepath = get_file_filepath()
+        if not filepath:
+            return
+
         generate_zip(filepath, files)
         tk.messagebox.showinfo("Guardado", message="Las imagenes se han guardado correctamente")
 
