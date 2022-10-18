@@ -162,8 +162,11 @@ class GUI(object):
         Splits the current image by doing KMeans clustering on it. The number of clusters
         is given by the user by filling the 'total_clusters' entry.
         """
-
-        n_childs = int(self.total_clusters.get())
+        try :
+            n_childs = int(self.total_clusters.get())
+        except:
+            tk.messagebox.showwarning("Error", message="Por favor ingresa un número.")
+            return
         selected_imgs = len(self.selected_images_indices)
         
         if selected_imgs > 1:
