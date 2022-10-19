@@ -44,7 +44,7 @@ class ContourData(object):
         When called, this function returns
         the total area of the contour.
         """
-        return np.round(cv2.contourArea(self.contour), 2)
+        return cv2.contourArea(self.contour)
     
     def get_equiv_radius(self) -> float:
         """
@@ -52,7 +52,7 @@ class ContourData(object):
         the equivalent radius associated to 
         the area of the contour.
         """
-        return np.round(np.sqrt(self.get_area()/np.pi), 1)
+        return np.sqrt(self.get_area()/np.pi)
     
     def get_equiv_lenght(self) -> float:
         """
@@ -60,7 +60,7 @@ class ContourData(object):
         the equivalent lenght associated to 
         the area of the contour.
         """
-        return np.round(np.sqrt(self.get_area()/self.aspect_ratio()), 1)
+        return np.sqrt(self.get_area()/self.aspect_ratio())
 
     def get_middle_point(self) -> Tuple[float, float]:
         """
@@ -69,7 +69,7 @@ class ContourData(object):
         of the contour.
         """
         x, y, w, h = self.r
-        return (np.round(x+w/2,0), np.round(y+h/2,0))
+        return (x+w/2, y+h/2)
     
     def get_all_statistics(self, pixel2cm) -> List:
         """
@@ -79,12 +79,12 @@ class ContourData(object):
         """
         return [
             self.group,
-            self.aspect_ratio(),
-            self.get_area()*pixel2cm*pixel2cm, 
-            self.get_equiv_radius()*pixel2cm, 
-            self.get_equiv_lenght()*pixel2cm, 
-            self.get_middle_point()[0],
-            self.get_middle_point()[1],
+            np.round(self.aspect_ratio(), 2),
+            np.round(self.get_area()*pixel2cm*pixel2cm, 3), 
+            np.round(self.get_equiv_radius()*pixel2cm, 2), 
+            np.round(self.get_equiv_lenght()*pixel2cm, 2),
+            np.round(self.get_middle_point()[0], 0),
+            np.round(self.get_middle_point()[1], 0)
             ]
 
 def contour_segmentation(img):

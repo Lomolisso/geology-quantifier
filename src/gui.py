@@ -93,19 +93,20 @@ class GUI(object):
         self.btn_update = tk.Button(self.btns_fr, text='Actualizar', width=20, command=self.update_screen, cursor='arrow')
         self.btn_update['font'] = self.my_font
 
-        self.btn_height = tk.Button(self.img_container_fr, text='Altura', width=20, command=self.set_height, cursor='arrow')
+        self.btn_height = tk.Button(self.btns_fr, text='Altura', width=20, command=self.set_height, cursor='arrow')
         self.btn_height['font'] = self.my_font
 
         # -- entries --
         self.total_clusters = EntryWithPlaceholder(self.btns_fr, "Número de clusters", 'gray')
         self.total_clusters['font'] = self.my_font
-        self.entry_height_cm = EntryWithPlaceholder(self.img_container_fr, "Altura (cm) recorte", 'gray')
-        self.height_cm = 0
+        self.entry_height_cm = EntryWithPlaceholder(self.btns_fr, "Altura recorte (cm)", 'gray')
+        self.entry_height_cm['font'] = self.my_font
 
         # -- extras --
         self.set_up_scrollbar()
         self.btn_fr_size = 200
         self.segmentation = False
+        self.height_cm = 0
     
     def set_height(self):
         self.height_cm = int(self.entry_height_cm.get())
@@ -206,6 +207,7 @@ class GUI(object):
         if event.char == "s":
             self.org_img = cut_image_from_vertex(self.org_img, self.sample_extractor)
             self.main_win.unbind('<Key>')
+            self.un_measures()
             self.show_img()
         elif event.char == "r":
             self.sample_extractor.reset_vertexes_pos()
@@ -232,8 +234,12 @@ class GUI(object):
         canvas_extractor.grid(row=0, column=0)
 
     def measures(self):
-        self.entry_height_cm.grid(row=0, column=0)
-        self.btn_height.grid(row=0, column=1)
+        self.entry_height_cm.grid(row=0, column=2)
+        self.btn_height.grid(row=0, column=3)
+
+    def un_measures(self):
+        self.entry_height_cm.grid_forget()
+        self.btn_height.grid_forget()
 
     def select_img(self):
         #try:
