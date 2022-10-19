@@ -1,14 +1,15 @@
 import csv
-from typing import Any
+from typing import Any, List
 import image_tree
 import tkinter as tk
 import tkinter.font as tk_font
 import numpy as np
 import cv2
 from PIL import Image, ImageTk
-import image_managers, sample_extraction, percent, tube, shape_detection as sc
+import image_managers, percent, tube, shape_detection as sc
 from sample_extraction import SampleExtractor
-from utils import EntryWithPlaceholder, generate_zip, get_path
+from utils import EntryWithPlaceholder, get_filepath, generate_zip, get_path
+
 
 CLUSTER_RESHAPE = 0.7
     
@@ -456,68 +457,97 @@ class GUI(object):
         else:
             canva.grid(row=1, column=0)
         results = sc.generate_results(contour)
-        self.fill_table(results)
+        self.fill_table(results, contour)
 
-    def fill_table(self, results) -> None:
+    def aggregate(self, results) -> List:
+        agg_results = []
+        color_count = []
+        # Results list initialization
+        for i in range(len(sc.COLORS)):
+            agg_results.append([])
+            color_count.append(0)
+            for _ in sc.STATISTICS:
+                agg_results[i].append(0)
+        for res in results:
+            # res[0] = c.group
+            color_count[res[0]] += 1
+            for i in range(len(sc.STATISTICS)):
+                # i is the statistic to aggregate
+                # i+1 is the position of the statistic
+                # in the res list
+                agg_results[res[0]][i] += res[i+1]
+        
+        for i in range(len(agg_results)):
+            for j in range(len(sc.STATISTICS)):
+                if color_count[i] != 0:
+                    agg_results[i][j] /= color_count[i]
+        return agg_results
+
+    def fill_table(self, results, contour) -> None:
         """
         This method fills and shows a table at the GUI.
         The data is given as an input.
         """
+        aggregated_results = self.aggregate(results)
         self.results_fr.grid(row=0,column=0)
         self.img_container_canvas.xview('moveto', 0)
         label_color = tk.Label(self.results_fr, text="Color")
         label_color.grid(row=0, column=0)
-        label_name = tk.Label(self.results_fr, text="Grupo")
+        label_name = tk.Label(self.results_fr, text="Mineral")
         label_name.grid(row=0, column=1)
-        label_total = tk.Label(self.results_fr, text="Porcentaje Total")
-        label_total.grid(row=0, column=2)
-        label_prom = tk.Label(self.results_fr, text="Porcentaje Promedio")
-        label_prom.grid(row=0, column=3)
+        for i in range(len(sc.STATISTICS)):
+            label =  tk.Label(self.results_fr, text=sc.STATISTICS[i])
+            label.grid(row=0, column=i+2)
         
-        for row_num in range(1, len(results[0])+1):
-            (b, g, r) = sc.COLORS[row_num-1]
+        for row_num in range(len(aggregated_results)):
+            (b, g, r) = sc.COLORS[row_num]
             color = '#%02x%02x%02x' % (r, g, b)
             label_color = tk.Label(self.results_fr, bg=color, width=1, height=1, justify=tk.CENTER)
-            label_color.grid(row=row_num, column=0, sticky=tk.W)
+            label_color.grid(row=row_num+1, column=0, sticky=tk.W)
             
-            name = EntryWithPlaceholder(self.results_fr, f"Grupo {row_num}")
+            name = EntryWithPlaceholder(self.results_fr, f"Mineral {row_num}")
             name['font'] = self.myFont
-            name.grid(row=row_num, column=1)
+            name.grid(row=row_num+1, column=1)
 
-            label_total = tk.Label(self.results_fr, text=results[0][row_num-1])
-            label_total.grid(row=row_num, column=2)
+            for col_num in range(len(sc.STATISTICS)):
+                label = tk.Label(self.results_fr, text=aggregated_results[row_num][col_num])
+                label.grid(row=row_num+1, column=col_num+2)
 
-            label_prom = tk.Label(self.results_fr, text=results[1][row_num-1])
-            label_prom.grid(row=row_num, column=3)
-
-        self.btnExport = tk.Button(self.results_fr, text="Export to csv", width=15, command=self.table_to_csv, cursor='arrow')
+        self.btnExport = tk.Button(self.results_fr, text="Export to csv", width=15, command=lambda : self.table_to_csv(results, contour), cursor='arrow')
         self.btnExport['font'] = self.myFont
-        self.btnExport.grid(row=2, column=4)
+        self.btnExport.grid(row=len(aggregated_results) + 1, column=len(sc.STATISTICS) // 2 + 1)
     
-    def table_to_csv(self) -> None:
+    def table_to_csv(self, results, contour) -> None:
         """
         This method takes the data from a table at the GUI
         and generates a csv with it.
         """
-        wgets = self.results_fr.winfo_children()[:-1]
-        def wgetter(wget_arr):
-            ret_arr = []
-            for wget in wget_arr:
-                if isinstance(wget, tk.Entry):
-                    ret_arr.append(wget.get())
-                else:
-                    if wget.cget('text') == '':
-                        ret_arr.append(wget.cget('bg'))
-                    else:
-                        ret_arr.append(wget.cget('text'))
-            return ret_arr
-    
-        rows = [wgetter(wgets[i:i+4]) for i in range(0, len(wgets), 4)]
+        # Get user location of results
+        filepath = get_filepath() + "/"
 
-        with open('geo_data.csv', 'w', newline='') as f:
+        # Get the names the user set
+        names = []
+        wgets = self.results_fr.winfo_children()[:-1]
+        entrys = [wgets[i+1] for i in range(len(sc.STATISTICS)+2, len(wgets), len(sc.STATISTICS)+2)]
+        for entry in entrys:
+            names.append(entry.get())
+
+        header_row = ["Nombre Mineral", "Nombre imagen", *sc.STATISTICS]
+        images = []
+        with open(f'{filepath}geo_data.csv', 'w', newline='') as f:
             wrtr = csv.writer(f, delimiter=',')
-            for row in rows:
+            wrtr.writerow(header_row)
+            for i in range(len(results)):
+                row = []
+                row.append(names[results[i][0]])
+                images.append(contour[i].img)
+                row.append(f"{i}.jpg")
+                for j in range(len(sc.STATISTICS)):
+                    row.append(results[i][j+1])
                 wrtr.writerow(row)
+        
+        generate_zip(f'{filepath}images', images)
+        tk.messagebox.showinfo("Guardado", message="Los resultados se han guardado correctamente")
     
     def save(self) -> None:
         """
@@ -528,7 +558,9 @@ class GUI(object):
         for child in self.img_tree.childs:
             files.append(child.image)
         
-        generate_zip(files)
+
+        filepath = get_filepath()
+        generate_zip(filepath, files)
         tk.messagebox.showinfo("Guardado", message="Las imagenes se han guardado correctamente")
 
 

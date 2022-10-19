@@ -3,11 +3,11 @@ Shape detection implementation for
 the geology-cuantifier project.
 """
 
+from typing import List, Tuple
 import cv2, numpy as np
-import percent
 
 COLORS = [(255,0,0), (0,255,0), (0,0,255)]
-
+STATISTICS = ["Area", "Radio Equiv", "Largo Equiv", "Punto Medio X", "Punto Medio Y"]
 
 class ContourData(object):
     """
@@ -17,14 +17,16 @@ class ContourData(object):
     with only the pixels in that region.
     """
 
-    def __init__(self, img, r) -> None:
+    def __init__(self, img, contour) -> None:
         """
         Class constructor, instantiates class
         params. such as the bounding rect. of a contour
         and It's mask.
         """
         self.img = img
-        self.r = r
+        self.contour = contour
+        self.r = cv2.boundingRect(contour)
+        self.group = None
 
     def aspect_ratio(self) -> float:
         """
@@ -34,6 +36,53 @@ class ContourData(object):
         """
         _, _, w, h = self.r
         return w/h
+    
+    def get_area(self) -> float:
+        """
+        When called, this function returns
+        the total area of the contour.
+        """
+        return cv2.contourArea(self.contour)
+    
+    def get_equiv_radius(self) -> float:
+        """
+        When called, this function returns
+        the equivalent radius associated to 
+        the area of the contour.
+        """
+        return np.sqrt(self.get_area()/np.pi)
+    
+    def get_equiv_lenght(self) -> float:
+        """
+        When called, this function returns
+        the equivalent lenght associated to 
+        the area of the contour.
+        """
+        return np.sqrt(self.get_area()/self.aspect_ratio())
+
+    def get_middle_point(self) -> Tuple[float, float]:
+        """
+        When called, this function returns
+        the middle point of the bounding rect
+        of the contour.
+        """
+        x, y, w, h = self.r
+        return (x+w/2, y+h/2)
+    
+    def get_all_statistics(self) -> List:
+        """
+        When called, this function returns
+        the results of all statistics implemented
+        in the class.
+        """
+        return [
+            self.group,
+            self.get_area(), 
+            self.get_equiv_radius(), 
+            self.get_equiv_lenght(), 
+            self.get_middle_point()[0],
+            self.get_middle_point()[1],
+            ]
 
 def contour_segmentation(img):
     """
@@ -53,7 +102,7 @@ def contour_segmentation(img):
         masked = cv2.bitwise_and(img,img, mask = mask)
         x,y,w,h = r
         masked = masked[y:y+h, x:x+w]
-        data.append(ContourData(masked,r))
+        data.append(ContourData(masked,cnt))
     return data
 
 def contour_agrupation(contours):
@@ -63,9 +112,10 @@ def contour_agrupation(contours):
     """
     for c in contours:
         asp_rat = c.aspect_ratio()
-        if asp_rat > 1.2:
+        if asp_rat <= 1.2 and asp_rat >= 0.8:
+            # Square like rectangles
             c.group = 0
-        elif asp_rat < 0.8:
+        elif asp_rat <= 1.5 and asp_rat >= 0.5:
             c.group = 1
         else:
             c.group = 2
@@ -88,14 +138,7 @@ def generate_results(contours):
     """
     Calculate statistics for each group.
     """
-    total_percentages = [0,0,0]
-    prom_percentages = [0,0,0]
-    num_of_contors = [0,0,0]
+    final_results = []
     for c in contours:
-        per = percent.percent(c.img)
-        total_percentages[c.group] += per
-        num_of_contors[c.group] += 1
-    for i in range(3):
-        if num_of_contors[i] != 0:
-            prom_percentages[i] = total_percentages[i]/num_of_contors[i]
-    return total_percentages, prom_percentages
+        final_results.append(c.get_all_statistics())
+    return final_results
