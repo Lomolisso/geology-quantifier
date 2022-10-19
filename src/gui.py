@@ -3,11 +3,13 @@ from typing import Any, List
 import image_tree
 import tkinter as tk
 import tkinter.font as tk_font
+import numpy as np
 import cv2
 from PIL import Image, ImageTk
 import image_managers, percent, tube, shape_detection as sc
 from sample_extraction import SampleExtractor
-from utils import EntryWithPlaceholder, get_filepath, generate_zip
+from utils import EntryWithPlaceholder, get_filepath, generate_zip, get_path
+
 
 CLUSTER_RESHAPE = 0.7
     
@@ -29,7 +31,9 @@ class GUI(object):
         self.img_tree = None
         self.selected_images_indices = []
         self.main_win = root
-
+        self.main_win.bind("<1>", self.focus_win)
+        self.key_pressed = ""
+        self.clicked_pos = (0,0)
         # --- interface parameters ---
         
         # -- fonts -- 
@@ -51,7 +55,7 @@ class GUI(object):
         self.results_fr = tk.Frame(self.canvas_fr)
 
         # -- buttons --
-        self.btn_img = tk.Button(self.btns_fr, text='Seleccionar imagen', width=20, command=self.show_img, cursor='arrow')
+        self.btn_img = tk.Button(self.btns_fr, text='Seleccionar imagen', width=20, command=self.select_img, cursor='arrow')
         self.btn_img['font'] = self.myFont
         self.btn_img.grid(row=0, column=0)
 
@@ -93,13 +97,20 @@ class GUI(object):
         self.set_up_scrollbar()
         self.btn_fr_size = 200
     
+    def focus_win(self, event):
+        if event.widget == self.main_win:
+            self.main_win.focus()
+
     def set_up_scrollbar(self):
-        
+        """
+        Sets up the scrollbar of the gui, instantiating tk.Scrollbar
+        and positioning it.
+        """
         self.scrollbar = tk.Scrollbar(self.img_container_fr, orient=tk.HORIZONTAL , command = self.img_container_canvas.xview)
 
         self.canvas_fr.bind(
             "<Configure>",
-            lambda e: self.img_container_canvas.configure(
+            lambda _: self.img_container_canvas.configure(
                 scrollregion=self.img_container_canvas.bbox("all")
             )
         )
@@ -124,12 +135,21 @@ class GUI(object):
         self.img_container_canvas.grid(row=0, column=0, sticky=tk.N+tk.E+tk.W+tk.S)
 
     def _bound_to_mousewheel(self, event):
+        """
+       Private method, handles the binding of the mouse wheel
+        """
         self.img_container_canvas.bind_all("<MouseWheel>", self._on_mousewheel)
 
     def _unbound_to_mousewheel(self, event):
+        """
+        Private method, handles the unbinding of the mouse wheel
+        """
         self.img_container_canvas.unbind_all("<MouseWheel>")
 
     def _on_mousewheel(self, event):
+        """
+        Private method, handles scrollbar mouse wheel scrolling
+        """
         self.img_container_canvas.xview_scroll(int(-1*(event.delta/120)), "units")
 
     def split(self) -> None:
@@ -152,50 +172,88 @@ class GUI(object):
         self.update_screen()
         self.selected_images_indices=[]
     
+    def click_check(self, event):
+        self.sample_extractor.check_circle_movement(event.x, event.y)
+    
+    def click_pos(self, event):
+        self.sample_extractor.move_vertex(event.x, event.y)
+
+        photo_img = cv2.cvtColor(self.sample_extractor.get_image(), cv2.COLOR_BGR2RGB)
+        photo_img = Image.fromarray(photo_img)
+        img_for_label = ImageTk.PhotoImage(photo_img)
+        self.label_extractor.configure(image=img_for_label)
+        self.label_extractor.image = img_for_label
+        self.label_extractor.grid(row=0, column=0, padx=10, pady=10)
+
+    def key_press(self, event):
+        if event.char == "s":
+            self.org_img = self.sample_extractor.cut()
+            self.main_win.unbind('<Key>')
+            self.show_img()
+        elif event.char == "r":
+            self.sample_extractor.reset_vertexes_pos()
+            self.sample_extractor.refresh_image()
+            photo_img = cv2.cvtColor(self.sample_extractor.get_image(), cv2.COLOR_BGR2RGB)
+            photo_img = Image.fromarray(photo_img)
+            img_for_label = ImageTk.PhotoImage(photo_img)
+            self.label_extractor.configure(image=img_for_label)
+            self.label_extractor.image = img_for_label
+            self.label_extractor.grid(row=0, column=0, padx=10, pady=10)
+    
+    def release_click(self, event):
+        self.sample_extractor.refresh_image()
+
+    def crop(self, image):
+        self.sample_extractor = SampleExtractor(self._resize_img(image))
+        #se ingresa en un canvas
+        canvas_extractor = tk.Canvas(self.principal_fr)
+        self.label_extractor = self.add_img_to_canvas(canvas_extractor, self.sample_extractor.get_image())
+        self.label_extractor.bind('<1>', self.click_check)
+        self.label_extractor.bind('<B1-Motion>',self.click_pos)
+        self.label_extractor.bind('<ButtonRelease-1>', self.release_click)
+        self.main_win.bind('<Key>',self.key_press)
+        canvas_extractor.grid(row=0, column=0)
+
+    def select_img(self):
+        try:
+            image = image_managers.load_image_from_window()
+            self.clean_frames()
+            self.clean_btns()
+            self.crop(image)
+        except:
+            pass
+
     def show_img(self) -> None:
         """
         This method is called when a new image is uploaded. 
         """
-        self.main_win.withdraw()
-        try:
-            image = image_managers.load_image_from_window()
-            self.org_img = SampleExtractor(image).extract_sample()
-            self.img_tree = image_tree.ImageNode(None, self.org_img)
-            self.update_screen()
-                    
-            if self.org_img.size > 0:
-                # Set buttons positions
-                self.btn_3d.grid(row=0, column=1)
-                self.total_clusters.grid(row=0, column=2)
-                self.btn_split.grid(row=0, column=3)
-                self.btn_merge.grid(row=0, column=4)
-                self.btn_sub.grid(row=0, column=5)      
-                self.btn_undo.grid(row=1,column=0)
-                self.btn_save.grid(row=1, column=1)
-                self.btn_up.grid(row=1, column=2)
-                self.btn_down.grid(row=1, column=3)
-                self.btn_contour.grid(row=1, column=4)
-                self.btn_update.grid(row=1, column=5)
-            
-        except:
-            self.img_tree = None
-            self.clean_win()
-            self.btn_3d.grid_forget()
-            self.total_clusters.grid_forget()
-            self.btn_split.grid_forget()
-            self.btn_merge.grid_forget()
-            self.btn_sub.grid_forget()      
-            self.btn_undo.grid_forget()
-            self.btn_save.grid_forget()
-            self.btn_up.grid_forget()
-            self.btn_down.grid_forget()
-            self.btn_contour.grid_forget()
-            self.btn_update.grid_forget()
-            
-        self.main_win.deiconify()
-        
+        self.clean_frames()
+        self.img_tree = image_tree.ImageNode(None, self.org_img)
+        self.update_screen()
+                
+        # Set buttons positions
+        self.create_btns()
 
-    def clean_win(self) -> None:
+    def clean_btns(self) -> None:
+        for wget in self.btns_fr.winfo_children():
+            wget.grid_forget()
+        self.btn_img.grid(row=0, column=0)
+
+    def create_btns(self) -> None:
+        # Set buttons positions
+        self.btn_3d.grid(row=0, column=1)
+        self.total_clusters.grid(row=0, column=2)
+        self.btn_split.grid(row=0, column=3)
+        self.btn_merge.grid(row=0, column=4)
+        self.btn_sub.grid(row=0, column=5)      
+        self.btn_undo.grid(row=1,column=0)
+        self.btn_save.grid(row=1, column=1)
+        self.btn_up.grid(row=1, column=2)
+        self.btn_down.grid(row=1, column=3)
+        self.btn_contour.grid(row=1, column=4)
+        self.btn_update.grid(row=1, column=5)
+
+    def clean_frames(self) -> None:
         """
         Destroy every tkinter instance on screen and
         starts new ones.
@@ -242,11 +300,9 @@ class GUI(object):
             self.selected_images_indices.append(key)
             canvas.configure(bg='red')
 
-            widgetP = tk.Label(canvas, text=str(percent.percent(image)), fg='white', bg='black')
+            color_percent = percent.percent(image)
+            widgetP = tk.Label(canvas, text=f"Porcentaje de pixeles: {color_percent}%", fg='white', bg='black')
             widgetP.grid(row = 1,column=0 )
-
-            widgetC = tk.Label(canvas, text=str(percent.contour(image)), fg='white', bg='black')
-            widgetC.grid(row = 2,column=0 )
 
     def _resize_img(self, img):
         """
@@ -284,7 +340,7 @@ class GUI(object):
         Updates the screen, this method is called right after
         the user interacts with the current image.
         """
-        self.clean_win()
+        self.clean_frames()
 
         img = self._resize_img(self.img_tree.image) # image at the current node of the image_tree
         self.selected_images_indices = [] # resets selected images
@@ -334,13 +390,8 @@ class GUI(object):
         in a 3D model of a cilinder.
         """
         img = self.img_tree.image
-        
-        cv2.destroyAllWindows()
-
         # Use the loaded img to fill a 3D tube surface.
         tube.fill_tube(img)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
         
     def undo(self) -> None:
         """
@@ -374,7 +425,6 @@ class GUI(object):
         self.img_tree = self.img_tree.parent
         self.selected_images_indices = []
         self.update_screen()
-
     
     def segmentate(self) -> None:
         """
@@ -386,7 +436,7 @@ class GUI(object):
         if len(self.selected_images_indices) == 1:
             self.img_tree = self.img_tree.childs[self.selected_images_indices[0]]
 
-        self.clean_win()
+        self.clean_frames()
         self.selected_images_indices = []
         
         principal_image = self.img_tree.image
@@ -512,13 +562,11 @@ class GUI(object):
         filepath = get_filepath()
         generate_zip(filepath, files)
         tk.messagebox.showinfo("Guardado", message="Las imagenes se han guardado correctamente")
-        
 
 
-    
 root = tk.Tk()
 root.title("Cuantificador geologico")
-root.iconbitmap("icon.ico")
+root.wm_iconbitmap(get_path('icon.ico'))
 root.config(cursor='plus')
 # Get user screen size
 screen_width = root.winfo_screenwidth()
