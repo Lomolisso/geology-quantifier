@@ -100,6 +100,7 @@ class GUI(object):
         # -- extras --
         self.set_up_scrollbar()
         self.btn_fr_size = 200
+        self.mode = 'p'
     
     def focus_win(self, event):
         if not isinstance( event.widget, tk.Entry):
@@ -189,11 +190,23 @@ class GUI(object):
         self.label_extractor.image = img_for_label
         self.label_extractor.grid(row=0, column=0, padx=10, pady=10)
 
+    def choose_cut_method(self):
+        if self.mode == 'p':
+            return cut_image_from_vertex(self.org_img, self.sample_extractor)
+        elif self.mode == 'w':
+            return resize_unwrapping(self.org_img, self.sample_extractor)
+
     def key_press(self, event):
         if event.char == "s":
-            self.org_img = resize_unwrapping(self.org_img, self.sample_extractor)
+            self.org_img = self.choose_cut_method()
             self.main_win.unbind('<Key>')
             self.show_img()
+        elif event.char == 'p':
+            self.crop(self.org_img, 4)
+            self.mode = 'p'
+        elif event.char == "w":
+            self.crop(self.org_img, 6)  
+            self.mode = 'w'
         elif event.char == "r":
             self.sample_extractor.reset_vertexes_pos()
             self.sample_extractor.refresh_image()
@@ -207,8 +220,8 @@ class GUI(object):
     def release_click(self, event):
         self.sample_extractor.refresh_image()
 
-    def crop(self, image):
-        self.sample_extractor = SampleExtractor(self._resize_img(image), 6)
+    def crop(self, image, n=4):
+        self.sample_extractor = SampleExtractor(self._resize_img(image), n)
         #se ingresa en un canvas
         canvas_extractor = tk.Canvas(self.principal_fr)
         self.label_extractor = self.add_img_to_canvas(canvas_extractor, self.sample_extractor.get_image())
@@ -238,6 +251,7 @@ class GUI(object):
             self.clean_frames()
             self.clean_btns()
             self.crop(img)
+            self.mode = 'p'
         except:
             pass
 
