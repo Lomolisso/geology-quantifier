@@ -71,7 +71,7 @@ class ContourData(object):
         x, y, w, h = self.r
         return (np.round(x+w/2,0), np.round(y+h/2,0))
     
-    def get_all_statistics(self) -> List:
+    def get_all_statistics(self, pixel2cm) -> List:
         """
         When called, this function returns
         the results of all statistics implemented
@@ -80,9 +80,9 @@ class ContourData(object):
         return [
             self.group,
             self.aspect_ratio(),
-            self.get_area(), 
-            self.get_equiv_radius(), 
-            self.get_equiv_lenght(), 
+            self.get_area()*pixel2cm*pixel2cm, 
+            self.get_equiv_radius()*pixel2cm, 
+            self.get_equiv_lenght()*pixel2cm, 
             self.get_middle_point()[0],
             self.get_middle_point()[1],
             ]
@@ -130,13 +130,13 @@ def cluster_segmentation(cluster, contours):
         cv2.rectangle(im, c.r, color, 2)
     return im
 
-def generate_results(contours):
+def generate_results(contours,pixel2cm):
     """
     Calculate statistics for each group.
     """
     final_results = []
     for c in contours:
-        final_results.append(c.get_all_statistics())
+        final_results.append(c.get_all_statistics(pixel2cm))
     return final_results
 
 def image_agrupation(img_org,contours,groups):

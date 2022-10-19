@@ -93,15 +93,23 @@ class GUI(object):
         self.btn_update = tk.Button(self.btns_fr, text='Actualizar', width=20, command=self.update_screen, cursor='arrow')
         self.btn_update['font'] = self.my_font
 
+        self.btn_height = tk.Button(self.img_container_fr, text='Altura', width=20, command=self.set_height, cursor='arrow')
+        self.btn_height['font'] = self.my_font
+
         # -- entries --
         self.total_clusters = EntryWithPlaceholder(self.btns_fr, "Número de clusters", 'gray')
         self.total_clusters['font'] = self.my_font
+        self.entry_height_cm = EntryWithPlaceholder(self.img_container_fr, "Altura (cm) recorte", 'gray')
+        self.height_cm = 0
 
         # -- extras --
         self.set_up_scrollbar()
         self.btn_fr_size = 200
         self.segmentation = False
     
+    def set_height(self):
+        self.height_cm = int(self.entry_height_cm.get())
+
     def focus_win(self, event):
         if not isinstance( event.widget, tk.Entry):
             self.main_win.focus()
@@ -223,30 +231,35 @@ class GUI(object):
         self.main_win.bind('<Key>',self.key_press)
         canvas_extractor.grid(row=0, column=0)
 
-    def select_img(self):
-        try:
-            img = image_managers.load_image_from_window()
-            #set max resolution
-            #TODO: Move to another module
-            resize_height = SCREEN_HEIGHT
-            resize_width = SCREEN_WIDTH
-            resize_img = img
-            if img.shape[0] > resize_height:
-                # Adjust image to the define height
-                resize_img = cv2.resize(img, ((int(img.shape[1] * resize_height / img.shape[0])), resize_height))
-                # If its new width exceed the define width
-            if resize_img.shape[1] > resize_width:
-                # Adjust image to the define width
-                resize_img = cv2.resize(resize_img, (resize_width, int(resize_img.shape[0] * resize_width / resize_img.shape[1])))
+    def measures(self):
+        self.entry_height_cm.grid(row=0, column=0)
+        self.btn_height.grid(row=0, column=1)
 
-            self.org_img = resize_img
-            self.clean_principal_frame()
-            self.clean_canvas_frame()
-            self.clean_btns()
-            self.crop(resize_img)
-            self.segmentation = False
-        except:
-            pass
+    def select_img(self):
+        #try:
+        img = image_managers.load_image_from_window()
+        #set max resolution
+        #TODO: Move to another module
+        resize_height = SCREEN_HEIGHT
+        resize_width = SCREEN_WIDTH
+        resize_img = img
+        if img.shape[0] > resize_height:
+            # Adjust image to the define height
+            resize_img = cv2.resize(img, ((int(img.shape[1] * resize_height / img.shape[0])), resize_height))
+            # If its new width exceed the define width
+        if resize_img.shape[1] > resize_width:
+            # Adjust image to the define width
+            resize_img = cv2.resize(resize_img, (resize_width, int(resize_img.shape[0] * resize_width / resize_img.shape[1])))
+
+        self.org_img = resize_img
+        self.clean_principal_frame()
+        self.clean_canvas_frame()
+        self.clean_btns()
+        self.crop(resize_img)
+        self.measures()
+        self.segmentation = False
+        #except:
+        #    pass
 
     def show_img(self) -> None:
         """
@@ -501,7 +514,7 @@ class GUI(object):
 
         self.update_screen()
 
-        results = sc.generate_results(self.contour)
+        results = sc.generate_results(self.contour, self.height_cm/self.segmentated.shape[0])
         self.fill_table(results)
 
     def aggregate(self, results) -> List:
@@ -611,7 +624,6 @@ class GUI(object):
         filepath = get_file_filepath()
         generate_zip(filepath, files)
         tk.messagebox.showinfo("Guardado", message="Las imagenes se han guardado correctamente")
-
 
 
 ROOT.title("Cuantificador geologico")
