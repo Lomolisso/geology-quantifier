@@ -7,7 +7,7 @@ import numpy as np
 import cv2
 from PIL import Image, ImageTk
 import image_managers, percent, tube, shape_detection as sc
-from sample_extraction2 import SampleExtractor, cut_image_from_vertex
+from sample_extraction2 import SampleExtractor, cut_image_from_vertex, resize_unwrapping
 from utils import EntryWithPlaceholder, generate_zip, get_path, get_filepath
 
 CLUSTER_RESHAPE = 0.7
@@ -191,8 +191,7 @@ class GUI(object):
 
     def key_press(self, event):
         if event.char == "s":
-            #self.org_img = cut_image_from_vertex(self.org_img, self.sample_extractor)
-            self.org_img = self.sample_extractor.unwrap()
+            self.org_img = resize_unwrapping(self.org_img, self.sample_extractor)
             self.main_win.unbind('<Key>')
             self.show_img()
         elif event.char == "r":
@@ -223,22 +222,22 @@ class GUI(object):
         try:
             img = image_managers.load_image_from_window()
             #set max resolution
-            #TODO: Move to another module
-            resize_height = SCREEN_HEIGHT
-            resize_width = SCREEN_WIDTH
-            resize_img = img
-            if img.shape[0] > resize_height:
-                # Adjust image to the define height
-                resize_img = cv2.resize(img, ((int(img.shape[1] * resize_height / img.shape[0])), resize_height))
-                # If its new width exceed the define width
-            if resize_img.shape[1] > resize_width:
-                # Adjust image to the define width
-                resize_img = cv2.resize(resize_img, (resize_width, int(resize_img.shape[0] * resize_width / resize_img.shape[1])))
+            # #TODO: Move to another module
+            # resize_height = SCREEN_HEIGHT
+            # resize_width = SCREEN_WIDTH
+            # resize_img = img
+            # if img.shape[0] > resize_height:
+            #     # Adjust image to the define height
+            #     resize_img = cv2.resize(img, ((int(img.shape[1] * resize_height / img.shape[0])), resize_height))
+            #     # If its new width exceed the define width
+            # if resize_img.shape[1] > resize_width:
+            #     # Adjust image to the define width
+            #     resize_img = cv2.resize(resize_img, (resize_width, int(resize_img.shape[0] * resize_width / resize_img.shape[1])))
 
-            self.org_img = resize_img
+            self.org_img = img
             self.clean_frames()
             self.clean_btns()
-            self.crop(resize_img)
+            self.crop(img)
         except:
             pass
 

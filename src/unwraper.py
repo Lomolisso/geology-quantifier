@@ -110,7 +110,6 @@ class LabelUnwrapper(object):
             self.points = points
 
         self.points = np.array(self.points)
-        print(self.points)
         (self.point_a, self.point_b, self.point_c,
          self.point_d, self.point_e, self.point_f) = self.points
 

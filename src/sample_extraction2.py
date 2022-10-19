@@ -167,6 +167,25 @@ class SampleExtractor(object):
         return unwrapping(self.original_image, "awa.jpg", points)
 
 
+def resize_unwrapping(img, sample_extractor):
+    """
+    Cut the same part of imagen of the sample extractor,
+    but in a different version of the image.
+    """
+    points = sample_extractor.vertex_data['vertex_1'], sample_extractor.vertex_data['vertex_6'], sample_extractor.vertex_data['vertex_5'], sample_extractor.vertex_data['vertex_4'], sample_extractor.vertex_data['vertex_3'], sample_extractor.vertex_data['vertex_2']
+    vertex_data = sample_extractor.get_vertex_data()
+    resize_image = sample_extractor.get_image()
+    rs_shape = resize_image.shape
+    org_shape = img.shape
+    ratio = org_shape[0]/rs_shape[0]
+    vertex = []
+    for value in points:
+        print("a")
+        vertex.append(value*ratio)
+    vertex_1, vertex_2, vertex_3, vertex_4, vertex_5, vertex_6 = [v for v in vertex]
+    points = vertex_1, vertex_2, vertex_3, vertex_4, vertex_5, vertex_6
+    return unwrapping(img, "awa.jpg", points)
+
 def cut_image_from_vertex(img, sample_extractor):
     """
     Cut the same part of imagen of the sample extractor,
