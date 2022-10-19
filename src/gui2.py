@@ -191,7 +191,8 @@ class GUI(object):
 
     def key_press(self, event):
         if event.char == "s":
-            self.org_img = cut_image_from_vertex(self.org_img, self.sample_extractor)
+            #self.org_img = cut_image_from_vertex(self.org_img, self.sample_extractor)
+            self.org_img = self.sample_extractor.unwrap()
             self.main_win.unbind('<Key>')
             self.show_img()
         elif event.char == "r":
@@ -208,7 +209,7 @@ class GUI(object):
         self.sample_extractor.refresh_image()
 
     def crop(self, image):
-        self.sample_extractor = SampleExtractor(self._resize_img(image))
+        self.sample_extractor = SampleExtractor(self._resize_img(image), 6)
         #se ingresa en un canvas
         canvas_extractor = tk.Canvas(self.principal_fr)
         self.label_extractor = self.add_img_to_canvas(canvas_extractor, self.sample_extractor.get_image())
@@ -219,7 +220,7 @@ class GUI(object):
         canvas_extractor.grid(row=0, column=0)
 
     def select_img(self):
-        # try:
+        try:
             img = image_managers.load_image_from_window()
             #set max resolution
             #TODO: Move to another module
@@ -238,8 +239,8 @@ class GUI(object):
             self.clean_frames()
             self.clean_btns()
             self.crop(resize_img)
-        # except:
-        #     pass
+        except:
+            pass
 
     def show_img(self) -> None:
         """

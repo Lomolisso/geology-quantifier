@@ -52,28 +52,31 @@ class SampleExtractor(object):
         return self.vertex_data
 
     def move_vertex(self, x, y):
-        self.bg = self.original_image.copy()
-        v1, v2, v3, v4 = [self.vertex_data[v] for v in self.vertex_data]
-        
+        self.bg = self.original_image.copy()    
         if self.total_vertexes == 4:
+            v1, v2, v3, v4 = [self.vertex_data[v] for v in self.vertex_data]
             cond_dict = {
                 "vertex_1": lambda x, y: x < min(v4[0], v3[0]) and y < min(v2[1], v3[1]),
                 "vertex_2": lambda x, y: x < min(v4[0], v3[0]) and y > max(v1[1], v4[1]),
                 "vertex_3": lambda x, y: x > max(v1[0], v2[0]) and y > max(v1[1], v4[1]),   
                 "vertex_4": lambda x, y: x > max(v1[0], v2[0]) and y < min(v2[1], v3[1]),
             }
+            if self.vertex_dirty is not None and cond_dict[self.vertex_dirty](x, y):
+                self.vertex_data[self.vertex_dirty] = np.array((x, y))
         else:
+            v1, v2, v3, v4, v5, v6 = [self.vertex_data[v] for v in self.vertex_data]
             cond_dict = {
-                "vertex_1": True,
-                "vertex_2": True,
-                "vertex_3": True,
-                "vertex_4": True,
-                "vertex_5": True,
-                "vertex_6": True,
+                "vertex_1": lambda x, y: True,
+                "vertex_2": lambda x, y: True,
+                "vertex_3": lambda x, y: True,
+                "vertex_4": lambda x, y: True,
+                "vertex_5": lambda x, y: True,
+                "vertex_6": lambda x, y: True,
             }
+            if self.vertex_dirty is not None and cond_dict[self.vertex_dirty](x, y):
+                self.vertex_data[self.vertex_dirty] = np.array((x, y))
 
-        if self.vertex_dirty is not None and cond_dict[self.vertex_dirty](x, y):
-            self.vertex_data[self.vertex_dirty] = np.array((x, y))
+
 
         self._draw_circles_and_lines()
 
@@ -112,8 +115,8 @@ class SampleExtractor(object):
         self.vertex_data[f"vertex_{4 + step}"] = np.array((bg_cols*3//4, bg_rows//4))
 
         if self.total_vertexes == 6:
-            self.vertex_data["vertex_3"] == np.array((bg_cols//2, bg_rows*3//4))
-            self.vertex_data["vertex_6"] == np.array((bg_cols//2, bg_rows//4))
+            self.vertex_data["vertex_3"] = np.array((bg_cols//2, bg_rows*3//4))
+            self.vertex_data["vertex_6"] = np.array((bg_cols//2, bg_rows//4))
     
     def _reset_vertex_dirty(self) -> None:
         """
@@ -161,7 +164,7 @@ class SampleExtractor(object):
     
     def unwrap(self):
         points = self.vertex_data['vertex_1'], self.vertex_data['vertex_6'], self.vertex_data['vertex_5'], self.vertex_data['vertex_4'], self.vertex_data['vertex_3'], self.vertex_data['vertex_2']
-        unwrapping(self.bg, "awa.jpg", points)
+        return unwrapping(self.original_image, "awa.jpg", points)
 
 
 def cut_image_from_vertex(img, sample_extractor):

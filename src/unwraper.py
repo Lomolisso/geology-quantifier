@@ -384,7 +384,8 @@ def unwrapping(imcv, img_name, dots):
         cv2.line(unwrapper.src_image, tuple(point), tuple(point), color=YELLOW_COLOR, thickness=3)
 
     # unwrapper.draw_mesh()
-    dst_image = cv2.resize(dst_image, (int(dst_image.shape[1]*0.2),int(dst_image.shape[0]*0.2)))
+    #dst_image = cv2.resize(dst_image, (int(dst_image.shape[1]*0.2),int(dst_image.shape[0]*0.2)))
     cv2.imshow("antes", imcv)
     cv2.imshow("despues", dst_image)
     cv2.imwrite("./img/panoramic/samples_by_degree/diorite/recortada/" + img_name, dst_image)
+    return dst_image
