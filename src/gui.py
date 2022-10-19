@@ -8,6 +8,7 @@ import cv2
 from PIL import Image, ImageTk
 import image_managers, percent, tube, shape_detection as sc
 from sample_extraction2 import SampleExtractor
+from sample_extraction import cut_image_from_vertex
 from utils import EntryWithPlaceholder, generate_zip, get_path, get_filepath
 
 CLUSTER_RESHAPE = 0.7
