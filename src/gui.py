@@ -7,7 +7,7 @@ import numpy as np
 import cv2
 from PIL import Image, ImageTk
 import image_managers, percent, tube, shape_detection as sc
-from sample_extraction import SampleExtractor, cut_image_from_vertex
+from sample_extraction2 import SampleExtractor
 from utils import EntryWithPlaceholder, generate_zip, get_path, get_filepath
 
 CLUSTER_RESHAPE = 0.7
@@ -191,7 +191,8 @@ class GUI(object):
 
     def key_press(self, event):
         if event.char == "s":
-            self.org_img = cut_image_from_vertex(self.org_img, self.sample_extractor)
+            #self.org_img = self.sample_extractor.unwrap()
+            self.org_img = self.sample_extractor.cut(self.org_img, self.sample_extractor)
             self.main_win.unbind('<Key>')
             self.show_img()
         elif event.char == "r":
