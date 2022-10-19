@@ -7,7 +7,7 @@ import numpy as np
 import cv2
 from PIL import Image, ImageTk
 import image_managers, percent, tube, shape_detection as sc
-from sample_extraction import SampleExtractor, cut_image_from_vertex
+from sample_extraction2 import SampleExtractor, cut_image_from_vertex
 from utils import EntryWithPlaceholder, generate_zip, get_path, get_filepath
 
 CLUSTER_RESHAPE = 0.7
@@ -219,7 +219,7 @@ class GUI(object):
         canvas_extractor.grid(row=0, column=0)
 
     def select_img(self):
-        try:
+        # try:
             img = image_managers.load_image_from_window()
             #set max resolution
             #TODO: Move to another module
@@ -238,8 +238,8 @@ class GUI(object):
             self.clean_frames()
             self.clean_btns()
             self.crop(resize_img)
-        except:
-            pass
+        # except:
+        #     pass
 
     def show_img(self) -> None:
         """
