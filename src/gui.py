@@ -242,30 +242,30 @@ class GUI(object):
         self.btn_height.grid_forget()
 
     def select_img(self):
-        #try:
-        img = image_managers.load_image_from_window()
-        #set max resolution
-        #TODO: Move to another module
-        resize_height = SCREEN_HEIGHT
-        resize_width = SCREEN_WIDTH
-        resize_img = img
-        if img.shape[0] > resize_height:
-            # Adjust image to the define height
-            resize_img = cv2.resize(img, ((int(img.shape[1] * resize_height / img.shape[0])), resize_height))
-            # If its new width exceed the define width
-        if resize_img.shape[1] > resize_width:
-            # Adjust image to the define width
-            resize_img = cv2.resize(resize_img, (resize_width, int(resize_img.shape[0] * resize_width / resize_img.shape[1])))
+        try:
+            img = image_managers.load_image_from_window()
+            #set max resolution
+            #TODO: Move to another module
+            resize_height = SCREEN_HEIGHT
+            resize_width = SCREEN_WIDTH
+            resize_img = img
+            if img.shape[0] > resize_height:
+                # Adjust image to the define height
+                resize_img = cv2.resize(img, ((int(img.shape[1] * resize_height / img.shape[0])), resize_height))
+                # If its new width exceed the define width
+            if resize_img.shape[1] > resize_width:
+                # Adjust image to the define width
+                resize_img = cv2.resize(resize_img, (resize_width, int(resize_img.shape[0] * resize_width / resize_img.shape[1])))
 
-        self.org_img = resize_img
-        self.clean_principal_frame()
-        self.clean_canvas_frame()
-        self.clean_btns()
-        self.crop(resize_img)
-        self.measures()
-        self.segmentation = False
-        #except:
-        #    pass
+            self.org_img = resize_img
+            self.clean_principal_frame()
+            self.clean_canvas_frame()
+            self.clean_btns()
+            self.crop(resize_img)
+            self.measures()
+            self.segmentation = False
+        except:
+           pass
 
     def show_img(self) -> None:
         """
