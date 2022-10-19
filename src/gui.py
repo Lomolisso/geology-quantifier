@@ -488,7 +488,7 @@ class GUI(object):
             return
         if len(self.selected_images_indices) == 1:
             self.img_tree = self.img_tree.childs[self.selected_images_indices[0]]
-
+        
         self.clean_principal_frame()
         self.clean_canvas_frame()
 
@@ -614,7 +614,6 @@ class GUI(object):
 
         generate_zip(filepath, files)
         tk.messagebox.showinfo("Guardado", message="Las imagenes se han guardado correctamente")
-
 
 
 ROOT.title("Cuantificador geologico")
