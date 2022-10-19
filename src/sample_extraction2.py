@@ -180,7 +180,6 @@ def resize_unwrapping(img, sample_extractor):
     ratio = org_shape[0]/rs_shape[0]
     vertex = []
     for value in points:
-        print("a")
         vertex.append(value*ratio)
     vertex_1, vertex_2, vertex_3, vertex_4, vertex_5, vertex_6 = [v for v in vertex]
     points = vertex_1, vertex_2, vertex_3, vertex_4, vertex_5, vertex_6

@@ -407,11 +407,11 @@ class GUI(object):
         This method plots the image of the current node of the image tree
         in a 3D model of a cilinder.
         """
-        tk.messagebox.showinfo("Proximamente", message="Esta funcionalidad estará disponible proximamente.")
+        # tk.messagebox.showinfo("Proximamente", message="Esta funcionalidad estará disponible proximamente.")
 
-        # img = self.img_tree.image
-        # # Use the loaded img to fill a 3D tube surface.
-        # tube.fill_tube(img)
+        img = self.img_tree.image
+        # Use the loaded img to fill a 3D tube surface.
+        tube.fill_tube(img)
         
     def undo(self) -> None:
         """
