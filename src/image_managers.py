@@ -39,7 +39,7 @@ def load_image_from_window() -> None:
         initialdir="../img",
         title="Select a File",
         filetypes=(
-            ("Image files","*.png *.jpg"),
+            ("Image files","*.png *.jpg *.tif"),
             ("all files", ".*")
         )
     )
@@ -62,7 +62,7 @@ def save_image_from_window(img: cv2.Mat) -> None:
         initialdir="../img",
         title="Save as",
         filetypes=(
-            ("Image files","*.png *.jpg"),
+            ("Image files","*.png *.jpg *.tif"),
             ("all files", ".*")
         )
     )

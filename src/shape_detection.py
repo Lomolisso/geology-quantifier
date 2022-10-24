@@ -7,7 +7,7 @@ from typing import List, Tuple
 import cv2, numpy as np
 
 COLORS = [(255,0,0), (0,255,0), (0,0,255)]
-STATISTICS = ["Area", "Radio Equiv", "Largo Equiv", "Punto Medio X", "Punto Medio Y"]
+STATISTICS = ["Rel. de Aspecto", "Area", "Radio Equiv", "Largo Equiv", "Punto Medio X", "Punto Medio Y"]
 
 class ContourData(object):
     """
@@ -17,13 +17,12 @@ class ContourData(object):
     with only the pixels in that region.
     """
 
-    def __init__(self, img, contour) -> None:
+    def __init__(self, contour) -> None:
         """
         Class constructor, instantiates class
         params. such as the bounding rect. of a contour
         and It's mask.
         """
-        self.img = img
         self.contour = contour
         self.r = cv2.boundingRect(contour)
         self.group = None
@@ -35,14 +34,17 @@ class ContourData(object):
         of the contour.
         """
         _, _, w, h = self.r
-        return w/h
+        asp_rat = w/h
+        if asp_rat < 1:
+            asp_rat = 1 / asp_rat
+        return np.round(asp_rat, 2)
     
     def get_area(self) -> float:
         """
         When called, this function returns
         the total area of the contour.
         """
-        return cv2.contourArea(self.contour)
+        return np.round(cv2.contourArea(self.contour), 2)
     
     def get_equiv_radius(self) -> float:
         """
@@ -50,7 +52,7 @@ class ContourData(object):
         the equivalent radius associated to 
         the area of the contour.
         """
-        return np.sqrt(self.get_area()/np.pi)
+        return np.round(np.sqrt(self.get_area()/np.pi), 1)
     
     def get_equiv_lenght(self) -> float:
         """
@@ -58,7 +60,7 @@ class ContourData(object):
         the equivalent lenght associated to 
         the area of the contour.
         """
-        return np.sqrt(self.get_area()/self.aspect_ratio())
+        return np.round(np.sqrt(self.get_area()/self.aspect_ratio()), 1)
 
     def get_middle_point(self) -> Tuple[float, float]:
         """
@@ -67,7 +69,7 @@ class ContourData(object):
         of the contour.
         """
         x, y, w, h = self.r
-        return (x+w/2, y+h/2)
+        return (np.round(x+w/2,0), np.round(y+h/2,0))
     
     def get_all_statistics(self) -> List:
         """
@@ -77,6 +79,7 @@ class ContourData(object):
         """
         return [
             self.group,
+            self.aspect_ratio(),
             self.get_area(), 
             self.get_equiv_radius(), 
             self.get_equiv_lenght(), 
@@ -90,19 +93,12 @@ def contour_segmentation(img):
     It's bounding rect and mask. Then draws the contours 
     and returns a list with all the data.
     """
-    data = []
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     (_, threshInv) = cv2.threshold(gray, 1, 255,cv2.THRESH_BINARY)
 
     contours, _ = cv2.findContours(threshInv, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    for cnt in contours:
-        mask = np.zeros(img.shape[:2], dtype="uint8")
-        r = cv2.boundingRect(cnt)
-        cv2.drawContours(mask, [cnt],-1, (255,255,255),-1)
-        masked = cv2.bitwise_and(img,img, mask = mask)
-        x,y,w,h = r
-        masked = masked[y:y+h, x:x+w]
-        data.append(ContourData(masked,cnt))
+
+    data = [ContourData(cnt) for cnt in contours]
     return data
 
 def contour_agrupation(contours):
@@ -112,10 +108,10 @@ def contour_agrupation(contours):
     """
     for c in contours:
         asp_rat = c.aspect_ratio()
-        if asp_rat <= 1.2 and asp_rat >= 0.8:
+        if asp_rat <= 1.2:
             # Square like rectangles
             c.group = 0
-        elif asp_rat <= 1.5 and asp_rat >= 0.5:
+        elif asp_rat <= 1.5:
             c.group = 1
         else:
             c.group = 2
@@ -142,3 +138,27 @@ def generate_results(contours):
     for c in contours:
         final_results.append(c.get_all_statistics())
     return final_results
+
+def image_agrupation(img_org,contours,groups):
+    """
+    Agrupate all images of the contours in one image for each group
+    """
+    shape = img_org.shape
+    masks = [np.zeros(shape[:2], dtype="uint8") for _ in range(groups)]
+    conts = [[] for _ in range(groups)]
+    for i in range(len(contours)):
+        group = contours[i].group
+        conts[group].append(contours[i].contour)
+    for i in range(groups):
+        cv2.drawContours(masks[i], conts[i],-1, (255,255,255),-1)
+        masks[i] = cv2.bitwise_and(img_org,img_org, mask = masks[i])
+    for i in range(len(contours)):
+        group = contours[i].group
+        x, y, _, _ =contours[i].r
+        position = (x,y)
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        font_size = 0.5
+        font_color = (221,82,196)
+        font_thickness = 1
+        cv2.putText(masks[group],str(i), position, font, font_size, font_color, font_thickness)
+    return masks
