@@ -93,6 +93,9 @@ class GUI(object):
         self.btn_update = tk.Button(self.btns_fr, text='Actualizar', width=20, command=self.update_screen, cursor='arrow')
         self.btn_update['font'] = self.my_font
 
+        self.btn_rotate = tk.Button(self.btns_fr, text='Girar', width=20, command=self.rotate_image, cursor='arrow')
+        self.btn_rotate['font'] = self.my_font
+
         # -- entries --
         self.total_clusters = EntryWithPlaceholder(self.btns_fr, "Número de clusters", 'gray')
         self.total_clusters['font'] = self.my_font
@@ -264,6 +267,7 @@ class GUI(object):
         for wget in self.btns_fr.winfo_children():
             wget.grid_forget()
         self.btn_img.grid(row=0, column=0)
+        self.btn_rotate.grid(row=0, column=1)
 
     def create_btns(self) -> None:
         # Set buttons positions
@@ -614,6 +618,11 @@ class GUI(object):
 
         generate_zip(filepath, files)
         tk.messagebox.showinfo("Guardado", message="Las imagenes se han guardado correctamente")
+    def rotate_image(self) -> None:
+        self.clean_principal_frame()
+        self.org_img =  cv2.rotate(self.org_img, cv2.ROTATE_90_CLOCKWISE)
+        self.crop(self.org_img)
+
 
 
 ROOT.title("Cuantificador geologico")
