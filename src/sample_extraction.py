@@ -179,4 +179,3 @@ def cut_image_from_vertex(img, sample_extractor):
     out = cv2.warpPerspective(img, M,(max_width, max_height), flags=cv2.INTER_LINEAR)
 
     return out
-            

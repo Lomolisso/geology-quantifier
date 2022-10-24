@@ -7,7 +7,7 @@ from typing import List, Tuple
 import cv2, numpy as np
 
 COLORS = [(255,0,0), (0,255,0), (0,0,255)]
-STATISTICS = ["Area", "Radio Equiv", "Largo Equiv", "Punto Medio X", "Punto Medio Y"]
+STATISTICS = ["Rel. de Aspecto", "Area", "Radio Equiv", "Largo Equiv", "Punto Medio X", "Punto Medio Y"]
 
 class ContourData(object):
     """
@@ -34,14 +34,17 @@ class ContourData(object):
         of the contour.
         """
         _, _, w, h = self.r
-        return w/h
+        asp_rat = w/h
+        if asp_rat < 1:
+            asp_rat = 1 / asp_rat
+        return np.round(asp_rat, 2)
     
     def get_area(self) -> float:
         """
         When called, this function returns
         the total area of the contour.
         """
-        return cv2.contourArea(self.contour)
+        return np.round(cv2.contourArea(self.contour), 2)
     
     def get_equiv_radius(self) -> float:
         """
@@ -49,7 +52,7 @@ class ContourData(object):
         the equivalent radius associated to 
         the area of the contour.
         """
-        return np.sqrt(self.get_area()/np.pi)
+        return np.round(np.sqrt(self.get_area()/np.pi), 1)
     
     def get_equiv_lenght(self) -> float:
         """
@@ -57,7 +60,7 @@ class ContourData(object):
         the equivalent lenght associated to 
         the area of the contour.
         """
-        return np.sqrt(self.get_area()/self.aspect_ratio())
+        return np.round(np.sqrt(self.get_area()/self.aspect_ratio()), 1)
 
     def get_middle_point(self) -> Tuple[float, float]:
         """
@@ -66,7 +69,7 @@ class ContourData(object):
         of the contour.
         """
         x, y, w, h = self.r
-        return (x+w/2, y+h/2)
+        return (np.round(x+w/2,0), np.round(y+h/2,0))
     
     def get_all_statistics(self) -> List:
         """
@@ -76,6 +79,7 @@ class ContourData(object):
         """
         return [
             self.group,
+            self.aspect_ratio(),
             self.get_area(), 
             self.get_equiv_radius(), 
             self.get_equiv_lenght(), 
@@ -104,10 +108,10 @@ def contour_agrupation(contours):
     """
     for c in contours:
         asp_rat = c.aspect_ratio()
-        if asp_rat <= 1.2 and asp_rat >= 0.8:
+        if asp_rat <= 1.2:
             # Square like rectangles
             c.group = 0
-        elif asp_rat <= 1.5 and asp_rat >= 0.5:
+        elif asp_rat <= 1.5:
             c.group = 1
         else:
             c.group = 2
