@@ -270,7 +270,7 @@ class GUI(object):
     def create_btns(self) -> None:
         # Set buttons positions
         self.btn_3d.grid(row=0, column=1, padx=5, pady=5)
-        self.total_clusters.grid(row=0, column=2, padx=5, pady=5)
+        self.total_clusters.grid(row=0, column=2, padx=5, pady=5, ipadx=2, ipady=5)
         self.btn_split.grid(row=0, column=3, padx=5, pady=5)
         self.btn_merge.grid(row=0, column=4, padx=5, pady=5)
         self.btn_sub.grid(row=0, column=5, padx=5, pady=5)      
