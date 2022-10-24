@@ -46,6 +46,7 @@ class GUI(object):
         # -- frames --
         self.btns_fr = tk.Frame(self.main_win)
         self.btns_fr.grid(row=0, column=1, columnspan=3, padx=10, pady=10, sticky=tk.NW)
+        for i in range(6): self.btns_fr.columnconfigure(i, weight=1)
 
         self.img_container_fr = tk.Frame(self.main_win)
         
