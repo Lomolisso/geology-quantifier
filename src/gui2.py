@@ -8,7 +8,7 @@ import cv2
 from PIL import Image, ImageTk
 import image_managers, percent, tube, shape_detection as sc
 from sample_extraction2 import SampleExtractor, cut_image_from_vertex, resize_unwrapping
-from utils import EntryWithPlaceholder, generate_zip, get_path, get_filepath
+from utils import EntryWithPlaceholder, generate_zip, get_path, get_file_filepath, get_results_filepath
 
 CLUSTER_RESHAPE = 0.7
 ROOT = tk.Tk()
@@ -558,7 +558,7 @@ class GUI(object):
         and generates a csv with it.
         """
         # Get user location of results
-        filepath = get_filepath() + "/"
+        filepath = get_results_filepath() + "/"
 
         # Get the names the user set
         names = []
@@ -594,7 +594,7 @@ class GUI(object):
             files.append(child.image)
         
 
-        filepath = get_filepath()
+        filepath = get_file_filepath()
         generate_zip(filepath, files)
         tk.messagebox.showinfo("Guardado", message="Las imagenes se han guardado correctamente")
 
