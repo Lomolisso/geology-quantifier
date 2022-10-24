@@ -1,13 +1,13 @@
-# Geology Cuantifier
+# Geology Quantifier
 
 ## Description
-This repository contains the implementation of a basic geology quantifier that uses computer vision techniques for detecting minerals at a rock sample and calculating statistics of the rock.
+This repository contains the implementation of a basic geological quantifier that uses computer vision techniques to detect minerals in a rock sample and calculate rock statistics.
 
-## Project Notebook
-Prior to developing any software, a research phase is needed for studying solutions. For the above, the project has a series of [Google Colaboratory](https://colab.research.google.com/) notebooks that document this process.
+# Install
+You need to install some libraries in order to use this tool. You can use `pip install -r requirements.txt` to install all the required dependencies.
 
-- **Iteration 1** [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1eOBqlBclk_3LtRS5o_QpVXf_3Bfrc3cf)
+## Usage
+All you need to do is run the main.py file. You can use `python main.py`. Whenever the script needs a user input it will be displayed in the terminal, so please check it.
 
-
-## References
-Shree Nayar and T. C. Chang. 2021. First Principles of Computer Vision. Columbia University. Available at: https://fpcv.cs.columbia.edu/
+## Segmentation tools
+For this iteration only the color segmentation tool is available, which uses k-means to create clusters to group similar colors. You can choose the number of clusters according to the different minerals you want to find. The clusters will then be displayed on the screen.
