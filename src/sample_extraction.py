@@ -45,6 +45,15 @@ class SampleExtractor(object):
         self._draw_circles_and_lines()
         self._reset_vertex_dirty()
 
+    # def create_rectangle(self,x,y):
+    #     v1, v2, v3, v4 = [self.vertex_data[v] for v in self.vertex_data]
+    #     actions_dict = {
+    #         "vertex_1": (lambda v4: x, lambda v2: y),
+    #         "vertex_2": lambda x, y: x < min(v4[0], v3[0]) and y > max(v1[1], v4[1]),
+    #         "vertex_3": lambda x, y: x > max(v1[0], v2[0]) and y > max(v1[1], v4[1]),  
+    #         "vertex_4": lambda x, y: x > max(v1[0], v2[0]) and y < min(v2[1], v3[1]),
+    #     }
+
     def move_vertex(self, x, y):
         self.bg = self.original_image.copy()
         v1, v2, v3, v4 = [self.vertex_data[v] for v in self.vertex_data]
