@@ -7,7 +7,7 @@ import numpy as np
 import cv2
 from PIL import Image, ImageTk
 import image_managers, percent, tube, shape_detection as sc
-from sample_extraction import SampleExtractor, cut_image_from_vertex, resize_unwrapping
+from sample_extraction3 import SampleExtractor, cut_image_from_vertex, resize_unwrapping
 from utils import EntryWithPlaceholder, generate_zip, get_file_filepath, get_path, get_results_filepath
 
 CLUSTER_RESHAPE = 0.7
@@ -269,8 +269,8 @@ class GUI(object):
         canvas_extractor.grid(row=0, column=0)
 
     def measures(self):
-        self.entry_height_cm.grid(row=0, column=2)
-        self.btn_height.grid(row=0, column=3)
+        self.entry_height_cm.grid(row=0, column=4)
+        self.btn_height.grid(row=0, column=5)
 
     def un_measures(self):
         self.entry_height_cm.grid_forget()
