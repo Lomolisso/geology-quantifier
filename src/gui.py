@@ -39,7 +39,7 @@ class GUI(object):
         # --- interface parameters ---
         
         # -- fonts -- 
-        self.my_font = tk_font.Font(size=13)
+        self.my_font = tk_font.Font(size=14)
         self.title_font = tk_font.Font(size=20)
         self.data_font = tk_font.Font(size=16)
         
