@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-import sample_extraction3
+import sample_extraction
 
 
 BLACK_COLOR = (0, 0, 0)
