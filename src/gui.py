@@ -84,14 +84,17 @@ class GUI(object):
         self.btn_undo = tk.Button(self.btns_fr, text='Deshacer', width=20, command=self.undo, cursor='arrow')
         self.btn_undo['font'] = self.my_font
 
-        self.btn_contour = tk.Button(self.btns_fr, text='Segmentar', width=20, command=self.segmentate, cursor='arrow')
-        self.btn_contour['font'] = self.my_font
-
         self.btn_save = tk.Button(self.btns_fr, text='Guardar', width=20, command=self.save, cursor='arrow')
         self.btn_save['font'] = self.my_font
 
         self.btn_update = tk.Button(self.btns_fr, text='Actualizar', width=20, command=self.update_screen, cursor='arrow')
         self.btn_update['font'] = self.my_font
+
+        self.btn_analyze = tk.Button(self.btns_fr, text='Analizar', width=20, command=self.analyze, cursor='arrow')
+        self.btn_analyze['font'] = self.my_font
+
+        self.btn_segmentate = tk.Button(self.btns_fr, text='Segmentar', width=20, command=self.segmentate, cursor='arrow')
+        self.btn_segmentate['font'] = self.my_font
 
         # -- entries --
         self.total_clusters = EntryWithPlaceholder(self.btns_fr, "Número de clusters", 'gray')
@@ -276,8 +279,9 @@ class GUI(object):
         self.btn_save.grid(row=1, column=1)
         self.btn_up.grid(row=1, column=2)
         self.btn_down.grid(row=1, column=3)
-        self.btn_contour.grid(row=1, column=4)
-        self.btn_update.grid(row=1, column=5)
+        self.btn_update.grid(row=1, column=4)
+        self.btn_analyze.grid(row=0, column=6)
+        self.btn_segmentate.grid(row=1, column=6)
 
     def clean_principal_frame(self) -> None:
         """
@@ -479,9 +483,33 @@ class GUI(object):
         self.segmentation = False
         self.update_screen()
     
+    def analyze(self) -> None:
+        """
+        This method is in charge of the shape detection at a cluster.
+        """
+        if len(self.selected_images_indices) > 1:
+            tk.messagebox.showwarning("Error", message="Por favor, seleccione solo una imagen.")
+            return
+        if len(self.selected_images_indices) == 1:
+            self.img_tree = self.img_tree.childs[self.selected_images_indices[0]]
+
+        self.clean_principal_frame()
+        self.clean_canvas_frame()
+
+        self.selected_images_indices = []
+        self.segmentation = True
+
+        self.contour = sc.contour_segmentation(self.img_tree.image)
+        self.segmentated = sc.cluster_segmentation(self.img_tree.image,self.contour)
+
+        self.update_screen()
+
+        results = sc.generate_results(self.contour)
+        self.fill_table(results)
+
     def segmentate(self) -> None:
         """
-        This method is in charge of the body detection at a cluster
+        This method is in charge of the shape segmentation at a cluster.
         """
         if len(self.selected_images_indices) > 1:
             tk.messagebox.showwarning("Error", message="Por favor, seleccione solo una imagen.")
@@ -495,7 +523,6 @@ class GUI(object):
         self.selected_images_indices = []
         self.segmentation = True
         
-        self.contour = sc.contour_segmentation(self.img_tree.image) 
         sc.contour_agrupation(self.contour)
         self.segmentated = sc.cluster_segmentation(self.img_tree.image,self.contour)
 
