@@ -103,16 +103,25 @@ class GUI(object):
         self.btn_update = tk.Button(self.btns_fr, text='Actualizar', width=20, command=self.update_screen, cursor='arrow')
         self.btn_update['font'] = self.my_font
 
+        self.btn_height = tk.Button(self.btns_fr, text='Altura', width=20, command=self.set_height, cursor='arrow')
+        self.btn_height['font'] = self.my_font
+
         # -- entries --
         self.total_clusters = EntryWithPlaceholder(self.btns_fr, "Número de clusters", 'gray')
         self.total_clusters.config(borderwidth=2)
         self.total_clusters['font'] = self.my_font
+        self.entry_height_cm = EntryWithPlaceholder(self.btns_fr, "Altura recorte (cm)", 'gray')
+        self.entry_height_cm['font'] = self.my_font
 
         # -- extras --
         self.set_up_scrollbar()
         self.btn_fr_size = 200
         self.segmentation = False
-        self.mode = 'p' 
+        self.height_cm = 0
+        self.mode = 'p'
+    
+    def set_height(self):
+        self.height_cm = int(self.entry_height_cm.get())
 
     def focus_win(self, event):
         if not isinstance( event.widget, tk.Entry):
@@ -222,6 +231,7 @@ class GUI(object):
     def save_image(self):
             self.org_img = self.choose_cut_method()
             self.main_win.unbind('<Key>')
+            self.un_measures()
             self.show_img()
             self.btn_panoramic.pack_forget()
             self.btn_unwrapping.pack_forget()
@@ -258,6 +268,14 @@ class GUI(object):
         self.main_win.bind('<Key>',self.key_press)
         canvas_extractor.grid(row=0, column=0)
 
+    def measures(self):
+        self.entry_height_cm.grid(row=0, column=2)
+        self.btn_height.grid(row=0, column=3)
+
+    def un_measures(self):
+        self.entry_height_cm.grid_forget()
+        self.btn_height.grid_forget()
+
     def select_img(self):
         try:
             img = image_managers.load_image_from_window()
@@ -279,13 +297,16 @@ class GUI(object):
             self.clean_canvas_frame()
             self.clean_btns()
             self.crop(resize_img)
+
+            self.measures()
             self.btn_panoramic.grid(row=0, column=1)
             self.btn_unwrapping.grid(row=0, column=2)
             self.btn_save_img.grid(row=0, column=3)
+
             self.segmentation = False
             self.mode = 'p'
         except:
-            pass
+           pass
 
     def show_img(self) -> None:
         """
@@ -540,7 +561,7 @@ class GUI(object):
 
         self.update_screen()
 
-        results = sc.generate_results(self.contour)
+        results = sc.generate_results(self.contour, self.height_cm/self.segmentated.shape[0])
         self.fill_table(results)
 
     def aggregate(self, results) -> List:
