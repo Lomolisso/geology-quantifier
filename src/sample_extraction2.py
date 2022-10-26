@@ -61,7 +61,7 @@ class SampleExtractor(object):
                 "vertex_3": lambda x, y: x > max(v1[0], v2[0]) and y > max(v1[1], v4[1]),   
                 "vertex_4": lambda x, y: x > max(v1[0], v2[0]) and y < min(v2[1], v3[1]),
             }
-            if self.vertex_dirty is not None and cond_dict[self.vertex_dirty](x, y):
+            if self.vertex_dirty is not None and cond_dict[self.vertex_dirty](x, y) and self._margin_conditions(x, y):
                 self.vertex_data[self.vertex_dirty] = np.array((x, y))
         else:
             v1, v2, v3, v4, v5, v6 = [self.vertex_data[v] for v in self.vertex_data]
@@ -73,12 +73,17 @@ class SampleExtractor(object):
                 "vertex_5": lambda x, y: True,
                 "vertex_6": lambda x, y: True,
             }
-            if self.vertex_dirty is not None and cond_dict[self.vertex_dirty](x, y):
+            if self.vertex_dirty is not None and cond_dict[self.vertex_dirty](x, y) and self._margin_conditions(x, y):
                 self.vertex_data[self.vertex_dirty] = np.array((x, y))
 
 
 
         self._draw_circles_and_lines()
+
+    def _margin_conditions(self, x, y):
+        min_margins = x > 0 and y > 0
+        max_margins = x < self.bg_size[1] and y < self.bg_size[0]
+        return min_margins and max_margins 
 
     def _draw_circles_and_lines(self) -> None:
         """
