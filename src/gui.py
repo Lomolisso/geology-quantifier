@@ -235,9 +235,11 @@ class GUI(object):
             self.main_win.unbind('<Key>')
             self.un_measures()
             self.show_img()
+            self.btn_rotate.grid_forget()
             self.btn_panoramic.pack_forget()
             self.btn_unwrapping.pack_forget()
-            self.btn_save_img.pack_forget()                
+            self.btn_save_img.pack_forget()
+                               
 
     def key_press(self, event):
         if event.char == "s":
@@ -304,6 +306,7 @@ class GUI(object):
             self.btn_panoramic.grid(row=0, column=1)
             self.btn_unwrapping.grid(row=0, column=2)
             self.btn_save_img.grid(row=0, column=3)
+            self.btn_rotate.grid(row=0, column=4)
 
             self.segmentation = False
             self.mode = 'p'
@@ -326,7 +329,7 @@ class GUI(object):
         for wget in self.btns_fr.winfo_children():
             wget.grid_forget()
         self.btn_img.grid(row=0, column=0)
-        self.btn_rotate.grid(row=0, column=1)
+        
 
     def create_btns(self) -> None:
         # Set buttons positions
