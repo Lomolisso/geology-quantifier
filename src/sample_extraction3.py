@@ -59,23 +59,35 @@ class SampleExtractor(object):
         #     "vertex_3": lambda x, y: x > max(v1[0], v2[0]) and y > max(v1[1], v4[1]),  
         #     "vertex_4": lambda x, y: x > max(v1[0], v2[0]) and y < min(v2[1], v3[1]),
         # }
-        v1, v2, v3, v4,v5,v6 = [self.vertex_data[v] for v in self.vertex_data]
+        v1, v2, v4, v5, v3, v6 = [self.vertex_data[v] for v in self.vertex_data]
         if self.vertex_dirty== "vertex_1":
-            v5[1] = y
             v2[0] = x
-            print("vertice1")
+            v3[0] = (x + v5[0])//2
+            v3[1] = v2[1]
+            v5[1] = y
+            v6[0] = (x + v5[0])//2
+            v6[1] = y
         if self.vertex_dirty== "vertex_2":
             v1[0] = x
+            v3[0] = (x + v4[0])//2
+            v3[1] = y
             v4[1] = y
-            print("vertice2")
+            v6[0] = (x + v5[0])//2
+            v6[1] = v5[1]
         if self.vertex_dirty== "vertex_4":
-            v5[0] = x
             v2[1] = y
-            print("vertice4")
+            v3[0] = (x + v2[0])//2
+            v3[1] = y
+            v5[0] = x
+            v6[0] = (x + v1[0])//2
+            v6[1] = v5[1]
         if self.vertex_dirty== "vertex_5":
             v1[1] = y
+            v3[0] = (x + v2[0])//2
+            v3[1] = v2[1]
             v4[0] = x
-            print("vertice5")
+            v6[0] = (x + v1[0])//2
+            v6[1] = y
 
     def move_vertex(self, x, y):
         self.bg = self.original_image.copy()    
