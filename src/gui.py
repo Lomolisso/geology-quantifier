@@ -548,11 +548,14 @@ class GUI(object):
                 # in the res list
                 agg_results[res[0]][i] += res[i+1]
         
+        cont = 0
         for i in range(len(agg_results)):
+            if color_count[i] == 0:
+                agg_results[i] = None
+                continue
             for j in range(len(sc.STATISTICS)):
-                if color_count[i] != 0:
-                    agg_results[i][j] /= color_count[i]
-                    agg_results[i][j] = np.round(agg_results[i][j], 2)
+                agg_results[i][j] /= color_count[i]
+                agg_results[i][j] = np.round(agg_results[i][j], 2)
         return agg_results
 
     def create_label(self, name, row, col):
@@ -574,6 +577,8 @@ class GUI(object):
             self.create_label(sc.STATISTICS[i], 0, i+2)
         
         for row_num in range(len(aggregated_results)):
+            if aggregated_results[row_num] == None:
+                continue
             (b, g, r) = sc.COLORS[row_num]
             color = '#%02x%02x%02x' % (r, g, b)
             label_color = self.create_label("", row_num+1, 0)
