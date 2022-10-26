@@ -59,22 +59,23 @@ class SampleExtractor(object):
         #     "vertex_3": lambda x, y: x > max(v1[0], v2[0]) and y > max(v1[1], v4[1]),  
         #     "vertex_4": lambda x, y: x > max(v1[0], v2[0]) and y < min(v2[1], v3[1]),
         # }
-        if self.total_vertexes == 4:
-            v1, v2, v3, v4 = [self.vertex_data[v] for v in self.vertex_data]
-            if self.vertex_dirty== "vertex_1":
-                v4[1] = y
-                v2[0] = x
-            if self.vertex_dirty== "vertex_2":
-                v1[0] = x
-                v3[1] = y
-            if self.vertex_dirty== "vertex_3":
-                v4[0] = x
-                v2[1] = y
-            else:
-                v1[1] = y
-                v3[0] = x
-        else:
-            v1, v2, v3, v4, v5, v6 = [self.vertex_data[v] for v in self.vertex_data]
+        v1, v2, v3, v4,v5,v6 = [self.vertex_data[v] for v in self.vertex_data]
+        if self.vertex_dirty== "vertex_1":
+            v5[1] = y
+            v2[0] = x
+            print("vertice1")
+        if self.vertex_dirty== "vertex_2":
+            v1[0] = x
+            v4[1] = y
+            print("vertice2")
+        if self.vertex_dirty== "vertex_4":
+            v5[0] = x
+            v2[1] = y
+            print("vertice4")
+        if self.vertex_dirty== "vertex_5":
+            v1[1] = y
+            v4[0] = x
+            print("vertice5")
 
     def move_vertex(self, x, y):
         self.bg = self.original_image.copy()    
@@ -100,9 +101,10 @@ class SampleExtractor(object):
             }
             if self.vertex_dirty is not None and cond_dict[self.vertex_dirty](x, y):
                 self.vertex_data[self.vertex_dirty] = np.array((x, y))
+                self.create_rectangle(x,y)
 
 
-        self.create_rectangle(x,y)
+        
         self._draw_circles_and_lines()
 
     def _draw_circles_and_lines(self) -> None:
@@ -144,8 +146,8 @@ class SampleExtractor(object):
         self.vertex_data[f"vertex_{4 + step}"] = np.array((bg_cols, 0))+d
 
         if self.total_vertexes == 6:
-            self.vertex_data["vertex_3"] = np.array((bg_cols//2, bg_rows*3//4))+d
-            self.vertex_data["vertex_6"] = np.array((bg_cols//2, bg_rows//4))+d
+            self.vertex_data["vertex_3"] = np.array((bg_cols//2, bg_rows))+d
+            self.vertex_data["vertex_6"] = np.array((bg_cols//2, 0))+d
     
     def _reset_vertex_dirty(self) -> None:
         """
