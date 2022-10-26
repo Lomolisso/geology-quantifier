@@ -6,7 +6,10 @@ the geology-cuantifier project.
 from typing import List, Tuple
 import cv2, numpy as np
 
+# COLORS in BGR
+DEF_COLOR = [(255,255,0)]
 COLORS = [(255,0,0), (0,255,0), (0,0,255)]
+
 STATISTICS = ["Rel. de Aspecto", "Area", "Radio Equiv", "Largo Equiv", "Punto Medio X", "Punto Medio Y"]
 
 class ContourData(object):
@@ -116,7 +119,7 @@ def contour_agrupation(contours):
         else:
             c.group = 2
 
-def cluster_segmentation(cluster, contours):
+def cluster_segmentation(cluster, contours, colors):
     """
     Once each CountourData instance is successfully 
     agrupated, this function draws each bounding rect.
@@ -126,7 +129,7 @@ def cluster_segmentation(cluster, contours):
     """
     im = np.copy(cluster)
     for c in contours:
-        color = COLORS[c.group]
+        color = colors[c.group]
         cv2.rectangle(im, c.r, color, 2)
     return im
 

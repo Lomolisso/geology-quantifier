@@ -500,12 +500,12 @@ class GUI(object):
         self.segmentation = True
 
         self.contour = sc.contour_segmentation(self.img_tree.image)
-        self.segmentated = sc.cluster_segmentation(self.img_tree.image,self.contour)
+        self.segmentated = sc.cluster_segmentation(self.img_tree.image,self.contour, sc.DEF_COLOR)
 
         self.update_screen()
 
         results = sc.generate_results(self.contour)
-        self.fill_table(results)
+        self.fill_table(results, sc.DEF_COLOR)
 
     def segmentate(self) -> None:
         """
@@ -524,12 +524,12 @@ class GUI(object):
         self.segmentation = True
         
         sc.contour_agrupation(self.contour)
-        self.segmentated = sc.cluster_segmentation(self.img_tree.image,self.contour)
+        self.segmentated = sc.cluster_segmentation(self.img_tree.image,self.contour, sc.COLORS)
 
         self.update_screen()
 
         results = sc.generate_results(self.contour)
-        self.fill_table(results)
+        self.fill_table(results, sc.COLORS)
 
     def aggregate(self, results) -> List:
         agg_results = []
@@ -548,7 +548,6 @@ class GUI(object):
                 # in the res list
                 agg_results[res[0]][i] += res[i+1]
         
-        cont = 0
         for i in range(len(agg_results)):
             if color_count[i] == 0:
                 agg_results[i] = None
@@ -563,7 +562,7 @@ class GUI(object):
         label.grid(row=row, column=col, sticky=tk.N+tk.S+tk.E+tk.W)
         return label
 
-    def fill_table(self, results) -> None:
+    def fill_table(self, results, colors) -> None:
         """
         This method fills and shows a table at the GUI.
         The data is given as an input.
@@ -579,7 +578,7 @@ class GUI(object):
         for row_num in range(len(aggregated_results)):
             if aggregated_results[row_num] == None:
                 continue
-            (b, g, r) = sc.COLORS[row_num]
+            (b, g, r) = colors[row_num]
             color = '#%02x%02x%02x' % (r, g, b)
             label_color = self.create_label("", row_num+1, 0)
             label_color.config(bg=color, width=1, height=1, justify=tk.CENTER)
