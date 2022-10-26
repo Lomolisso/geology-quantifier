@@ -7,7 +7,7 @@ import numpy as np
 import cv2
 from PIL import Image, ImageTk
 import image_managers, percent, tube, shape_detection as sc
-from sample_extraction import SampleExtractor, cut_image_from_vertex
+from sample_extraction import SampleExtractor, cut_image_from_vertex, resize_unwrapping
 from utils import EntryWithPlaceholder, generate_zip, get_file_filepath, get_path, get_results_filepath
 
 CLUSTER_RESHAPE = 0.7
@@ -64,6 +64,15 @@ class GUI(object):
         self.btn_img['font'] = self.my_font
         self.btn_img.grid(row=0, column=0, padx=5, pady=5)
 
+        self.btn_panoramic = tk.Button(self.btns_fr, text='Modo panorámico', width=20, command=self.to_panoramic, cursor='arrow')
+        self.btn_panoramic['font'] = self.my_font
+
+        self.btn_unwrapping = tk.Button(self.btns_fr, text='Modo unwrapping', width=20, command=self.to_unwrapping, cursor='arrow')
+        self.btn_unwrapping['font'] = self.my_font
+
+        self.btn_save_img = tk.Button(self.btns_fr, text='Guardar imagen', width=20, command=self.save_image, cursor='arrow')
+        self.btn_save_img['font'] = self.my_font
+
         self.btn_3d = tk.Button(self.btns_fr, text='3D', width=20, command=self.plot_3d, cursor='arrow')
         self.btn_3d['font'] = self.my_font
 
@@ -103,7 +112,8 @@ class GUI(object):
         self.set_up_scrollbar()
         self.btn_fr_size = 200
         self.segmentation = False
-    
+        self.mode = 'p' 
+
     def focus_win(self, event):
         if not isinstance( event.widget, tk.Entry):
             self.main_win.focus()
@@ -188,7 +198,6 @@ class GUI(object):
     
     def click_pos(self, event):
         self.sample_extractor.move_vertex(event.x, event.y)
-
         photo_img = cv2.cvtColor(self.sample_extractor.get_image(), cv2.COLOR_BGR2RGB)
         photo_img = Image.fromarray(photo_img)
         img_for_label = ImageTk.PhotoImage(photo_img)
@@ -196,11 +205,35 @@ class GUI(object):
         self.label_extractor.image = img_for_label
         self.label_extractor.grid(row=0, column=0, padx=10, pady=10)
 
-    def key_press(self, event):
-        if event.char == "s":
-            self.org_img = cut_image_from_vertex(self.org_img, self.sample_extractor)
+    def choose_cut_method(self):
+        if self.mode == 'p':
+            return cut_image_from_vertex(self.org_img, self.sample_extractor)
+        elif self.mode == 'w':
+            return resize_unwrapping(self.org_img, self.sample_extractor)
+    
+    def to_unwrapping(self):
+        self.crop(self.org_img, 6)  
+        self.mode = 'w'
+
+    def to_panoramic(self):
+        self.crop(self.org_img, 4)
+        self.mode = 'p'
+
+    def save_image(self):
+            self.org_img = self.choose_cut_method()
             self.main_win.unbind('<Key>')
             self.show_img()
+            self.btn_panoramic.pack_forget()
+            self.btn_unwrapping.pack_forget()
+            self.btn_save_img.pack_forget()                
+
+    def key_press(self, event):
+        if event.char == "s":
+            self.save_image()
+        elif event.char == 'p':
+            self.to_panoramic()
+        elif event.char == "w":
+            self.to_unwrapping()
         elif event.char == "r":
             self.sample_extractor.reset_vertexes_pos()
             self.sample_extractor.refresh_image()
@@ -214,8 +247,8 @@ class GUI(object):
     def release_click(self, event):
         self.sample_extractor.refresh_image()
 
-    def crop(self, image):
-        self.sample_extractor = SampleExtractor(self._resize_img(image))
+    def crop(self, image, n=4):
+        self.sample_extractor = SampleExtractor(self._resize_img(image), n)
         #se ingresa en un canvas
         canvas_extractor = tk.Canvas(self.principal_fr)
         self.label_extractor = self.add_img_to_canvas(canvas_extractor, self.sample_extractor.get_image())
@@ -246,7 +279,11 @@ class GUI(object):
             self.clean_canvas_frame()
             self.clean_btns()
             self.crop(resize_img)
+            self.btn_panoramic.grid(row=0, column=1)
+            self.btn_unwrapping.grid(row=0, column=2)
+            self.btn_save_img.grid(row=0, column=3)
             self.segmentation = False
+            self.mode = 'p'
         except:
             pass
 
