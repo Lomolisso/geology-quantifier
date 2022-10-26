@@ -6,6 +6,7 @@ a matrix.
 """
 import cv2
 import pyvista as pv
+from utils import get_path
 
 pv.global_theme.title = '3D Rock Sample'
 
@@ -20,6 +21,6 @@ def fill_tube(image: cv2.Mat) -> bool:
     tex = pv.numpy_to_texture(outRGB)
 
     # Create the tube and later load the image texture, to see it.
-    surf = pv.read('.\src\\tubo.obj')
+    surf = pv.read(get_path('.\src\\tubo.obj'))
     surf.plot(texture=tex, background="black", cpos='xy')
     return True
