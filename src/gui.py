@@ -63,6 +63,15 @@ class GUI(object):
         self.btn_img['font'] = self.my_font
         self.btn_img.grid(row=0, column=0)
 
+        self.btn_panoramic = tk.Button(self.btns_fr, text='Modo panorámico', width=20, command=self.to_panoramic, cursor='arrow')
+        self.btn_panoramic['font'] = self.my_font
+
+        self.btn_unwrapping = tk.Button(self.btns_fr, text='Modo unwrapping', width=20, command=self.to_unwrapping, cursor='arrow')
+        self.btn_unwrapping['font'] = self.my_font
+
+        self.btn_save_img = tk.Button(self.btns_fr, text='Guardar imagen', width=20, command=self.save_image, cursor='arrow')
+        self.btn_save_img['font'] = self.my_font
+
         self.btn_3d = tk.Button(self.btns_fr, text='3D', width=20, command=self.plot_3d, cursor='arrow')
         self.btn_3d['font'] = self.my_font
 
@@ -199,18 +208,30 @@ class GUI(object):
             return cut_image_from_vertex(self.org_img, self.sample_extractor)
         elif self.mode == 'w':
             return resize_unwrapping(self.org_img, self.sample_extractor)
+    
+    def to_unwrapping(self):
+        self.crop(self.org_img, 6)  
+        self.mode = 'w'
 
-    def key_press(self, event):
-        if event.char == "s":
+    def to_panoramic(self):
+        self.crop(self.org_img, 4)
+        self.mode = 'p'
+
+    def save_image(self):
             self.org_img = self.choose_cut_method()
             self.main_win.unbind('<Key>')
             self.show_img()
+            self.btn_panoramic.pack_forget()
+            self.btn_unwrapping.pack_forget()
+            self.btn_save_img.pack_forget()                
+
+    def key_press(self, event):
+        if event.char == "s":
+            self.save_image()
         elif event.char == 'p':
-            self.crop(self.org_img, 4)
-            self.mode = 'p'
+            self.to_panoramic()
         elif event.char == "w":
-            self.crop(self.org_img, 6)  
-            self.mode = 'w'
+            self.to_unwrapping()
         elif event.char == "r":
             self.sample_extractor.reset_vertexes_pos()
             self.sample_extractor.refresh_image()
@@ -256,6 +277,9 @@ class GUI(object):
             self.clean_canvas_frame()
             self.clean_btns()
             self.crop(resize_img)
+            self.btn_panoramic.grid(row=0, column=1)
+            self.btn_unwrapping.grid(row=0, column=2)
+            self.btn_save_img.grid(row=0, column=3)
             self.segmentation = False
             self.mode = 'p'
         except:
