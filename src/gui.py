@@ -523,6 +523,7 @@ class GUI(object):
         self.selected_images_indices = []
         self.segmentation = True
         
+        self.contour = sc.contour_segmentation(self.img_tree.image)
         sc.contour_agrupation(self.contour)
         self.segmentated = sc.cluster_segmentation(self.img_tree.image,self.contour, sc.COLORS)
 
