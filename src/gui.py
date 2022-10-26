@@ -235,12 +235,11 @@ class GUI(object):
             self.main_win.unbind('<Key>')
             self.un_measures()
             self.show_img()
-            self.btn_rotate.grid_forget()
             self.btn_panoramic.pack_forget()
             self.btn_unwrapping.pack_forget()
             self.btn_save_img.pack_forget()
+            self.btn_rotate.grid_forget()
                                
-
     def key_press(self, event):
         if event.char == "s":
             self.save_image()
