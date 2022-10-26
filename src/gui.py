@@ -39,14 +39,13 @@ class GUI(object):
         # --- interface parameters ---
         
         # -- fonts -- 
-        self.my_font = tk_font.Font(size=14)
+        self.my_font = tk_font.Font(size=13)
         self.title_font = tk_font.Font(size=20)
         self.data_font = tk_font.Font(size=16)
         
         # -- frames --
         self.btns_fr = tk.Frame(self.main_win)
         self.btns_fr.grid(row=0, column=1, columnspan=3, padx=10, pady=10, sticky=tk.NW)
-        for i in range(6): self.btns_fr.columnconfigure(i, weight=1)
 
         self.img_container_fr = tk.Frame(self.main_win)
         
@@ -62,7 +61,7 @@ class GUI(object):
         # -- buttons --
         self.btn_img = tk.Button(self.btns_fr, text='Seleccionar imagen', width=20, command=self.select_img, cursor='arrow')
         self.btn_img['font'] = self.my_font
-        self.btn_img.grid(row=0, column=0, padx=5, pady=5)
+        self.btn_img.grid(row=0, column=0)
 
         self.btn_3d = tk.Button(self.btns_fr, text='3D', width=20, command=self.plot_3d, cursor='arrow')
         self.btn_3d['font'] = self.my_font
@@ -96,7 +95,6 @@ class GUI(object):
 
         # -- entries --
         self.total_clusters = EntryWithPlaceholder(self.btns_fr, "Número de clusters", 'gray')
-        self.total_clusters.config(borderwidth=2)
         self.total_clusters['font'] = self.my_font
 
         # -- extras --
@@ -265,21 +263,21 @@ class GUI(object):
     def clean_btns(self) -> None:
         for wget in self.btns_fr.winfo_children():
             wget.grid_forget()
-        self.btn_img.grid(row=0, column=0, padx=5, pady=5)
+        self.btn_img.grid(row=0, column=0)
 
     def create_btns(self) -> None:
         # Set buttons positions
-        self.btn_3d.grid(row=0, column=1, padx=5, pady=5)
-        self.total_clusters.grid(row=0, column=2, padx=5, pady=5, ipadx=2, ipady=5)
-        self.btn_split.grid(row=0, column=3, padx=5, pady=5)
-        self.btn_merge.grid(row=0, column=4, padx=5, pady=5)
-        self.btn_sub.grid(row=0, column=5, padx=5, pady=5)      
-        self.btn_undo.grid(row=1,column=0, padx=5, pady=5)
-        self.btn_save.grid(row=1, column=1, padx=5, pady=5)
-        self.btn_up.grid(row=1, column=2, padx=5, pady=5)
-        self.btn_down.grid(row=1, column=3, padx=5, pady=5)
-        self.btn_contour.grid(row=1, column=4, padx=5, pady=5)
-        self.btn_update.grid(row=1, column=5, padx=5, pady=5)
+        self.btn_3d.grid(row=0, column=1)
+        self.total_clusters.grid(row=0, column=2)
+        self.btn_split.grid(row=0, column=3)
+        self.btn_merge.grid(row=0, column=4)
+        self.btn_sub.grid(row=0, column=5)      
+        self.btn_undo.grid(row=1,column=0)
+        self.btn_save.grid(row=1, column=1)
+        self.btn_up.grid(row=1, column=2)
+        self.btn_down.grid(row=1, column=3)
+        self.btn_contour.grid(row=1, column=4)
+        self.btn_update.grid(row=1, column=5)
 
     def clean_principal_frame(self) -> None:
         """
