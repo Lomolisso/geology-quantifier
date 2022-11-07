@@ -7,7 +7,7 @@ import numpy as np
 import cv2
 from PIL import Image, ImageTk
 import image_managers, percent, tube, shape_detection as sc
-from sample_extraction3 import SampleExtractor, cut_image_from_vertex, resize_unwrapping
+from sample_extraction_refactor import ExtractorModeEnum, SampleExtractor, cut_image_from_vertex, resize_unwrapping
 from utils import EntryWithPlaceholder, generate_zip, get_file_filepath, get_path, get_results_filepath
 
 CLUSTER_RESHAPE = 0.7
@@ -203,7 +203,7 @@ class GUI(object):
         self.selected_images_indices=[]
     
     def click_check(self, event):
-        self.sample_extractor.check_circle_movement(event.x, event.y)
+        self.sample_extractor.check_mov(event.x, event.y)
     
     def click_pos(self, event):
         self.sample_extractor.move_vertex(event.x, event.y)
@@ -221,21 +221,21 @@ class GUI(object):
             return resize_unwrapping(self.org_img, self.sample_extractor)
     
     def to_unwrapping(self):
-        self.crop(self.org_img, 6)  
+        self.crop(self.org_img, ExtractorModeEnum.UNWRAPPER)  
         self.mode = 'w'
 
     def to_panoramic(self):
-        self.crop(self.org_img, 4)
+        self.crop(self.org_img, ExtractorModeEnum.PANORAMIC)
         self.mode = 'p'
 
     def save_image(self):
-            self.org_img = self.choose_cut_method()
-            self.main_win.unbind('<Key>')
-            self.un_measures()
-            self.show_img()
-            self.btn_panoramic.pack_forget()
-            self.btn_unwrapping.pack_forget()
-            self.btn_save_img.pack_forget()                
+        self.org_img = self.choose_cut_method()
+        self.main_win.unbind('<Key>')
+        self.un_measures()
+        self.show_img()
+        self.btn_panoramic.pack_forget()
+        self.btn_unwrapping.pack_forget()
+        self.btn_save_img.pack_forget()                
 
     def key_press(self, event):
         if event.char == "s":
@@ -245,7 +245,7 @@ class GUI(object):
         elif event.char == "w":
             self.to_unwrapping()
         elif event.char == "r":
-            self.sample_extractor.reset_vertexes_pos()
+            self.sample_extractor.reset_vertices()
             self.sample_extractor.refresh_image()
             photo_img = cv2.cvtColor(self.sample_extractor.get_image(), cv2.COLOR_BGR2RGB)
             photo_img = Image.fromarray(photo_img)
@@ -257,8 +257,8 @@ class GUI(object):
     def release_click(self, event):
         self.sample_extractor.refresh_image()
 
-    def crop(self, image, n=4):
-        self.sample_extractor = SampleExtractor(self._resize_img(image), n)
+    def crop(self, image, mode):
+        self.sample_extractor = SampleExtractor(self._resize_img(image), mode)
         #se ingresa en un canvas
         canvas_extractor = tk.Canvas(self.principal_fr)
         self.label_extractor = self.add_img_to_canvas(canvas_extractor, self.sample_extractor.get_image())
@@ -296,7 +296,8 @@ class GUI(object):
             self.clean_principal_frame()
             self.clean_canvas_frame()
             self.clean_btns()
-            self.crop(resize_img)
+            
+            self.crop(resize_img, ExtractorModeEnum.PANORAMIC)
 
             self.measures()
             self.btn_panoramic.grid(row=0, column=1)

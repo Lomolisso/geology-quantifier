@@ -1,7 +1,5 @@
 import cv2
 import numpy as np
-import sample_extraction3
-
 
 BLACK_COLOR = (0, 0, 0)
 WHITE_COLOR = (255, 255, 255)
