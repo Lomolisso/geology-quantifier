@@ -42,10 +42,17 @@ class GUI(object):
         self.my_font = tk_font.Font(size=14)
         self.title_font = tk_font.Font(size=20)
         self.data_font = tk_font.Font(size=16)
+        self.section_font = tk_font.Font(size=10)
         
         # -- frames --
         self.btns_fr = tk.Frame(self.main_win)
         self.btns_fr.grid(row=0, column=1, columnspan=3, padx=10, pady=10, sticky=tk.NW)
+        self.file_fr = tk.Frame(self.btns_fr, highlightbackground="light gray", highlightthickness=1)
+        self.file_fr.grid(row = 0, column= 0, sticky=tk.N)
+        self.command_fr = tk.Frame(self.btns_fr, highlightbackground="light gray", highlightthickness=1)
+        self.crop_fr = tk.Frame(self.btns_fr, highlightbackground="light gray", highlightthickness=1)
+        self.size_fr = tk.Frame(self.btns_fr, highlightbackground="light gray", highlightthickness=1)
+        self.size_sub_fr = tk.Frame(self.size_fr)
         for i in range(6): self.btns_fr.columnconfigure(i, weight=1)
 
         self.img_container_fr = tk.Frame(self.main_win)
@@ -60,20 +67,20 @@ class GUI(object):
         self.results_fr = tk.Frame(self.canvas_fr)
 
         # -- buttons --
-        self.btn_img = tk.Button(self.btns_fr, text='Seleccionar imagen', width=20, command=self.select_img, cursor='arrow')
+        self.btn_img = tk.Button(self.file_fr, text='Seleccionar imagen', width=20, command=self.select_img, cursor='arrow')
         self.btn_img['font'] = self.my_font
         self.btn_img.grid(row=0, column=0, padx=5, pady=5)
         self.hover_img = CreateToolTip(widget=self.btn_img, text="Permite abrir una imagen desde su PC.")
 
-        self.btn_panoramic = tk.Button(self.btns_fr, text='Modo panorámico', width=20, command=self.to_panoramic, cursor='arrow')
+        self.btn_panoramic = tk.Button(self.crop_fr, text='Modo panorámico', width=20, command=self.to_panoramic, cursor='arrow')
         self.btn_panoramic['font'] = self.my_font
         self.hover_panoramic = CreateToolTip(widget=self.btn_panoramic, text="Es necesario posicionar 4 puntos para realizar \n un recorte sin ajuste de perspectiva.")
 
-        self.btn_unwrapping = tk.Button(self.btns_fr, text='Modo unwrapping', width=20, command=self.to_unwrapping, cursor='arrow')
+        self.btn_unwrapping = tk.Button(self.crop_fr, text='Modo unwrapping', width=20, command=self.to_unwrapping, cursor='arrow')
         self.btn_unwrapping['font'] = self.my_font
         self.hover_unwrapping = CreateToolTip(widget=self.btn_unwrapping, text="Es necesario posicionar 6 puntos para realizar \n un recorte con ajuste de perspectiva.")
 
-        self.btn_save_img = tk.Button(self.btns_fr, text='Guardar imagen', width=20, command=self.save_image, cursor='arrow')
+        self.btn_save_img = tk.Button(self.command_fr, text='Guardar imagen', width=20, command=self.save_image, cursor='arrow')
         self.btn_save_img['font'] = self.my_font
         self.hover_save_img = CreateToolTip(widget=self.btn_save_img, text="Recorta la imagen encerrada en el rectangulo que se ve en pantalla.")
 
@@ -109,7 +116,7 @@ class GUI(object):
         self.btn_contour['font'] = self.my_font
         self.hover_contour = CreateToolTip(widget=self.btn_contour, text="Calcula resultados utilizando como base la imagen seleccionada.")
 
-        self.btn_save = tk.Button(self.btns_fr, text='Guardar', width=20, command=self.save, cursor='arrow')
+        self.btn_save = tk.Button(self.file_fr, text='Guardar', width=20, command=self.save, cursor='arrow')
         self.btn_save['font'] = self.my_font
         self.hover_save = CreateToolTip(widget=self.btn_save, text="Guarda la imagen actual junto con las imágenes \n obtenidas al segmentar por color.")
 
@@ -117,7 +124,7 @@ class GUI(object):
         self.btn_update['font'] = self.my_font
         self.hover_update = CreateToolTip(widget=self.btn_update, text="Actualiza la pantalla, ajustando el tamaño de las imágenes presentes en ella.")
 
-        self.btn_height = tk.Button(self.btns_fr, text='Altura', width=20, command=self.set_height, cursor='arrow')
+        self.btn_height = tk.Button(self.size_sub_fr, text='Altura', width=20, command=self.set_height, cursor='arrow')
         self.btn_height['font'] = self.my_font
         self.hover_height = CreateToolTip(widget=self.btn_height, text="Permite guardar la altura (en cm) de la roca introdujida.")
 
@@ -125,8 +132,15 @@ class GUI(object):
         self.total_clusters = EntryWithPlaceholder(self.btns_fr, "Número de clusters", 'gray')
         self.total_clusters.config(borderwidth=2)
         self.total_clusters['font'] = self.my_font
-        self.entry_height_cm = EntryWithPlaceholder(self.btns_fr, "Altura recorte (cm)", 'gray')
+        self.entry_height_cm = EntryWithPlaceholder(self.size_sub_fr, "Altura recorte (cm)", 'gray')
         self.entry_height_cm['font'] = self.my_font
+
+        # -- labels --
+        self.file_fr_lbl = tk.Label(self.file_fr, text = "Archivos", font= self.section_font)
+        self.file_fr_lbl.grid(column= 0)
+        self.command_fr_lbl = tk.Label(self.command_fr, text = "Comandos",  font= self.section_font)
+        self.crop_fr_lbl = tk.Label(self.crop_fr, text = "Modo de\n recorte", font= self.section_font)
+        self.size_fr_lbl = tk.Label(self.size_fr, text = "Tamaño", font= self.section_font)
 
         # -- extras --
         self.set_up_scrollbar()
@@ -134,6 +148,7 @@ class GUI(object):
         self.segmentation = False
         self.height_cm = 0
         self.mode = 'p'
+
     
     def set_height(self):
         self.height_cm = int(self.entry_height_cm.get())
@@ -248,9 +263,15 @@ class GUI(object):
             self.main_win.unbind('<Key>')
             self.un_measures()
             self.show_img()
-            self.btn_panoramic.grid_forget()
-            self.btn_unwrapping.grid_forget()
-            self.btn_save_img.grid_forget()                
+            for wget in self.command_fr.winfo_children():
+                wget.grid_forget()
+            for wget in self.crop_fr.winfo_children():
+                wget.grid_forget()
+            for wget in self.size_fr.winfo_children():
+                wget.grid_forget()
+            self.command_fr.grid_forget()
+            self.crop_fr.grid_forget()    
+            self.size_fr.grid_forget()                  
 
     def key_press(self, event):
         if event.char == "s":
@@ -284,12 +305,19 @@ class GUI(object):
         canvas_extractor.grid(row=0, column=0)
 
     def measures(self):
-        self.entry_height_cm.grid(row=0, column=4)
-        self.btn_height.grid(row=0, column=5)
+        self.size_fr.grid(row=0, column=4, sticky=tk.N)
+        self.size_sub_fr.grid(row=0, column=0)
+        self.entry_height_cm.grid(row=0, column=0)
+        self.btn_height.grid(row=0, column=1)
+        self.size_fr_lbl.grid(row=1, column=0)
 
     def un_measures(self):
+        
         self.entry_height_cm.grid_forget()
         self.btn_height.grid_forget()
+        self.size_fr_lbl.grid_forget()
+        self.size_fr.grid_forget()
+        self.size_sub_fr.grid_forget()
 
     def select_img(self):
         try:
@@ -314,9 +342,17 @@ class GUI(object):
             self.crop(resize_img)
 
             self.measures()
-            self.btn_panoramic.grid(row=0, column=1)
-            self.btn_unwrapping.grid(row=0, column=2)
-            self.btn_save_img.grid(row=0, column=3)
+
+            self.file_fr_lbl.grid(column= 0)
+            # -- crop types --
+            self.crop_fr.grid(row = 0, column= 2, sticky=tk.N)
+            self.btn_panoramic.grid(row=0, column=0,padx=5, pady=5)
+            self.btn_unwrapping.grid(row=1, column=0, padx=5, pady=5)
+            self.crop_fr_lbl.grid(column=0,padx=5, pady=5)
+            # -- commands --
+            self.command_fr.grid(row=0, column=1, sticky=tk.N)
+            self.btn_save_img.grid(row=0, column=0, padx=5, pady=5)
+            self.command_fr_lbl.grid(column=0, padx=5, pady=5)
 
             self.segmentation = False
             self.mode = 'p'
@@ -338,17 +374,23 @@ class GUI(object):
     def clean_btns(self) -> None:
         for wget in self.btns_fr.winfo_children():
             wget.grid_forget()
+        self.file_fr_lbl.grid_forget()
+        self.file_fr.grid(row = 0, column= 0, sticky=tk.N)
         self.btn_img.grid(row=0, column=0, padx=5, pady=5)
 
     def create_btns(self) -> None:
         # Set buttons positions
+        self.file_fr_lbl.grid_forget()
         self.btn_3d.grid(row=0, column=1, padx=5, pady=5)
         self.total_clusters.grid(row=0, column=2, padx=5, pady=5, ipadx=2, ipady=5)
         self.btn_split.grid(row=0, column=3, padx=5, pady=5)
         self.btn_merge.grid(row=0, column=4, padx=5, pady=5)
         self.btn_sub.grid(row=0, column=5, padx=5, pady=5)      
         self.btn_undo.grid(row=1,column=0, padx=5, pady=5)
-        self.btn_save.grid(row=1, column=1, padx=5, pady=5)
+        # -- files --
+        self.btn_save.grid(row=1, column=0, padx=5, pady=5)
+        self.file_fr_lbl.grid(column= 0, padx=5, pady=5)
+
         self.btn_up.grid(row=1, column=2, padx=5, pady=5)
         self.btn_down.grid(row=1, column=3, padx=5, pady=5)
         self.btn_contour.grid(row=1, column=4, padx=5, pady=5)
