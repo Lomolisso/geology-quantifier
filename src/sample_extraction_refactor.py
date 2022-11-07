@@ -301,9 +301,9 @@ def resize_unwrapping(img, sample_extractor):
     but in a different version of the image.
     """
 
-    v1, v2, v4, v5, v3, v6 = sample_extractor.get_vertex_data()
+    v1, v6, v5, v4, v3, v2 = sample_extractor.get_vertex_data()
 
-    points = v1, v6, v5, v4, v3, v2
+    points = v1, v2, v3, v4, v5, v6
     
     resize_image = sample_extractor.get_image()
     rs_shape = resize_image.shape
@@ -330,7 +330,7 @@ def cut_image_from_vertex(img, sample_extractor):
     org_shape = img.shape
     ratio = org_shape[0]/rs_shape[0]
     vertex = []
-    for value in vertex_data.values():
+    for value in vertex_data:
         vertex.append(value*ratio)
     vertex_1, vertex_2, vertex_3, vertex_4 = [v for v in vertex]
 
