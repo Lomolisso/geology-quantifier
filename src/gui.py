@@ -70,6 +70,12 @@ class GUI(object):
         self.btn_unwrapping = tk.Button(self.btns_fr, text='Modo unwrapping', width=20, command=self.to_unwrapping, cursor='arrow')
         self.btn_unwrapping['font'] = self.my_font
 
+        self.btn_rotateR = tk.Button(self.btns_fr, text='Rotar imagen R', width=20, command=self.rotateR, cursor='arrow')
+        self.btn_rotateR['font'] = self.my_font
+
+        self.btn_rotateL = tk.Button(self.btns_fr, text='Rotar imagen L', width=20, command=self.rotateL, cursor='arrow')
+        self.btn_rotateL['font'] = self.my_font
+
         self.btn_save_img = tk.Button(self.btns_fr, text='Guardar imagen', width=20, command=self.save_image, cursor='arrow')
         self.btn_save_img['font'] = self.my_font
 
@@ -119,7 +125,8 @@ class GUI(object):
         self.segmentation = False
         self.height_cm = 0
         self.mode = 'p'
-    
+        self.grados = 0
+
     def set_height(self):
         self.height_cm = int(self.entry_height_cm.get())
 
@@ -224,6 +231,21 @@ class GUI(object):
         self.crop(self.org_img, ExtractorModeEnum.UNWRAPPER)  
         self.mode = 'w'
 
+    def rotateR(self):
+        degree = cv2.getTrackbarPos('degree','Cuantificador geologico')
+        image_center = tuple(np.array(self.org_img.shape[1::-1]) / 2)
+        rotation_matrix = cv2.getRotationMatrix2D(image_center, degree, 1)
+        rotated_image = cv2.warpAffine(self.bg, rotation_matrix, image_center)
+        cv2.imshow('Rotate', rotated_image)
+    
+    def rotateL(self):
+        degree = cv2.getTrackbarPos('degree','Frame')
+        image_center = tuple(np.array(self.org_img.shape[1::-1]) / 2)
+        rotation_matrix = cv2.getRotationMatrix2D(image_center, degree, -1)
+        rotated_image = cv2.warpAffine(self.bg, rotation_matrix, image_center)
+        cv2.imshow('Rotate', rotated_image)
+
+
     def to_panoramic(self):
         self.crop(self.org_img, ExtractorModeEnum.PANORAMIC)
         self.mode = 'p'
@@ -236,6 +258,8 @@ class GUI(object):
         self.btn_panoramic.pack_forget()
         self.btn_unwrapping.pack_forget()
         self.btn_save_img.pack_forget()                
+        self.btn_rotateR.pack_forget()
+        self.btn_rotateL.pack_forget()
 
     def key_press(self, event):
         if event.char == "s":
@@ -303,6 +327,8 @@ class GUI(object):
             self.btn_panoramic.grid(row=0, column=1)
             self.btn_unwrapping.grid(row=0, column=2)
             self.btn_save_img.grid(row=0, column=3)
+            self.btn_rotateR.grid(row=2, column=5)
+            self.btn_rotateL.grid(row=2, column=4)
 
             self.segmentation = False
             self.mode = 'p'

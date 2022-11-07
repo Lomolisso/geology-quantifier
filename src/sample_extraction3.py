@@ -209,6 +209,17 @@ class SampleExtractor(object):
         points = self.vertex_data['vertex_1'], self.vertex_data['vertex_6'], self.vertex_data['vertex_5'], self.vertex_data['vertex_4'], self.vertex_data['vertex_3'], self.vertex_data['vertex_2']
         return unwrapping(self.original_image, "awa.jpg", points)
 
+    def rotate_image(self) -> None:
+        self.org_img =  cv2.rotate(self.org_img, cv2.ROTATE_90_CLOCKWISE)
+        self.crop(self.org_img)
+    
+    def funcRotate(self, degree=0):
+        degree = cv2.getTrackbarPos('degree','Frame')
+        image_center = tuple(np.array(self.bg.shape[1::-1]) / 2)
+        rotation_matrix = cv2.getRotationMatrix2D(image_center, degree, 1)
+        rotated_image = cv2.warpAffine(self.bg, rotation_matrix, image_center)
+        cv2.imshow('Rotate', rotated_image)
+
 
 def resize_unwrapping(img, sample_extractor):
     """
