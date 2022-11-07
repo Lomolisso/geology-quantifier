@@ -248,9 +248,9 @@ class GUI(object):
             self.main_win.unbind('<Key>')
             self.un_measures()
             self.show_img()
-            self.btn_panoramic.pack_forget()
-            self.btn_unwrapping.pack_forget()
-            self.btn_save_img.pack_forget()                
+            self.btn_panoramic.grid_forget()
+            self.btn_unwrapping.grid_forget()
+            self.btn_save_img.grid_forget()                
 
     def key_press(self, event):
         if event.char == "s":
@@ -284,8 +284,8 @@ class GUI(object):
         canvas_extractor.grid(row=0, column=0)
 
     def measures(self):
-        self.entry_height_cm.grid(row=0, column=2)
-        self.btn_height.grid(row=0, column=3)
+        self.entry_height_cm.grid(row=0, column=4)
+        self.btn_height.grid(row=0, column=5)
 
     def un_measures(self):
         self.entry_height_cm.grid_forget()
