@@ -7,7 +7,7 @@ import numpy as np
 import cv2
 from PIL import Image, ImageTk
 import image_managers, percent, tube, shape_detection as sc
-from sample_extraction import SampleExtractor, cut_image_from_vertex
+from sample_extraction import SampleExtractor, cut_image_from_vertex, resize_unwrapping
 from utils import EntryWithPlaceholder, generate_zip, get_file_filepath, get_path, get_results_filepath
 
 CLUSTER_RESHAPE = 0.7
@@ -64,6 +64,15 @@ class GUI(object):
         self.btn_img['font'] = self.my_font
         self.btn_img.grid(row=0, column=0, padx=5, pady=5)
 
+        self.btn_panoramic = tk.Button(self.btns_fr, text='Modo panorámico', width=20, command=self.to_panoramic, cursor='arrow')
+        self.btn_panoramic['font'] = self.my_font
+
+        self.btn_unwrapping = tk.Button(self.btns_fr, text='Modo unwrapping', width=20, command=self.to_unwrapping, cursor='arrow')
+        self.btn_unwrapping['font'] = self.my_font
+
+        self.btn_save_img = tk.Button(self.btns_fr, text='Guardar imagen', width=20, command=self.save_image, cursor='arrow')
+        self.btn_save_img['font'] = self.my_font
+
         self.btn_3d = tk.Button(self.btns_fr, text='3D', width=20, command=self.plot_3d, cursor='arrow')
         self.btn_3d['font'] = self.my_font
 
@@ -97,16 +106,26 @@ class GUI(object):
         self.btn_segmentate = tk.Button(self.btns_fr, text='Segmentar', width=20, command=self.segmentate, cursor='arrow')
         self.btn_segmentate['font'] = self.my_font
 
+        self.btn_height = tk.Button(self.btns_fr, text='Altura', width=20, command=self.set_height, cursor='arrow')
+        self.btn_height['font'] = self.my_font
+
         # -- entries --
         self.total_clusters = EntryWithPlaceholder(self.btns_fr, "Número de clusters", 'gray')
         self.total_clusters.config(borderwidth=2)
         self.total_clusters['font'] = self.my_font
+        self.entry_height_cm = EntryWithPlaceholder(self.btns_fr, "Altura recorte (cm)", 'gray')
+        self.entry_height_cm['font'] = self.my_font
 
         # -- extras --
         self.set_up_scrollbar()
         self.btn_fr_size = 200
         self.segmentation = False
+        self.height_cm = 0
+        self.mode = 'p'
     
+    def set_height(self):
+        self.height_cm = int(self.entry_height_cm.get())
+
     def focus_win(self, event):
         if not isinstance( event.widget, tk.Entry):
             self.main_win.focus()
@@ -191,7 +210,6 @@ class GUI(object):
     
     def click_pos(self, event):
         self.sample_extractor.move_vertex(event.x, event.y)
-
         photo_img = cv2.cvtColor(self.sample_extractor.get_image(), cv2.COLOR_BGR2RGB)
         photo_img = Image.fromarray(photo_img)
         img_for_label = ImageTk.PhotoImage(photo_img)
@@ -199,11 +217,36 @@ class GUI(object):
         self.label_extractor.image = img_for_label
         self.label_extractor.grid(row=0, column=0, padx=10, pady=10)
 
+    def choose_cut_method(self):
+        if self.mode == 'p':
+            return cut_image_from_vertex(self.org_img, self.sample_extractor)
+        elif self.mode == 'w':
+            return resize_unwrapping(self.org_img, self.sample_extractor)
+    
+    def to_unwrapping(self):
+        self.crop(self.org_img, 6)  
+        self.mode = 'w'
+
+    def to_panoramic(self):
+        self.crop(self.org_img, 4)
+        self.mode = 'p'
+
+    def save_image(self):
+            self.org_img = self.choose_cut_method()
+            self.main_win.unbind('<Key>')
+            self.un_measures()
+            self.show_img()
+            self.btn_panoramic.pack_forget()
+            self.btn_unwrapping.pack_forget()
+            self.btn_save_img.pack_forget()                
+
     def key_press(self, event):
         if event.char == "s":
-            self.org_img = cut_image_from_vertex(self.org_img, self.sample_extractor)
-            self.main_win.unbind('<Key>')
-            self.show_img()
+            self.save_image()
+        elif event.char == 'p':
+            self.to_panoramic()
+        elif event.char == "w":
+            self.to_unwrapping()
         elif event.char == "r":
             self.sample_extractor.reset_vertexes_pos()
             self.sample_extractor.refresh_image()
@@ -217,8 +260,8 @@ class GUI(object):
     def release_click(self, event):
         self.sample_extractor.refresh_image()
 
-    def crop(self, image):
-        self.sample_extractor = SampleExtractor(self._resize_img(image))
+    def crop(self, image, n=4):
+        self.sample_extractor = SampleExtractor(self._resize_img(image), n)
         #se ingresa en un canvas
         canvas_extractor = tk.Canvas(self.principal_fr)
         self.label_extractor = self.add_img_to_canvas(canvas_extractor, self.sample_extractor.get_image())
@@ -227,6 +270,14 @@ class GUI(object):
         self.label_extractor.bind('<ButtonRelease-1>', self.release_click)
         self.main_win.bind('<Key>',self.key_press)
         canvas_extractor.grid(row=0, column=0)
+
+    def measures(self):
+        self.entry_height_cm.grid(row=0, column=2)
+        self.btn_height.grid(row=0, column=3)
+
+    def un_measures(self):
+        self.entry_height_cm.grid_forget()
+        self.btn_height.grid_forget()
 
     def select_img(self):
         try:
@@ -249,9 +300,16 @@ class GUI(object):
             self.clean_canvas_frame()
             self.clean_btns()
             self.crop(resize_img)
+
+            self.measures()
+            self.btn_panoramic.grid(row=0, column=1)
+            self.btn_unwrapping.grid(row=0, column=2)
+            self.btn_save_img.grid(row=0, column=3)
+
             self.segmentation = False
+            self.mode = 'p'
         except:
-            pass
+           pass
 
     def show_img(self) -> None:
         """
@@ -531,7 +589,7 @@ class GUI(object):
 
         self.update_screen()
 
-        results = sc.generate_results(self.contour)
+        results = sc.generate_results(self.contour, self.height_cm/self.segmentated.shape[0])
         self.fill_table(results, sc.COLORS)
 
     def aggregate(self, results) -> List:
