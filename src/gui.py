@@ -235,17 +235,19 @@ class GUI(object):
         # degree = cv2.getTrackbarPos('degree','Cuantificador geologico')
         image_center = tuple(np.array(self.org_img.shape[1::-1]) / 2)
         rotation_matrix = cv2.getRotationMatrix2D(image_center, angle=1, scale=1)
-        rotated_image = cv2.warpAffine(self.org_img, self.org_img, rotation_matrix, image_center)
-        cv2.imshow('Rotate', rotated_image)
+        # rotated_image = cv2.warpAffine(self.org_img, rotation_matrix,(self.org_img.shape[1],self.org_img.shape[0]))
+        self.org_img = cv2.warpAffine(self.org_img, rotation_matrix,(self.org_img.shape[1],self.org_img.shape[0]))
+        self.crop(self.org_img, ExtractorModeEnum.PANORAMIC)
+        cv2.imshow('Rotate', self.org_img)
     
     def rotateL(self):
         # degree = cv2.getTrackbarPos('degree','Frame')
         image_center = tuple(np.array(self.org_img.shape[1::-1]) / 2)
-        rotation_matrix = cv2.getRotationMatrix2D(image_center, angle=1, scale=1)
-        rotated_image = cv2.warpAffine(self.org_img, (self.org_img.shape[1],self.org_img.shape[0]) , rotation_matrix, image_center)
-        print
-        cv2.imshow('Rotate', rotated_image)
-
+        rotation_matrix = cv2.getRotationMatrix2D(image_center, angle=-1, scale=1)
+        # rotated_image = cv2.warpAffine(self.org_img, rotation_matrix,(self.org_img.shape[1],self.org_img.shape[0]))
+        self.org_img = cv2.warpAffine(self.org_img, rotation_matrix,(self.org_img.shape[1],self.org_img.shape[0]))
+        self.crop(self.org_img, ExtractorModeEnum.PANORAMIC)
+        cv2.imshow('Rotate', self.org_img)
 
     def to_panoramic(self):
         self.crop(self.org_img, ExtractorModeEnum.PANORAMIC)
