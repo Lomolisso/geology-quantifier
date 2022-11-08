@@ -8,7 +8,7 @@ import cv2
 from PIL import Image, ImageTk
 import image_managers, percent, tube, shape_detection as sc
 from sample_extraction import SampleExtractor, cut_image_from_vertex, resize_unwrapping
-from utils import EntryWithPlaceholder, CreateToolTip, generate_zip, get_file_filepath, get_path, get_results_filepath
+from utils import EntryWithPlaceholder, createButtonWithHover, generate_zip, get_file_filepath, get_path, get_results_filepath
 
 CLUSTER_RESHAPE = 0.7
 ROOT = tk.Tk()
@@ -47,12 +47,18 @@ class GUI(object):
         # -- frames --
         self.btns_fr = tk.Frame(self.main_win)
         self.btns_fr.grid(row=0, column=1, columnspan=3, padx=10, pady=10, sticky=tk.NW)
+
         self.file_fr = tk.Frame(self.btns_fr, highlightbackground="light gray", highlightthickness=1)
         self.file_fr.grid(row = 0, column= 0, sticky=tk.N)
+        
         self.command_fr = tk.Frame(self.btns_fr, highlightbackground="light gray", highlightthickness=1)
+        
         self.crop_fr = tk.Frame(self.btns_fr, highlightbackground="light gray", highlightthickness=1)
+        
         self.size_fr = tk.Frame(self.btns_fr, highlightbackground="light gray", highlightthickness=1)
+        
         self.size_sub_fr = tk.Frame(self.size_fr)
+        
         for i in range(6): self.btns_fr.columnconfigure(i, weight=1)
 
         self.img_container_fr = tk.Frame(self.main_win)
@@ -67,71 +73,76 @@ class GUI(object):
         self.results_fr = tk.Frame(self.canvas_fr)
 
         # -- buttons --
-        self.btn_img = tk.Button(self.file_fr, text='Seleccionar imagen', width=20, command=self.select_img, cursor='arrow')
-        self.btn_img['font'] = self.my_font
+        btn_img_name = 'Seleccionar imagen'
+        btn_img_description = 'Permite abrir una imagen desde su PC.'
+        self.btn_img, self.hover_img = createButtonWithHover(self.file_fr, btn_img_name, self.select_img, self.my_font, btn_img_description)
         self.btn_img.grid(row=0, column=0, padx=5, pady=5)
-        self.hover_img = CreateToolTip(widget=self.btn_img, text="Permite abrir una imagen desde su PC.")
 
-        self.btn_panoramic = tk.Button(self.crop_fr, text='Modo panorámico', width=20, command=self.to_panoramic, cursor='arrow')
-        self.btn_panoramic['font'] = self.my_font
-        self.hover_panoramic = CreateToolTip(widget=self.btn_panoramic, text="Es necesario posicionar 4 puntos para realizar \n un recorte sin ajuste de perspectiva.")
+        btn_panoramic_name = 'Modo panorámico'
+        btn_panoramic_description = 'Es necesario posicionar 4 puntos para realizar un recorte sin ajuste de perspectiva.'
+        self.btn_panoramic, self.hover_panoramic = createButtonWithHover(self.crop_fr, btn_panoramic_name, self.to_panoramic, self.my_font, btn_panoramic_description)
 
-        self.btn_unwrapping = tk.Button(self.crop_fr, text='Modo unwrapping', width=20, command=self.to_unwrapping, cursor='arrow')
-        self.btn_unwrapping['font'] = self.my_font
-        self.hover_unwrapping = CreateToolTip(widget=self.btn_unwrapping, text="Es necesario posicionar 6 puntos para realizar \n un recorte con ajuste de perspectiva.")
-
-        self.btn_save_img = tk.Button(self.command_fr, text='Guardar imagen', width=20, command=self.save_image, cursor='arrow')
-        self.btn_save_img['font'] = self.my_font
-        self.hover_save_img = CreateToolTip(widget=self.btn_save_img, text="Recorta la imagen encerrada en el rectangulo que se ve en pantalla.")
-
-        self.btn_3d = tk.Button(self.btns_fr, text='3D', width=20, command=self.plot_3d, cursor='arrow')
-        self.btn_3d['font'] = self.my_font
-        self.hover_3d = CreateToolTip(widget=self.btn_3d, text="Permite visualizar en 3D la imagen que se encuentra en la pantalla.")
-
-        self.btn_split = tk.Button(self.btns_fr, text='Separar', width=20, command=self.split, cursor='arrow')
-        self.btn_split['font'] = self.my_font
-        self.hover_split = CreateToolTip(widget=self.btn_split, text="Segmenta la imagen por colores, generando una cantidad \n de imagenes igual al número ingresado.")
-
-        self.btn_merge = tk.Button(self.btns_fr, text='Combinar', width=20, command=self.merge, cursor='arrow')
-        self.btn_merge['font'] = self.my_font
-        self.hover_merge = CreateToolTip(widget=self.btn_merge, text="Permite combinar 2 o más imagenes en una sola.")
+        btn_unwrapping_name = 'Modo unwrapping'
+        btn_unwrapping_description = 'Es necesario posicionar 6 puntos para realizar un recorte con ajuste de perspectiva.'
+        self.btn_unwrapping, self.hover_unwrapping = createButtonWithHover(self.crop_fr, btn_unwrapping_name, self.to_unwrapping, self.my_font, btn_unwrapping_description)
         
-        self.btn_sub = tk.Button(self.btns_fr, text='Eliminar', width=20, command=self.delete, cursor='arrow')
-        self.btn_sub['font'] = self.my_font
-        self.hover_sub = CreateToolTip(widget=self.btn_sub, text="Permite eliminar 1 o más imagenes, \n también se refleja en la imagen original.")
+        btn_save_img_name = 'Guardar imagen'
+        btn_save_img_description = 'Recorta la imagen encerrada en el rectangulo que se ve en pantalla.'
+        self.btn_save_img, self.hover_save_img = createButtonWithHover(self.command_fr, btn_save_img_name, self.save_image, self.my_font, btn_save_img_description)
+
+        btn_height_name = 'Altura'
+        btn_height_description = 'Permite guardar la altura (en cm) de la roca introdujida.'
+        self.btn_height, self.hover_height = createButtonWithHover(self.size_sub_fr, btn_height_name, self.set_height, self.my_font, btn_height_description)
+
+        btn_3d_name = '3D'
+        btn_3d_description = 'Permite visualizar en 3D la imagen que se encuentra en la pantalla.'
+        self.btn_3d, self.hover_3d = createButtonWithHover(self.btns_fr, btn_3d_name, self.plot_3d, self.my_font, btn_3d_description)
+       
+        btn_split_name = 'Separar'
+        btn_split_description = 'Segmenta la imagen por colores, generando una cantidad de imagenes igual al número ingresado.'
+        self.btn_split, self.hover_split = createButtonWithHover(self.btns_fr, btn_split_name, self.split, self.my_font, btn_split_description)
+
+        btn_merge_name = 'Combinar'
+        btn_merge_description = 'Permite combinar 2 o más imagenes en una sola.'
+        self.btn_merge, self.hover_merge = createButtonWithHover(self.btns_fr, btn_merge_name, self.merge, self.my_font, btn_merge_description)
         
-        self.btn_up = tk.Button(self.btns_fr, text='Subir', width=20, command=self.up, cursor='arrow')
-        self.btn_up['font'] = self.my_font
-        self.hover_up = CreateToolTip(widget=self.btn_up, text="Permite acceder a la imagen que se tenia anteriormente.")
+        btn_sub_name = 'Eliminar'
+        btn_sub_description = 'Permite eliminar 1 o más imagenes, también se refleja en la imagen original.'
+        self.btn_sub, self.hover_sub = createButtonWithHover(self.btns_fr, btn_sub_name, self.delete, self.my_font, btn_sub_description)
+
+        btn_up_name = 'Subir'
+        btn_up_description = 'Permite acceder a la imagen que se tenia anteriormente.'
+        self.btn_up, self.hover_up = createButtonWithHover(self.btns_fr, btn_up_name, self.up, self.my_font, btn_up_description)
         
-        self.btn_down = tk.Button(self.btns_fr, text='Bajar', width=20, command=self.down, cursor='arrow')
-        self.btn_down['font'] = self.my_font
-        self.hover_down = CreateToolTip(widget=self.btn_down, text="Permite cambiar la imagen actual por la imagen seleccionada.")
+        btn_down_name = 'Bajar'
+        btn_down_description = 'Permite cambiar la imagen actual por la imagen seleccionada.'
+        self.btn_down, self.hover_down = createButtonWithHover(self.btns_fr, btn_down_name, self.down, self.my_font, btn_down_description)
 
-        self.btn_undo = tk.Button(self.btns_fr, text='Deshacer', width=20, command=self.undo, cursor='arrow')
-        self.btn_undo['font'] = self.my_font
-        self.hover_undo = CreateToolTip(widget=self.btn_undo, text="Deshace todos los cambios hechos sobre la imagen.")
+        btn_undo_name = 'Deshacer'
+        btn_undo_description = 'Deshace todos los cambios hechos sobre la imagen.'
+        self.btn_undo, self.hover_undo = createButtonWithHover(self.btns_fr, btn_undo_name, self.undo, self.my_font, btn_undo_description)
 
-        self.btn_contour = tk.Button(self.btns_fr, text='Segmentar', width=20, command=self.segmentate, cursor='arrow')
-        self.btn_contour['font'] = self.my_font
-        self.hover_contour = CreateToolTip(widget=self.btn_contour, text="Calcula resultados utilizando como base la imagen seleccionada.")
+        btn_contour_name = 'Segmentar'
+        btn_contour_description = 'Calcula resultados utilizando como base la imagen seleccionada.'
+        self.btn_contour, self.hover_contour = createButtonWithHover(self.btns_fr, btn_contour_name, self.segmentate, self.my_font, btn_contour_description)
 
-        self.btn_save = tk.Button(self.file_fr, text='Guardar', width=20, command=self.save, cursor='arrow')
-        self.btn_save['font'] = self.my_font
-        self.hover_save = CreateToolTip(widget=self.btn_save, text="Guarda la imagen actual junto con las imágenes \n obtenidas al segmentar por color.")
+        btn_contour_name = 'Segmentar'
+        btn_contour_description = 'Calcula resultados utilizando como base la imagen seleccionada.'
+        self.btn_contour, self.hover_contour = createButtonWithHover(self.btns_fr, btn_contour_name, self.segmentate, self.my_font, btn_contour_description)
 
-        self.btn_update = tk.Button(self.btns_fr, text='Actualizar', width=20, command=self.update_screen, cursor='arrow')
-        self.btn_update['font'] = self.my_font
-        self.hover_update = CreateToolTip(widget=self.btn_update, text="Actualiza la pantalla, ajustando el tamaño de las imágenes presentes en ella.")
+        btn_save_name = 'Guardar'
+        btn_save_description = 'Guarda la imagen actual junto con las imágenes obtenidas al segmentar por color.'
+        self.btn_save, self.hover_save = createButtonWithHover(self.file_fr, btn_save_name, self.save, self.my_font, btn_save_description)
 
-        self.btn_height = tk.Button(self.size_sub_fr, text='Altura', width=20, command=self.set_height, cursor='arrow')
-        self.btn_height['font'] = self.my_font
-        self.hover_height = CreateToolTip(widget=self.btn_height, text="Permite guardar la altura (en cm) de la roca introdujida.")
+        btn_update_name = 'Actualizar'
+        btn_update_description = 'Actualiza la pantalla, ajustando el tamaño de las imágenes presentes en ella.'
+        self.btn_update, self.hover_update = createButtonWithHover(self.btns_fr, btn_update_name, self.update_screen, self.my_font, btn_update_description)
 
         # -- entries --
         self.total_clusters = EntryWithPlaceholder(self.btns_fr, "Número de clusters", 'gray')
         self.total_clusters.config(borderwidth=2)
         self.total_clusters['font'] = self.my_font
+
         self.entry_height_cm = EntryWithPlaceholder(self.size_sub_fr, "Altura recorte (cm)", 'gray')
         self.entry_height_cm['font'] = self.my_font
 
@@ -151,7 +162,12 @@ class GUI(object):
 
     
     def set_height(self):
-        self.height_cm = int(self.entry_height_cm.get())
+        try:
+            self.height_cm = int(self.entry_height_cm.get())
+        except:
+            tk.messagebox.showwarning("Error", message="Por favor ingresa un número.")
+            return
+
 
     def focus_win(self, event):
         if not isinstance( event.widget, tk.Entry):
