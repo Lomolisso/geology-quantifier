@@ -232,17 +232,18 @@ class GUI(object):
         self.mode = 'w'
 
     def rotateR(self):
-        degree = cv2.getTrackbarPos('degree','Cuantificador geologico')
+        # degree = cv2.getTrackbarPos('degree','Cuantificador geologico')
         image_center = tuple(np.array(self.org_img.shape[1::-1]) / 2)
-        rotation_matrix = cv2.getRotationMatrix2D(image_center, degree, 1)
-        rotated_image = cv2.warpAffine(self.bg, rotation_matrix, image_center)
+        rotation_matrix = cv2.getRotationMatrix2D(image_center, angle=1, scale=1)
+        rotated_image = cv2.warpAffine(self.org_img, self.org_img, rotation_matrix, image_center)
         cv2.imshow('Rotate', rotated_image)
     
     def rotateL(self):
-        degree = cv2.getTrackbarPos('degree','Frame')
+        # degree = cv2.getTrackbarPos('degree','Frame')
         image_center = tuple(np.array(self.org_img.shape[1::-1]) / 2)
-        rotation_matrix = cv2.getRotationMatrix2D(image_center, degree, -1)
-        rotated_image = cv2.warpAffine(self.bg, rotation_matrix, image_center)
+        rotation_matrix = cv2.getRotationMatrix2D(image_center, angle=1, scale=1)
+        rotated_image = cv2.warpAffine(self.org_img, (self.org_img.shape[1],self.org_img.shape[0]) , rotation_matrix, image_center)
+        print
         cv2.imshow('Rotate', rotated_image)
 
 
