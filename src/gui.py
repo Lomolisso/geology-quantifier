@@ -50,15 +50,16 @@ class GUI(object):
 
         self.file_fr = tk.Frame(self.btns_fr, highlightbackground="light gray", highlightthickness=1)
         self.file_fr.grid(row = 0, column= 0, sticky=tk.N)
-        
         self.command_fr = tk.Frame(self.btns_fr, highlightbackground="light gray", highlightthickness=1)
-        
         self.crop_fr = tk.Frame(self.btns_fr, highlightbackground="light gray", highlightthickness=1)
-        
         self.size_fr = tk.Frame(self.btns_fr, highlightbackground="light gray", highlightthickness=1)
-        
         self.size_sub_fr = tk.Frame(self.size_fr)
-        
+        self.color_seg_fr = tk.Frame(self.btns_fr, highlightbackground="light gray", highlightthickness=1)
+        self.shape_seg_fr = tk.Frame(self.btns_fr, highlightbackground="light gray", highlightthickness=1)
+        self.image_tools_fr = tk.Frame(self.btns_fr, highlightbackground="light gray", highlightthickness=1)
+        self.gen_results_fr = tk.Frame(self.btns_fr, highlightbackground="light gray", highlightthickness=1)
+        self.navigate_fr = tk.Frame(self.btns_fr, highlightbackground="light gray", highlightthickness=1)
+
         for i in range(6): self.btns_fr.columnconfigure(i, weight=1)
 
         self.img_container_fr = tk.Frame(self.main_win)
@@ -152,6 +153,12 @@ class GUI(object):
         self.command_fr_lbl = tk.Label(self.command_fr, text = "Comandos",  font= self.section_font)
         self.crop_fr_lbl = tk.Label(self.crop_fr, text = "Modo de\n recorte", font= self.section_font)
         self.size_fr_lbl = tk.Label(self.size_fr, text = "Tamaño", font= self.section_font)
+        self.color_seg_lb = tk.Label(self.color_seg_fr, text = "Tamaño", font= self.section_font)
+        self.shape_seg_lb = tk.Label(self.shape_seg_fr, text = "Tamaño", font= self.section_font)
+        self.image_tools_lb = tk.Label(self.image_tools_fr, text = "Tamaño", font= self.section_font)
+        self.gen_results_lb = tk.Label(self.gen_results_fr, text = "Tamaño", font= self.section_font)
+        self.navigate_lb = tk.Label(self.navigate_fr, text = "Tamaño", font= self.section_font)
+
 
         # -- extras --
         self.set_up_scrollbar()
