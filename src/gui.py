@@ -3,6 +3,7 @@ from typing import Any, List
 import image_tree
 import tkinter as tk
 import tkinter.font as tk_font
+import tkinter.messagebox
 import numpy as np
 import cv2
 from PIL import Image, ImageTk
