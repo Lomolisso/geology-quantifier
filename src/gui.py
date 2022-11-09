@@ -97,39 +97,35 @@ class GUI(object):
 
         btn_3d_name = '3D'
         btn_3d_description = 'Permite visualizar en 3D la imagen que se encuentra en la pantalla.'
-        self.btn_3d, self.hover_3d = createButtonWithHover(self.btns_fr, btn_3d_name, self.plot_3d, self.my_font, btn_3d_description)
+        self.btn_3d, self.hover_3d = createButtonWithHover(self.gen_results_fr, btn_3d_name, self.plot_3d, self.my_font, btn_3d_description)
        
         btn_split_name = 'Separar'
         btn_split_description = 'Segmenta la imagen por colores, generando una cantidad de imagenes igual al número ingresado.'
-        self.btn_split, self.hover_split = createButtonWithHover(self.btns_fr, btn_split_name, self.split, self.my_font, btn_split_description)
+        self.btn_split, self.hover_split = createButtonWithHover(self.color_seg_fr, btn_split_name, self.split, self.my_font, btn_split_description)
 
         btn_merge_name = 'Combinar'
         btn_merge_description = 'Permite combinar 2 o más imagenes en una sola.'
-        self.btn_merge, self.hover_merge = createButtonWithHover(self.btns_fr, btn_merge_name, self.merge, self.my_font, btn_merge_description)
+        self.btn_merge, self.hover_merge = createButtonWithHover(self.color_seg_fr, btn_merge_name, self.merge, self.my_font, btn_merge_description)
         
         btn_sub_name = 'Eliminar'
         btn_sub_description = 'Permite eliminar 1 o más imagenes, también se refleja en la imagen original.'
-        self.btn_sub, self.hover_sub = createButtonWithHover(self.btns_fr, btn_sub_name, self.delete, self.my_font, btn_sub_description)
+        self.btn_sub, self.hover_sub = createButtonWithHover(self.color_seg_fr, btn_sub_name, self.delete, self.my_font, btn_sub_description)
 
         btn_up_name = 'Subir'
         btn_up_description = 'Permite acceder a la imagen que se tenia anteriormente.'
-        self.btn_up, self.hover_up = createButtonWithHover(self.btns_fr, btn_up_name, self.up, self.my_font, btn_up_description)
+        self.btn_up, self.hover_up = createButtonWithHover(self.navigate_fr, btn_up_name, self.up, self.my_font, btn_up_description)
         
         btn_down_name = 'Bajar'
         btn_down_description = 'Permite cambiar la imagen actual por la imagen seleccionada.'
-        self.btn_down, self.hover_down = createButtonWithHover(self.btns_fr, btn_down_name, self.down, self.my_font, btn_down_description)
+        self.btn_down, self.hover_down = createButtonWithHover(self.navigate_fr, btn_down_name, self.down, self.my_font, btn_down_description)
 
         btn_undo_name = 'Deshacer'
         btn_undo_description = 'Deshace todos los cambios hechos sobre la imagen.'
-        self.btn_undo, self.hover_undo = createButtonWithHover(self.btns_fr, btn_undo_name, self.undo, self.my_font, btn_undo_description)
+        self.btn_undo, self.hover_undo = createButtonWithHover(self.image_tools_fr, btn_undo_name, self.undo, self.my_font, btn_undo_description)
 
         btn_contour_name = 'Segmentar'
         btn_contour_description = 'Calcula resultados utilizando como base la imagen seleccionada.'
-        self.btn_contour, self.hover_contour = createButtonWithHover(self.btns_fr, btn_contour_name, self.segmentate, self.my_font, btn_contour_description)
-
-        btn_contour_name = 'Segmentar'
-        btn_contour_description = 'Calcula resultados utilizando como base la imagen seleccionada.'
-        self.btn_contour, self.hover_contour = createButtonWithHover(self.btns_fr, btn_contour_name, self.segmentate, self.my_font, btn_contour_description)
+        self.btn_contour, self.hover_contour = createButtonWithHover(self.shape_seg_fr, btn_contour_name, self.segmentate, self.my_font, btn_contour_description)
 
         btn_save_name = 'Guardar'
         btn_save_description = 'Guarda la imagen actual junto con las imágenes obtenidas al segmentar por color.'
@@ -137,10 +133,10 @@ class GUI(object):
 
         btn_update_name = 'Actualizar'
         btn_update_description = 'Actualiza la pantalla, ajustando el tamaño de las imágenes presentes en ella.'
-        self.btn_update, self.hover_update = createButtonWithHover(self.btns_fr, btn_update_name, self.update_screen, self.my_font, btn_update_description)
+        self.btn_update, self.hover_update = createButtonWithHover(self.image_tools_fr, btn_update_name, self.update_screen, self.my_font, btn_update_description)
 
         # -- entries --
-        self.total_clusters = EntryWithPlaceholder(self.btns_fr, "Número de clusters", 'gray')
+        self.total_clusters = EntryWithPlaceholder(self.color_seg_fr, "Número de clusters", 'gray')
         self.total_clusters.config(borderwidth=2)
         self.total_clusters['font'] = self.my_font
 
@@ -153,11 +149,11 @@ class GUI(object):
         self.command_fr_lbl = tk.Label(self.command_fr, text = "Comandos",  font= self.section_font)
         self.crop_fr_lbl = tk.Label(self.crop_fr, text = "Modo de\n recorte", font= self.section_font)
         self.size_fr_lbl = tk.Label(self.size_fr, text = "Tamaño", font= self.section_font)
-        self.color_seg_lb = tk.Label(self.color_seg_fr, text = "Tamaño", font= self.section_font)
-        self.shape_seg_lb = tk.Label(self.shape_seg_fr, text = "Tamaño", font= self.section_font)
-        self.image_tools_lb = tk.Label(self.image_tools_fr, text = "Tamaño", font= self.section_font)
-        self.gen_results_lb = tk.Label(self.gen_results_fr, text = "Tamaño", font= self.section_font)
-        self.navigate_lb = tk.Label(self.navigate_fr, text = "Tamaño", font= self.section_font)
+        self.color_seg_lb = tk.Label(self.color_seg_fr, text = "Segmentación color", font= self.section_font)
+        self.shape_seg_lb = tk.Label(self.shape_seg_fr, text = "Segmentación \n forma", font= self.section_font)
+        self.image_tools_lb = tk.Label(self.image_tools_fr, text = "Modificar imagen", font= self.section_font)
+        self.gen_results_lb = tk.Label(self.gen_results_fr, text = "Generación \n resultados", font= self.section_font)
+        self.navigate_lb = tk.Label(self.navigate_fr, text = "Navegar", font= self.section_font)
 
 
         # -- extras --
@@ -366,16 +362,20 @@ class GUI(object):
 
             self.measures()
 
+            # -- File managment
+            self.file_fr.grid(row=0, column=0, sticky=tk.N)
+            self.btn_img.grid(row=0, column=0, padx=5, pady=5)
             self.file_fr_lbl.grid(column= 0)
+            # -- commands --
+            self.command_fr.grid(row=0, column=1, sticky=tk.N)
+            self.btn_save_img.grid(row=0, column=0, padx=5, pady=5)
+            self.command_fr_lbl.grid(column=0, padx=5, pady=5)
             # -- crop types --
             self.crop_fr.grid(row = 0, column= 2, sticky=tk.N)
             self.btn_panoramic.grid(row=0, column=0,padx=5, pady=5)
             self.btn_unwrapping.grid(row=1, column=0, padx=5, pady=5)
             self.crop_fr_lbl.grid(column=0,padx=5, pady=5)
-            # -- commands --
-            self.command_fr.grid(row=0, column=1, sticky=tk.N)
-            self.btn_save_img.grid(row=0, column=0, padx=5, pady=5)
-            self.command_fr_lbl.grid(column=0, padx=5, pady=5)
+            
 
             self.segmentation = False
             self.mode = 'p'
@@ -395,29 +395,64 @@ class GUI(object):
         self.create_btns()
 
     def clean_btns(self) -> None:
-        for wget in self.btns_fr.winfo_children():
+        for wget in self.file_fr.winfo_children():
             wget.grid_forget()
-        self.file_fr_lbl.grid_forget()
-        self.file_fr.grid(row = 0, column= 0, sticky=tk.N)
-        self.btn_img.grid(row=0, column=0, padx=5, pady=5)
+        self.file_fr.grid_forget()
+        for wget in self.color_seg_fr.winfo_children():
+            wget.grid_forget()
+        self.color_seg_fr.grid_forget()
+        for wget in self.shape_seg_fr.winfo_children():
+            wget.grid_forget()
+        self.shape_seg_fr.grid_forget()
+        for wget in self.image_tools_fr.winfo_children():
+            wget.grid_forget()
+        self.image_tools_fr.grid_forget()
+        for wget in self.gen_results_fr.winfo_children():
+            wget.grid_forget()
+        self.gen_results_fr.grid_forget()
+        for wget in self.navigate_fr.winfo_children():
+            wget.grid_forget()
+        self.navigate_fr.grid_forget()
+
 
     def create_btns(self) -> None:
-        # Set buttons positions
-        self.file_fr_lbl.grid_forget()
-        self.btn_3d.grid(row=0, column=1, padx=5, pady=5)
-        self.total_clusters.grid(row=0, column=2, padx=5, pady=5, ipadx=2, ipady=5)
-        self.btn_split.grid(row=0, column=3, padx=5, pady=5)
-        self.btn_merge.grid(row=0, column=4, padx=5, pady=5)
-        self.btn_sub.grid(row=0, column=5, padx=5, pady=5)      
-        self.btn_undo.grid(row=1,column=0, padx=5, pady=5)
+        
         # -- files --
-        self.btn_save.grid(row=1, column=0, padx=5, pady=5)
+        self.btn_save.grid(row=0, column=1, padx=5, pady=5)
         self.file_fr_lbl.grid(column= 0, padx=5, pady=5)
 
-        self.btn_up.grid(row=1, column=2, padx=5, pady=5)
-        self.btn_down.grid(row=1, column=3, padx=5, pady=5)
-        self.btn_contour.grid(row=1, column=4, padx=5, pady=5)
-        self.btn_update.grid(row=1, column=5, padx=5, pady=5)
+        # -- Color Segmentation --
+        self.color_seg_fr.grid(row=0, column=1, sticky=tk.N)
+        self.total_clusters.grid(row=0, column=0, padx=5, pady=5, ipadx=2, ipady=5)
+        self.btn_split.grid(row=0, column=1, padx=5, pady=5)
+        self.btn_merge.grid(row=1, column=0, padx=5, pady=5)
+        self.btn_sub.grid(row=1, column=1, padx=5, pady=5)
+        self.color_seg_lb.grid(padx=5, pady=5)
+
+        # -- Shape Segmentation --
+        self.shape_seg_fr.grid(row=0, column=2, sticky=tk.N)
+        self.btn_contour.grid(row=0, column=0, padx=5, pady=5)
+        # self.btn_segmentate.grid(row=0, column=0, padx=5, pady=5)
+        self.shape_seg_lb.grid(column=0, padx=5, pady=5)
+
+        # -- Image Tools
+        self.image_tools_fr.grid(row=0, column=3, sticky=tk.N)
+        self.btn_update.grid(row=0, column=0, padx=5, pady=5)
+        self.btn_undo.grid(row=1, column=0, padx=5, pady=5)
+        self.image_tools_lb.grid(column=0, padx=5, pady=5)
+
+        # -- Results generation --
+        self.gen_results_fr.grid(row=0, column=4, sticky=tk.N)
+        self.btn_3d.grid(row=0, column=0, padx=5, pady=5)
+        # self.btn_analyze.grid(row=0, column=0, padx=5, pady=5)
+        self.gen_results_lb.grid(column=0, padx=5, pady=5)
+
+        # -- Navigate --
+        self.navigate_fr.grid(row=1, column=0, sticky=tk.N)
+        self.btn_up.grid(row=0, column=0, padx=5, pady=5)
+        self.btn_down.grid(row=0, column=1, padx=5, pady=5)
+        self.navigate_lb.grid(column=0, padx=5, pady=5)
+
 
     def clean_principal_frame(self) -> None:
         """
