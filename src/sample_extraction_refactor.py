@@ -322,16 +322,16 @@ def resize_unwrapping(img, sample_extractor):
 
     points = v1, v2, v3, v4, v5, v6
 
-    distance = v5[0]-v1[0]
+    # distance = v5[0]-v1[0]
 
-    proportion = 0.1
+    # proportion = 0.1
 
-    correction = distance*proportion//2
+    # correction = distance*proportion//2
 
-    v1[0] = v1[0] - correction
-    v2[0] = v2[0] - correction
-    v4[0] = v4[0] + correction
-    v5[0] = v5[0] + correction + (distance*0.02)//2
+    # v1[0] = v1[0] - correction
+    # v2[0] = v2[0] - correction
+    # v4[0] = v4[0] + correction
+    # v5[0] = v5[0] + correction
 
     
     resize_image = sample_extractor.get_image()

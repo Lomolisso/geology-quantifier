@@ -259,7 +259,7 @@ class GUI(object):
         self.prev_boolean = True
         copy_img = np.copy(self.org_img)
         copy_img = self.choose_cut_method(copy_img)
-        self.label_extractor = self.add_img_to_canvas(self.canvas_preview, copy_img)
+        self.label_extractor2 = self.add_img_to_canvas(self.canvas_preview, copy_img)
         self.canvas_preview.grid(row=0,column=1)
 
     def to_panoramic(self):
