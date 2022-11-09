@@ -255,6 +255,8 @@ class GUI(object):
         self.crop(self.org_img, ExtractorModeEnum.PANORAMIC)
 
     def preview(self):
+        if self.canvas_preview:
+            self.canvas_preview.destroy()
         self.canvas_preview = tk.Canvas(self.principal_fr)
         self.prev_boolean = True
         copy_img = np.copy(self.org_img)
