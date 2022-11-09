@@ -61,13 +61,13 @@ def createBalloon(widget, button_name, text):
     timeout = 1
     return Balloon(master=widget, headertext=button_name, text=text, timeout=timeout, width=width)
 
-def createButtonWithHover(master, name, command, font, description):
+def createButtonWithHover(master, name, command, font, description, image=None):
     """
     Creates a new button with a hover balloon.
     """
     width = 20
     cursor = 'arrow'
-    btn = tk.Button(master=master, text=name, width=width, command=command, cursor=cursor)
+    btn = tk.Button(master=master, text=name, width=width, command=command, cursor=cursor, image=image)
     btn['font'] = font
     hover = createBalloon(btn, name, description)
     return btn, hover

@@ -14,6 +14,8 @@ CLUSTER_RESHAPE = 0.7
 ROOT = tk.Tk()
 SCREEN_WIDTH = ROOT.winfo_screenwidth()
 SCREEN_HEIGHT = ROOT.winfo_screenheight()
+ARROW_LEFT = tk.PhotoImage(file="left_arrow.png")
+ARROW_RIGHT = tk.PhotoImage(file="right_arrow.png")
     
 class GUI(object):
     """
@@ -141,11 +143,11 @@ class GUI(object):
 
         btn_up_name = 'Subir'
         btn_up_description = 'Permite acceder a la imagen que se tenia anteriormente.'
-        self.btn_up, self.hover_up = createButtonWithHover(self.navigate_fr, btn_up_name, self.up, self.my_font, btn_up_description)
+        self.btn_up, self.hover_up = createButtonWithHover(self.navigate_fr, btn_up_name, self.up, self.my_font, btn_up_description, image=ARROW_LEFT)
         
         btn_down_name = 'Bajar'
         btn_down_description = 'Permite cambiar la imagen actual por la imagen seleccionada.'
-        self.btn_down, self.hover_down = createButtonWithHover(self.navigate_fr, btn_down_name, self.down, self.my_font, btn_down_description)
+        self.btn_down, self.hover_down = createButtonWithHover(self.navigate_fr, btn_down_name, self.down, self.my_font, btn_down_description,image=ARROW_RIGHT)
 
         # -- entries --
         self.total_clusters = EntryWithPlaceholder(self.color_seg_fr, "Número de clusters", 'gray')
