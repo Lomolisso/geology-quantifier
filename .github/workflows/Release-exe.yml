@@ -14,7 +14,7 @@ jobs:
     - name: Checkout files
       uses: actions/checkout@v3
       with:
-        ref: github-action-test
+        ref: main
   
     - name: Package Application
       uses: JackMcKew/pyinstaller-action-windows@main
