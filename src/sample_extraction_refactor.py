@@ -75,7 +75,6 @@ class AbstractExtraction(object):
             dist = np.linalg.norm(self.vertex_data[k] - np.array((x, y))) 
             if dist <= self.radius:
                 self.vertex_dirty = k
-                print(f"vertex-{k}")
                 break
 
     
