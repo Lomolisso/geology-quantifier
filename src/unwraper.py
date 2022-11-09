@@ -383,7 +383,7 @@ def unwrapping(imcv, img_name, dots):
     # unwrapper.draw_mesh()
     #dst_image = cv2.resize(dst_image, (int(dst_image.shape[1]*0.2),int(dst_image.shape[0]*0.2)))
     y, x, _ = dst_image.shape
-    interval = x//7
-    dst_image = dst_image[0:y, interval:(x - interval)]
+    # interval = x//7
+    # dst_image = dst_image[0:y, interval:(x - interval)]
     cv2.imwrite("./img/panoramic/samples_by_degree/diorite/recortada/" + img_name, dst_image)
     return dst_image

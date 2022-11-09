@@ -30,6 +30,7 @@ class GUI(object):
 
         # --- workflow parameters ---
         self.org_img = None
+        self.clone_img = None
         self.img_tree = None
         self.selected_images_indices = []
         self.main_win = root
@@ -233,18 +234,20 @@ class GUI(object):
 
     def rotateR(self):
         # degree = cv2.getTrackbarPos('degree','Cuantificador geologico')
-        image_center = tuple(np.array(self.org_img.shape[1::-1]) / 2)
-        rotation_matrix = cv2.getRotationMatrix2D(image_center, angle=1, scale=1)
+        image_center = tuple(np.array(self.clone_img.shape[1::-1]) / 2)
+        self.grados-=1
+        rotation_matrix = cv2.getRotationMatrix2D(image_center, angle=self.grados, scale=1)
         # rotated_image = cv2.warpAffine(self.org_img, rotation_matrix,(self.org_img.shape[1],self.org_img.shape[0]))
-        self.org_img = cv2.warpAffine(self.org_img, rotation_matrix,(self.org_img.shape[1],self.org_img.shape[0]))
+        self.org_img = cv2.warpAffine(self.clone_img, rotation_matrix,(self.clone_img.shape[1],self.clone_img.shape[0]))
         self.crop(self.org_img, ExtractorModeEnum.PANORAMIC)
     
     def rotateL(self):
         # degree = cv2.getTrackbarPos('degree','Frame')
-        image_center = tuple(np.array(self.org_img.shape[1::-1]) / 2)
-        rotation_matrix = cv2.getRotationMatrix2D(image_center, angle=-1, scale=1)
+        image_center = tuple(np.array(self.clone_img.shape[1::-1]) / 2)
+        self.grados+=1
+        rotation_matrix = cv2.getRotationMatrix2D(image_center, angle=self.grados, scale=1)
         # rotated_image = cv2.warpAffine(self.org_img, rotation_matrix,(self.org_img.shape[1],self.org_img.shape[0]))
-        self.org_img = cv2.warpAffine(self.org_img, rotation_matrix,(self.org_img.shape[1],self.org_img.shape[0]))
+        self.org_img = cv2.warpAffine(self.clone_img, rotation_matrix,(self.clone_img.shape[1],self.clone_img.shape[0]))
         self.crop(self.org_img, ExtractorModeEnum.PANORAMIC)
 
     def to_panoramic(self):
@@ -259,8 +262,8 @@ class GUI(object):
         self.btn_panoramic.pack_forget()
         self.btn_unwrapping.pack_forget()
         self.btn_save_img.pack_forget()                
-        self.btn_rotateR.pack_forget()
-        self.btn_rotateL.pack_forget()
+        self.btn_rotateR.grid_forget()
+        self.btn_rotateL.grid_forget()
 
     def key_press(self, event):
         if event.char == "s":
@@ -318,6 +321,7 @@ class GUI(object):
                 resize_img = cv2.resize(resize_img, (resize_width, int(resize_img.shape[0] * resize_width / resize_img.shape[1])))
 
             self.org_img = resize_img
+            self.clone_img = resize_img
             self.clean_principal_frame()
             self.clean_canvas_frame()
             self.clean_btns()
@@ -333,6 +337,7 @@ class GUI(object):
 
             self.segmentation = False
             self.mode = 'p'
+            self.grados = 0
         except:
            pass
 
