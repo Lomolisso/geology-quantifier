@@ -79,6 +79,14 @@ class GUI(object):
         self.btn_img, self.hover_img = createButtonWithHover(self.file_fr, btn_img_name, self.select_img, self.my_font, btn_img_description)
         self.btn_img.grid(row=0, column=0, padx=5, pady=5)
 
+        btn_save_img_name = 'Recortar'
+        btn_save_img_description = 'Recorta la imagen encerrada en el rectangulo que se ve en pantalla.'
+        self.btn_save_img, self.hover_save_img = createButtonWithHover(self.command_fr, btn_save_img_name, self.save_image, self.my_font, btn_save_img_description)
+
+        btn_reset_img_name = 'Restablecer'
+        btn_reset_img_description = 'Reestablece la posición de los puntos usados para recortar la imagen.'
+        self.btn_reset_img, self.hover_reset_img = createButtonWithHover(self.command_fr, btn_reset_img_name, self.reset_image, self.my_font, btn_reset_img_description)
+
         btn_panoramic_name = 'Modo panorámico'
         btn_panoramic_description = 'Es necesario posicionar 4 puntos para realizar un recorte sin ajuste de perspectiva.'
         self.btn_panoramic, self.hover_panoramic = createButtonWithHover(self.crop_fr, btn_panoramic_name, self.to_panoramic, self.my_font, btn_panoramic_description)
@@ -87,17 +95,13 @@ class GUI(object):
         btn_unwrapping_description = 'Es necesario posicionar 6 puntos para realizar un recorte con ajuste de perspectiva.'
         self.btn_unwrapping, self.hover_unwrapping = createButtonWithHover(self.crop_fr, btn_unwrapping_name, self.to_unwrapping, self.my_font, btn_unwrapping_description)
         
-        btn_save_img_name = 'Guardar imagen'
-        btn_save_img_description = 'Recorta la imagen encerrada en el rectangulo que se ve en pantalla.'
-        self.btn_save_img, self.hover_save_img = createButtonWithHover(self.command_fr, btn_save_img_name, self.save_image, self.my_font, btn_save_img_description)
-
         btn_height_name = 'Altura'
         btn_height_description = 'Permite guardar la altura (en cm) de la roca introdujida.'
         self.btn_height, self.hover_height = createButtonWithHover(self.size_sub_fr, btn_height_name, self.set_height, self.my_font, btn_height_description)
 
-        btn_3d_name = '3D'
-        btn_3d_description = 'Permite visualizar en 3D la imagen que se encuentra en la pantalla.'
-        self.btn_3d, self.hover_3d = createButtonWithHover(self.gen_results_fr, btn_3d_name, self.plot_3d, self.my_font, btn_3d_description)
+        btn_save_name = 'Guardar'
+        btn_save_description = 'Guarda la imagen actual junto con las imágenes obtenidas al segmentar por color.'
+        self.btn_save, self.hover_save = createButtonWithHover(self.file_fr, btn_save_name, self.save, self.my_font, btn_save_description)
        
         btn_split_name = 'Separar'
         btn_split_description = 'Segmenta la imagen por colores, generando una cantidad de imagenes igual al número ingresado.'
@@ -111,6 +115,30 @@ class GUI(object):
         btn_sub_description = 'Permite eliminar 1 o más imagenes, también se refleja en la imagen original.'
         self.btn_sub, self.hover_sub = createButtonWithHover(self.color_seg_fr, btn_sub_name, self.delete, self.my_font, btn_sub_description)
 
+        btn_outline_name = 'Perfilar'
+        btn_outline_description = 'Perfila la imagen seleccionada.'
+        self.btn_outline, self.hover_outline = createButtonWithHover(self.shape_seg_fr, btn_outline_name, self.outline, self.my_font, btn_outline_description)
+
+        btn_segmentate_name = 'Segmentar'
+        btn_segmentate_description = 'Calcula resultados utilizando como base la imagen seleccionada.'
+        self.btn_segmentate, self.hover_segmentate = createButtonWithHover(self.shape_seg_fr, btn_segmentate_name, self.segmentate, self.my_font, btn_segmentate_description)
+
+        btn_update_name = 'Actualizar'
+        btn_update_description = 'Actualiza la pantalla, ajustando el tamaño de las imágenes presentes en ella.'
+        self.btn_update, self.hover_update = createButtonWithHover(self.image_tools_fr, btn_update_name, self.update_screen, self.my_font, btn_update_description)
+ 
+        btn_undo_name = 'Deshacer'
+        btn_undo_description = 'Deshace todos los cambios hechos sobre la imagen.'
+        self.btn_undo, self.hover_undo = createButtonWithHover(self.image_tools_fr, btn_undo_name, self.undo, self.my_font, btn_undo_description)
+
+        btn_3d_name = '3D'
+        btn_3d_description = 'Permite visualizar en 3D la imagen que se encuentra en la pantalla.'
+        self.btn_3d, self.hover_3d = createButtonWithHover(self.gen_results_fr, btn_3d_name, self.plot_3d, self.my_font, btn_3d_description)
+       
+        btn_analyze_name = 'Analizar'
+        btn_analyze_description = 'Permite analizar la imagen seleccionada, calculando las estadisticas presentes en el programa.'
+        self.btn_analyze, self.hover_analyze = createButtonWithHover(self.gen_results_fr, btn_analyze_name, self.analyze, self.my_font, btn_analyze_description)
+
         btn_up_name = 'Subir'
         btn_up_description = 'Permite acceder a la imagen que se tenia anteriormente.'
         self.btn_up, self.hover_up = createButtonWithHover(self.navigate_fr, btn_up_name, self.up, self.my_font, btn_up_description)
@@ -118,22 +146,6 @@ class GUI(object):
         btn_down_name = 'Bajar'
         btn_down_description = 'Permite cambiar la imagen actual por la imagen seleccionada.'
         self.btn_down, self.hover_down = createButtonWithHover(self.navigate_fr, btn_down_name, self.down, self.my_font, btn_down_description)
-
-        btn_undo_name = 'Deshacer'
-        btn_undo_description = 'Deshace todos los cambios hechos sobre la imagen.'
-        self.btn_undo, self.hover_undo = createButtonWithHover(self.image_tools_fr, btn_undo_name, self.undo, self.my_font, btn_undo_description)
-
-        btn_contour_name = 'Segmentar'
-        btn_contour_description = 'Calcula resultados utilizando como base la imagen seleccionada.'
-        self.btn_contour, self.hover_contour = createButtonWithHover(self.shape_seg_fr, btn_contour_name, self.segmentate, self.my_font, btn_contour_description)
-
-        btn_save_name = 'Guardar'
-        btn_save_description = 'Guarda la imagen actual junto con las imágenes obtenidas al segmentar por color.'
-        self.btn_save, self.hover_save = createButtonWithHover(self.file_fr, btn_save_name, self.save, self.my_font, btn_save_description)
-
-        btn_update_name = 'Actualizar'
-        btn_update_description = 'Actualiza la pantalla, ajustando el tamaño de las imágenes presentes en ella.'
-        self.btn_update, self.hover_update = createButtonWithHover(self.image_tools_fr, btn_update_name, self.update_screen, self.my_font, btn_update_description)
 
         # -- entries --
         self.total_clusters = EntryWithPlaceholder(self.color_seg_fr, "Número de clusters", 'gray')
@@ -278,19 +290,29 @@ class GUI(object):
         self.mode = 'p'
 
     def save_image(self):
-            self.org_img = self.choose_cut_method()
-            self.main_win.unbind('<Key>')
-            self.un_measures()
-            self.show_img()
-            for wget in self.command_fr.winfo_children():
-                wget.grid_forget()
-            for wget in self.crop_fr.winfo_children():
-                wget.grid_forget()
-            for wget in self.size_fr.winfo_children():
-                wget.grid_forget()
-            self.command_fr.grid_forget()
-            self.crop_fr.grid_forget()    
-            self.size_fr.grid_forget()                  
+        self.org_img = self.choose_cut_method()
+        self.main_win.unbind('<Key>')
+        self.un_measures()
+        self.show_img()
+        for wget in self.command_fr.winfo_children():
+            wget.grid_forget()
+        for wget in self.crop_fr.winfo_children():
+            wget.grid_forget()
+        for wget in self.size_fr.winfo_children():
+            wget.grid_forget()
+        self.command_fr.grid_forget()
+        self.crop_fr.grid_forget()    
+        self.size_fr.grid_forget()                  
+
+    def reset_image(self):
+        self.sample_extractor.reset_vertexes_pos()
+        self.sample_extractor.refresh_image()
+        photo_img = cv2.cvtColor(self.sample_extractor.get_image(), cv2.COLOR_BGR2RGB)
+        photo_img = Image.fromarray(photo_img)
+        img_for_label = ImageTk.PhotoImage(photo_img)
+        self.label_extractor.configure(image=img_for_label)
+        self.label_extractor.image = img_for_label
+        self.label_extractor.grid(row=0, column=0, padx=10, pady=10)
 
     def key_press(self, event):
         if event.char == "s":
@@ -300,14 +322,7 @@ class GUI(object):
         elif event.char == "w":
             self.to_unwrapping()
         elif event.char == "r":
-            self.sample_extractor.reset_vertexes_pos()
-            self.sample_extractor.refresh_image()
-            photo_img = cv2.cvtColor(self.sample_extractor.get_image(), cv2.COLOR_BGR2RGB)
-            photo_img = Image.fromarray(photo_img)
-            img_for_label = ImageTk.PhotoImage(photo_img)
-            self.label_extractor.configure(image=img_for_label)
-            self.label_extractor.image = img_for_label
-            self.label_extractor.grid(row=0, column=0, padx=10, pady=10)
+            self.reset_image()
     
     def release_click(self, event):
         self.sample_extractor.refresh_image()
@@ -369,6 +384,7 @@ class GUI(object):
             # -- commands --
             self.command_fr.grid(row=0, column=1, sticky=tk.N)
             self.btn_save_img.grid(row=0, column=0, padx=5, pady=5)
+            self.btn_reset_img.grid(row=1, column=0, padx=5, pady=5)
             self.command_fr_lbl.grid(column=0, padx=5, pady=5)
             # -- crop types --
             self.crop_fr.grid(row = 0, column= 2, sticky=tk.N)
@@ -431,8 +447,8 @@ class GUI(object):
 
         # -- Shape Segmentation --
         self.shape_seg_fr.grid(row=0, column=2, sticky=tk.N)
-        self.btn_contour.grid(row=0, column=0, padx=5, pady=5)
-        # self.btn_segmentate.grid(row=0, column=0, padx=5, pady=5)
+        self.btn_outline.grid(row=0, column=0, padx=5, pady=5)
+        self.btn_segmentate.grid(row=1, column=0, padx=5, pady=5)
         self.shape_seg_lb.grid(column=0, padx=5, pady=5)
 
         # -- Image Tools
@@ -444,7 +460,7 @@ class GUI(object):
         # -- Results generation --
         self.gen_results_fr.grid(row=0, column=4, sticky=tk.N)
         self.btn_3d.grid(row=0, column=0, padx=5, pady=5)
-        # self.btn_analyze.grid(row=0, column=0, padx=5, pady=5)
+        self.btn_analyze.grid(row=0, column=0, padx=5, pady=5)
         self.gen_results_lb.grid(column=0, padx=5, pady=5)
 
         # -- Navigate --
@@ -654,6 +670,12 @@ class GUI(object):
         self.segmentation = False
         self.update_screen()
     
+    def analyze(self) -> None:
+        tk.messagebox.showwarning("Proximamente", message="Esta funcionalidad estara disponible proximamente.")
+
+    def outline(self) -> None:
+        tk.messagebox.showwarning("Proximamente", message="Esta funcionalidad estara disponible proximamente.")
+
     def segmentate(self) -> None:
         """
         This method is in charge of the body detection at a cluster
