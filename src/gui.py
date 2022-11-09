@@ -235,7 +235,7 @@ class GUI(object):
     def rotateR(self):
         # degree = cv2.getTrackbarPos('degree','Cuantificador geologico')
         image_center = tuple(np.array(self.clone_img.shape[1::-1]) / 2)
-        self.grados-=1
+        self.grados-=0.2
         rotation_matrix = cv2.getRotationMatrix2D(image_center, angle=self.grados, scale=1)
         # rotated_image = cv2.warpAffine(self.org_img, rotation_matrix,(self.org_img.shape[1],self.org_img.shape[0]))
         self.org_img = cv2.warpAffine(self.clone_img, rotation_matrix,(self.clone_img.shape[1],self.clone_img.shape[0]))
@@ -244,7 +244,7 @@ class GUI(object):
     def rotateL(self):
         # degree = cv2.getTrackbarPos('degree','Frame')
         image_center = tuple(np.array(self.clone_img.shape[1::-1]) / 2)
-        self.grados+=1
+        self.grados+=0.2
         rotation_matrix = cv2.getRotationMatrix2D(image_center, angle=self.grados, scale=1)
         # rotated_image = cv2.warpAffine(self.org_img, rotation_matrix,(self.org_img.shape[1],self.org_img.shape[0]))
         self.org_img = cv2.warpAffine(self.clone_img, rotation_matrix,(self.clone_img.shape[1],self.clone_img.shape[0]))
@@ -312,13 +312,14 @@ class GUI(object):
             resize_height = SCREEN_HEIGHT
             resize_width = SCREEN_WIDTH
             resize_img = img
+            resize_scale = 4
             if img.shape[0] > resize_height:
                 # Adjust image to the define height
-                resize_img = cv2.resize(img, ((int(img.shape[1] * resize_height / img.shape[0])), resize_height))
+                resize_img = cv2.resize(img, ((int(img.shape[1] * resize_height / img.shape[0])), int(resize_height)))
                 # If its new width exceed the define width
             if resize_img.shape[1] > resize_width:
                 # Adjust image to the define width
-                resize_img = cv2.resize(resize_img, (resize_width, int(resize_img.shape[0] * resize_width / resize_img.shape[1])))
+                resize_img = cv2.resize(resize_img, (int(resize_width), int(resize_img.shape[0] * resize_width / resize_img.shape[1])))
 
             self.org_img = resize_img
             self.clone_img = resize_img
@@ -434,9 +435,10 @@ class GUI(object):
         win_height = self.main_win.winfo_height()
         win_width = self.main_win.winfo_width()
         padding_size = 10
+        resize_scale = 2
         # Define the desire height and width of the image
-        resize_height = int((win_height - self.btn_fr_size - padding_size) * 1 // 2)
-        resize_width = int((win_width - padding_size / 2) * 1 // 3)
+        resize_height = int((win_height - self.btn_fr_size - padding_size) * resize_scale // 2)
+        resize_width = int((win_width - padding_size / 2) * resize_scale // 3)
 
         # If the larger size of the image is its height (type TUBE)
         if img.shape[0] > img.shape[1]:
