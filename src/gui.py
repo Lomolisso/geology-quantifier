@@ -225,7 +225,7 @@ class GUI(object):
         self.label_extractor.grid(row=0, column=0, padx=10, pady=10)
 
     def choose_cut_method(self, img = None):
-        if self.prev_boolean:
+        if not self.prev_boolean:
             img = self.org_img
         if self.mode == 'p':
             return cut_image_from_vertex(img, self.sample_extractor)
@@ -451,7 +451,7 @@ class GUI(object):
         win_height = self.main_win.winfo_height()
         win_width = self.main_win.winfo_width()
         padding_size = 10
-        resize_scale = 2
+        resize_scale = 1
         # Define the desire height and width of the image
         resize_height = int((win_height - self.btn_fr_size - padding_size) * resize_scale // 2)
         resize_width = int((win_width - padding_size / 2) * resize_scale // 3)

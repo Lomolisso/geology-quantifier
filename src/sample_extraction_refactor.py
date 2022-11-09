@@ -115,6 +115,12 @@ class PanoramicExtraction(AbstractExtraction):
             np.array((image_cols, 0)) + d
         ]
 
+    def _margin_conditions(self, x, y):
+        min_margins = x > 0 and y > 0
+        max_margins = x < self.image_size[1] and y < self.image_size[0]
+        return min_margins and max_margins 
+
+
     def move_vertex(self, x, y):
         self.image = self.original_image.copy()    
         v1, v2, v3, v4 = self.vertex_data
@@ -124,7 +130,7 @@ class PanoramicExtraction(AbstractExtraction):
             lambda x, y: x > max(v1[0], v2[0]) and y > max(v1[1], v4[1]),   
             lambda x, y: x > max(v1[0], v2[0]) and y < min(v2[1], v3[1]),
         ]
-        if self.vertex_dirty is not None and cond_list[self.vertex_dirty](x, y):
+        if self.vertex_dirty is not None and cond_list[self.vertex_dirty](x, y) and self._margin_conditions(x,y):
             self.vertex_data[self.vertex_dirty] = np.array((x, y))
 
         self._draw_circles_and_lines()
@@ -320,18 +326,6 @@ def resize_unwrapping(img, sample_extractor):
     v1, v6, v5, v4, v3, v2 = sample_extractor.get_vertex_data()
 
     points = v1, v2, v3, v4, v5, v6
-
-    # distance = v5[0]-v1[0]
-
-    # proportion = 0.1
-
-    # correction = distance*proportion//2
-
-    # v1[0] = v1[0] - correction
-    # v2[0] = v2[0] - correction
-    # v4[0] = v4[0] + correction
-    # v5[0] = v5[0] + correction
-
     
     resize_image = sample_extractor.get_image()
     rs_shape = resize_image.shape
