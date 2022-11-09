@@ -127,6 +127,8 @@ class GUI(object):
         self.height_cm = 0
         self.mode = 'p'
         self.grados = 0
+        self.canvas_preview = tk.Canvas(self.principal_fr)
+        self.prev_boolean = False
 
     def set_height(self):
         self.height_cm = int(self.entry_height_cm.get())
@@ -222,11 +224,13 @@ class GUI(object):
         self.label_extractor.image = img_for_label
         self.label_extractor.grid(row=0, column=0, padx=10, pady=10)
 
-    def choose_cut_method(self):
+    def choose_cut_method(self, img = None):
+        if self.prev_boolean:
+            img = self.org_img
         if self.mode == 'p':
-            return cut_image_from_vertex(self.org_img, self.sample_extractor)
+            return cut_image_from_vertex(img, self.sample_extractor)
         elif self.mode == 'w':
-            return resize_unwrapping(self.org_img, self.sample_extractor)
+            return resize_unwrapping(img, self.sample_extractor)
     
     def to_unwrapping(self):
         self.crop(self.org_img, ExtractorModeEnum.UNWRAPPER)  
@@ -250,11 +254,20 @@ class GUI(object):
         self.org_img = cv2.warpAffine(self.clone_img, rotation_matrix,(self.clone_img.shape[1],self.clone_img.shape[0]))
         self.crop(self.org_img, ExtractorModeEnum.PANORAMIC)
 
+    def preview(self):
+        self.canvas_preview = tk.Canvas(self.principal_fr)
+        self.prev_boolean = True
+        copy_img = np.copy(self.org_img)
+        copy_img = self.choose_cut_method(copy_img)
+        self.label_extractor = self.add_img_to_canvas(self.canvas_preview, copy_img)
+        self.canvas_preview.grid(row=0,column=1)
+
     def to_panoramic(self):
         self.crop(self.org_img, ExtractorModeEnum.PANORAMIC)
         self.mode = 'p'
 
     def save_image(self):
+        self.prev_boolean = False
         self.org_img = self.choose_cut_method()
         self.main_win.unbind('<Key>')
         self.un_measures()
@@ -284,6 +297,7 @@ class GUI(object):
     
     def release_click(self, event):
         self.sample_extractor.refresh_image()
+        self.preview()
 
     def crop(self, image, mode):
         self.sample_extractor = SampleExtractor(self._resize_img(image), mode)

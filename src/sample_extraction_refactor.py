@@ -316,6 +316,8 @@ def resize_unwrapping(img, sample_extractor):
     but in a different version of the image.
     """
 
+    copy_img = np.copy(img)
+
     v1, v6, v5, v4, v3, v2 = sample_extractor.get_vertex_data()
 
     points = v1, v2, v3, v4, v5, v6
@@ -344,7 +346,7 @@ def resize_unwrapping(img, sample_extractor):
     vertex_1, vertex_2, vertex_3, vertex_4, vertex_5, vertex_6 = [v for v in vertex]
     points = vertex_1, vertex_2, vertex_3, vertex_4, vertex_5, vertex_6
     
-    return unwrapping(img, "awa.jpg", points)
+    return unwrapping(copy_img, "awa.jpg", points)
 
 def cut_image_from_vertex(img, sample_extractor):
     """
