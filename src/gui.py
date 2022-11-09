@@ -89,6 +89,10 @@ class GUI(object):
         btn_reset_img_description = 'Reestablece la posición de los puntos usados para recortar la imagen.'
         self.btn_reset_img, self.hover_reset_img = createButtonWithHover(self.command_fr, btn_reset_img_name, self.reset_image, self.my_font, btn_reset_img_description)
 
+        btn_rotate_name = 'Girar'
+        btn_rotate_description = 'Gira 90 grados la imagen a recortar en sentido antihorario.'
+        self.btn_rotate, self.hover_rotate = createButtonWithHover(self.command_fr, btn_rotate_name, self.rotate_image, self.my_font, btn_rotate_description)
+
         btn_panoramic_name = 'Modo panorámico'
         btn_panoramic_description = 'Es necesario posicionar 4 puntos para realizar un recorte sin ajuste de perspectiva.'
         self.btn_panoramic, self.hover_panoramic = createButtonWithHover(self.crop_fr, btn_panoramic_name, self.to_panoramic, self.my_font, btn_panoramic_description)
@@ -390,13 +394,13 @@ class GUI(object):
             self.command_fr.grid(row=0, column=1, sticky=tk.N)
             self.btn_save_img.grid(row=0, column=0, padx=5, pady=5)
             self.btn_reset_img.grid(row=1, column=0, padx=5, pady=5)
-            self.command_fr_lbl.grid(column=0, padx=5, pady=5)
+            self.btn_rotate.grid(row=0, column=1, padx=5, pady=5)
+            self.command_fr_lbl.grid(column=0, padx=5, pady=5, columnspan=2)
             # -- crop types --
             self.crop_fr.grid(row = 0, column= 2, sticky=tk.N)
             self.btn_panoramic.grid(row=0, column=0,padx=5, pady=5)
             self.btn_unwrapping.grid(row=1, column=0, padx=5, pady=5)
             self.crop_fr_lbl.grid(column=0,padx=5, pady=5)
-            
 
             self.segmentation = False
             self.mode = 'p'
@@ -434,7 +438,6 @@ class GUI(object):
         for wget in self.navigate_fr.winfo_children():
             wget.grid_forget()
         self.navigate_fr.grid_forget()
-
 
     def create_btns(self) -> None:
         
@@ -829,6 +832,11 @@ class GUI(object):
 
         generate_zip(filepath, files, files_names)
         tk.messagebox.showinfo("Guardado", message="Las imagenes se han guardado correctamente")
+    def rotate_image(self) -> None:
+        self.clean_principal_frame()
+        self.org_img =  cv2.rotate(self.org_img, cv2.ROTATE_90_CLOCKWISE)
+        self.crop(self.org_img)
+
 
 
 ROOT.title("Cuantificador geologico")
