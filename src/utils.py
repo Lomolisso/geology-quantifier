@@ -103,17 +103,18 @@ def get_file_filepath() -> str:
     )
     return filepath
 
-def generate_zip(filepath, files) -> None:
+def generate_zip(filepath, files, files_name=None) -> None:
     """
     Generates a ZIP file that contains a list 
     of files given as an input.
     """
+    if not files_name:
+        files_name = range(len(files))
+        files_name = map(str, files_name)
     zipObj = ZipFile(f'{filepath}.zip', 'w')
-    i = 0
-    for file in files:
-        _, buf = cv2.imencode('.png', file)
-        zipObj.writestr(str(i)+'.png', buf)
-        i+=1
+    for (file_img, name) in zip(files, files_name):
+        _, buf = cv2.imencode('.png', file_img)
+        zipObj.writestr(name + '.png', buf)
 
 def get_path(filename):
     if hasattr(sys, "_MEIPASS"):

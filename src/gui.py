@@ -408,7 +408,7 @@ class GUI(object):
         This method is called when a new image is uploaded. 
         """
         # self.clean_frames()
-        self.img_tree = image_tree.ImageNode(None, self.org_img)
+        self.img_tree = image_tree.ImageNode(None, self.org_img, "Imagen original")
         self.segmentation = False
         self.update_screen()
                 
@@ -576,16 +576,22 @@ class GUI(object):
             principal_image = self.img_tree.image
             principal_image_res = self._resize_img(principal_image)
             principal_canva = tk.Canvas(self.principal_fr, width=principal_image_res.shape[1], height=principal_image_res.shape[0])
+            principal_label = tk.Label(self.principal_fr, text=self.img_tree.name)
             self.add_img_to_canvas(principal_canva, principal_image_res)
             principal_canva.grid(row=0, column=0)
 
             self.segmentated = self._resize_img(self.segmentated)
             canva = tk.Canvas(self.principal_fr, width=self.segmentated.shape[1], height=self.segmentated.shape[0])
+            canva_label = tk.Label(self.principal_fr, text=f"{self.img_tree.name} segmentada")
             self.add_img_to_canvas(canva, self.segmentated)
             if self.segmentated.shape[0] > self.segmentated.shape[1]:
                 canva.grid(row=0, column=1)
+                principal_label.grid(row=1, column=0)
+                canva_label.grid(row=1, column=1)
             else:
                 canva.grid(row=1, column=0)
+                principal_label.grid(row=0, column=1)
+                canva_label.grid(row=1, column=1)
             
         else:
             self.clean_canvas_frame()
@@ -593,6 +599,8 @@ class GUI(object):
             canva = tk.Canvas(self.principal_fr, width=img.shape[1], height=img.shape[0])
             _ = self.add_img_to_canvas(canva, img)
             canva.grid(row=0, column=0)
+            principal_label = tk.Label(self.principal_fr, text=self.img_tree.name)
+            principal_label.grid(row=1, column=0)
 
             # draws image node childs
             img_row_shape = 2
@@ -603,7 +611,9 @@ class GUI(object):
                 canva = tk.Canvas(self.canvas_fr, width=child_img.shape[1], height=child_img.shape[0])
                 label = self.add_img_to_canvas(canva, child_img)
                 label.bind('<ButtonPress-1>', lambda event, image=child.image, key=i, canvas=canva: self.click(image, key, canvas))
-                canva.grid(row=i%img_row_shape, column=i//img_row_shape)
+                canva.grid(row=2*(i%img_row_shape), column=i//img_row_shape)
+                name_label = tk.Label(self.canvas_fr, text=child.name)
+                name_label.grid(row=2*(i%img_row_shape) + 1, column=i//img_row_shape)
                 i+=1
 
     def merge(self) -> None:
@@ -645,7 +655,7 @@ class GUI(object):
         """
         Resets the image tree back to it's original form.
         """
-        self.img_tree = image_tree.ImageNode(None,self.org_img)
+        self.img_tree = image_tree.ImageNode(None,self.org_img,"Imagen original")
         self.selected_images_indices = []
         self.segmentation = False
         self.update_screen()
@@ -807,16 +817,17 @@ class GUI(object):
         This method saves both the current image and it's clusters if they exist.
         """
         files = [self.img_tree.image]
+        files_names = [self.img_tree.name]
         
         for child in self.img_tree.childs:
             files.append(child.image)
-        
+            files_names.append(child.name)
 
         filepath = get_file_filepath()
         if not filepath:
             return
 
-        generate_zip(filepath, files)
+        generate_zip(filepath, files, files_names)
         tk.messagebox.showinfo("Guardado", message="Las imagenes se han guardado correctamente")
 
 
