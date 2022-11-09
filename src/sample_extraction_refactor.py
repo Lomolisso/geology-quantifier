@@ -204,6 +204,12 @@ class UnwrapperExtraction(AbstractExtraction):
         v3 += np.array([0, dy])
         v5 += np.array([m-v5[0], 0])        
 
+    def _mov_vertex_2(self, x, y):
+        _, _, v2, _, _, v5 = self.vertex_data
+        vect = np.array([x, y])
+        dx, dy = vect - v2
+        v2 += np.array([dx, dy])
+        v5 += np.array([dx, 0])
 
     def _mov_vertex_3(self, x, y):
         """
@@ -236,13 +242,22 @@ class UnwrapperExtraction(AbstractExtraction):
         v3 += np.array([dx, 0])
         v4 += np.array([dx, dy])
         v5 += np.array([m-v5[0], dy])
+
+    def _mov_vertex_5(self, x, y):
+        _, _, v2, _, _, v5 = self.vertex_data
+        vect = np.array([x, y])
+        dx, dy = vect - v5
+        v2 += np.array([dx, 0])
+        v5 += np.array([dx, dy])
         
     def _process_scale_mov(self, x, y):
         mov_dict = {
             0 : self._mov_vertex_0,
             1 : self._mov_vertex_1,
+            2 : self._mov_vertex_2,
             3 : self._mov_vertex_3,
-            4 : self._mov_vertex_4
+            4 : self._mov_vertex_4,
+            5 : self._mov_vertex_5
         }
         if self.vertex_dirty is not None:
             mov_dict[self.vertex_dirty](x, y)
@@ -250,7 +265,7 @@ class UnwrapperExtraction(AbstractExtraction):
         
     def move_vertex(self, x, y):
         self.image = self.original_image.copy()
-        is_free_vertex = lambda v: v == 2 or v == 5
+        is_free_vertex = lambda v: v == 6
         
         if is_free_vertex(self.vertex_dirty):
             self.vertex_data[self.vertex_dirty] = np.array((x, y))

@@ -238,7 +238,6 @@ class GUI(object):
         # rotated_image = cv2.warpAffine(self.org_img, rotation_matrix,(self.org_img.shape[1],self.org_img.shape[0]))
         self.org_img = cv2.warpAffine(self.org_img, rotation_matrix,(self.org_img.shape[1],self.org_img.shape[0]))
         self.crop(self.org_img, ExtractorModeEnum.PANORAMIC)
-        cv2.imshow('Rotate', self.org_img)
     
     def rotateL(self):
         # degree = cv2.getTrackbarPos('degree','Frame')
@@ -247,7 +246,6 @@ class GUI(object):
         # rotated_image = cv2.warpAffine(self.org_img, rotation_matrix,(self.org_img.shape[1],self.org_img.shape[0]))
         self.org_img = cv2.warpAffine(self.org_img, rotation_matrix,(self.org_img.shape[1],self.org_img.shape[0]))
         self.crop(self.org_img, ExtractorModeEnum.PANORAMIC)
-        cv2.imshow('Rotate', self.org_img)
 
     def to_panoramic(self):
         self.crop(self.org_img, ExtractorModeEnum.PANORAMIC)
