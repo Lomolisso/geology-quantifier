@@ -295,16 +295,19 @@ class GUI(object):
         self.org_img = self.choose_cut_method()
         self.main_win.unbind('<Key>')
         self.un_measures()
-        self.show_img()
+        for wget in self.file_fr.winfo_children():
+            wget.grid_forget()
+        self.file_fr.grid_forget()
         for wget in self.command_fr.winfo_children():
             wget.grid_forget()
+        self.command_fr.grid_forget()
         for wget in self.crop_fr.winfo_children():
             wget.grid_forget()
+        self.crop_fr.grid_forget() 
         for wget in self.size_fr.winfo_children():
-            wget.grid_forget()
-        self.command_fr.grid_forget()
-        self.crop_fr.grid_forget()    
-        self.size_fr.grid_forget()                  
+            wget.grid_forget()   
+        self.size_fr.grid_forget()
+        self.show_img()            
 
     def reset_image(self):
         self.sample_extractor.reset_vertexes_pos()
@@ -436,7 +439,9 @@ class GUI(object):
     def create_btns(self) -> None:
         
         # -- files --
-        self.btn_save.grid(row=0, column=1, padx=5, pady=5)
+        self.file_fr.grid(row=0, column=0, sticky=tk.N)
+        self.btn_img.grid(row=0, column=0, padx=5, pady=5)
+        self.btn_save.grid(row=1, column=0, padx=5, pady=5)
         self.file_fr_lbl.grid(column= 0, padx=5, pady=5)
 
         # -- Color Segmentation --
@@ -445,7 +450,7 @@ class GUI(object):
         self.btn_split.grid(row=0, column=1, padx=5, pady=5)
         self.btn_merge.grid(row=1, column=0, padx=5, pady=5)
         self.btn_sub.grid(row=1, column=1, padx=5, pady=5)
-        self.color_seg_lb.grid(padx=5, pady=5)
+        self.color_seg_lb.grid(padx=5, pady=5, columnspan=2)
 
         # -- Shape Segmentation --
         self.shape_seg_fr.grid(row=0, column=2, sticky=tk.N)
@@ -462,14 +467,14 @@ class GUI(object):
         # -- Results generation --
         self.gen_results_fr.grid(row=0, column=4, sticky=tk.N)
         self.btn_3d.grid(row=0, column=0, padx=5, pady=5)
-        self.btn_analyze.grid(row=0, column=0, padx=5, pady=5)
+        self.btn_analyze.grid(row=1, column=0, padx=5, pady=5)
         self.gen_results_lb.grid(column=0, padx=5, pady=5)
 
         # -- Navigate --
         self.navigate_fr.grid(row=1, column=0, sticky=tk.N)
         self.btn_up.grid(row=0, column=0, padx=5, pady=5)
         self.btn_down.grid(row=0, column=1, padx=5, pady=5)
-        self.navigate_lb.grid(column=0, padx=5, pady=5)
+        self.navigate_lb.grid(column=0, padx=5, pady=5, columnspan=2)
 
 
     def clean_principal_frame(self) -> None:
