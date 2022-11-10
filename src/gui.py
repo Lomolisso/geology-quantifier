@@ -4,6 +4,7 @@ import image_tree
 import tkinter as tk
 import tkinter.font as tk_font
 import numpy as np
+import webbrowser
 import cv2
 from PIL import Image, ImageTk
 import image_managers, percent, tube, shape_detection as sc
@@ -16,6 +17,7 @@ SCREEN_WIDTH = ROOT.winfo_screenwidth()
 SCREEN_HEIGHT = ROOT.winfo_screenheight()
 ARROW_LEFT = tk.PhotoImage(file="left_arrow.png")
 ARROW_RIGHT = tk.PhotoImage(file="right_arrow.png")
+HELP_ICON = tk.PhotoImage(file="help_icon.png")
     
 class GUI(object):
     """
@@ -61,6 +63,7 @@ class GUI(object):
         self.image_tools_fr = tk.Frame(self.btns_fr, highlightbackground="light gray", highlightthickness=1)
         self.gen_results_fr = tk.Frame(self.btns_fr, highlightbackground="light gray", highlightthickness=1)
         self.navigate_fr = tk.Frame(self.btns_fr, highlightbackground="light gray", highlightthickness=1)
+        self.help_fr = tk.Frame(self.btns_fr)
 
         for i in range(6): self.btns_fr.columnconfigure(i, weight=1)
 
@@ -152,6 +155,10 @@ class GUI(object):
         btn_down_name = 'Bajar'
         btn_down_description = 'Permite cambiar la imagen actual por la imagen seleccionada.'
         self.btn_down, self.hover_down = createButtonWithHover(self.navigate_fr, btn_down_name, self.down, self.my_font, btn_down_description,image=ARROW_RIGHT)
+
+        btn_doc_name = 'Ayuda'
+        btn_doc_description = 'Permite abrir la documentación completa de la aplicación.'
+        self.btn_doc, self.hover_doc = createButtonWithHover(self.help_fr, btn_doc_name, self.view_documentation, self.my_font, btn_doc_description,image=HELP_ICON)
 
         # -- entries --
         self.total_clusters = EntryWithPlaceholder(self.color_seg_fr, "Número de clusters", 'gray')
@@ -478,6 +485,10 @@ class GUI(object):
         self.btn_up.grid(row=0, column=0, padx=5, pady=5)
         self.btn_down.grid(row=0, column=1, padx=5, pady=5)
         self.navigate_lb.grid(column=0, padx=5, pady=5, columnspan=2)
+
+        # -- Help --
+        self.help_fr.grid(row=0, column=5, sticky=tk.N)
+        self.btn_doc.grid(row=0, column=0, padx=5, pady=5)
 
 
     def clean_principal_frame(self) -> None:
@@ -836,6 +847,17 @@ class GUI(object):
         self.clean_principal_frame()
         self.org_img =  cv2.rotate(self.org_img, cv2.ROTATE_90_CLOCKWISE)
         self.crop(self.org_img)
+
+    def view_documentation(self) -> None:
+        """
+        This method open the documentation file. It opens de file that is save in the proyect or, if it fails,
+        open the file that is save in the repository.
+        """
+        try:
+            filepath = get_path("Documentacion_Proyecto.pdf")
+            webbrowser.open_new(filepath)
+        except: 
+            webbrowser.open_new("https://github.com/Lomolisso/geology-quantifier/blob/ba67360da5f0c7dc3e2edac6996fc463c8b78599/Documentacion_Proyecto.pdf")
 
 
 
