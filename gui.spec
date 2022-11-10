@@ -1,4 +1,8 @@
 # -*- mode: python ; coding: utf-8 -*-
+from PyInstaller.utils.hooks import collect_data_files
+
+datas = [('icon.ico', '.'), ('src/tubo.obj', 'src')]
+datas += collect_data_files('sv_ttk')
 
 
 block_cipher = None
@@ -8,7 +12,7 @@ a = Analysis(
     ['src\\gui.py'],
     pathex=[],
     binaries=[],
-    datas=[('icon.ico', '.'), ('src/tubo.obj', 'src')],
+    datas=datas,
     hiddenimports=['vtkmodules', 'vtkmodules.all', 'vtkmodules.qt.QVTKRenderWindowInteractor', 'vtkmodules.util', 'vtkmodules.util.numpy_support', 'vtkmodules.numpy_interface.dataset_adapter'],
     hookspath=[],
     runtime_hooks=[],
