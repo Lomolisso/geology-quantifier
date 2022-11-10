@@ -7,8 +7,7 @@ import cv2
 import image_managers, percent, tube, shape_detection as sc
 import sv_ttk
 from tkinter import ttk
-
-
+import tkinter.messagebox
 
 from PIL import Image, ImageTk
 from sample_extraction_refactor import ExtractorModeEnum, SampleExtractor, cut_image_from_vertex, resize_unwrapping
