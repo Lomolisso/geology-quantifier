@@ -3,6 +3,7 @@ from typing import Any, List
 import image_tree
 import tkinter as tk
 import tkinter.font as tk_font
+import tkinter.messagebox
 import numpy as np
 import cv2
 from PIL import Image, ImageTk
@@ -101,14 +102,20 @@ class GUI(object):
         self.btn_undo = tk.Button(self.btns_fr, text='Deshacer', width=20, command=self.undo, cursor='arrow')
         self.btn_undo['font'] = self.my_font
 
-        self.btn_contour = tk.Button(self.btns_fr, text='Segmentar', width=20, command=self.segmentate, cursor='arrow')
-        self.btn_contour['font'] = self.my_font
-
         self.btn_save = tk.Button(self.btns_fr, text='Guardar', width=20, command=self.save, cursor='arrow')
         self.btn_save['font'] = self.my_font
 
         self.btn_update = tk.Button(self.btns_fr, text='Actualizar', width=20, command=self.update_screen, cursor='arrow')
         self.btn_update['font'] = self.my_font
+
+        self.btn_analyze = tk.Button(self.btns_fr, text='Analizar', width=20, command=self.analyze, cursor='arrow')
+        self.btn_analyze['font'] = self.my_font
+
+        self.btn_segmentate = tk.Button(self.btns_fr, text='Segmentar', width=20, command=self.segmentate, cursor='arrow')
+        self.btn_segmentate['font'] = self.my_font
+
+        self.btn_rotate = tk.Button(self.btns_fr, text='Girar', width=20, command=self.rotate_image, cursor='arrow')
+        self.btn_rotate['font'] = self.my_font
 
         self.btn_height = tk.Button(self.btns_fr, text='Altura', width=20, command=self.set_height, cursor='arrow')
         self.btn_height['font'] = self.my_font
@@ -269,6 +276,7 @@ class GUI(object):
         self.mode = 'p'
 
     def save_image(self):
+        scale-img-extraction
         self.prev_boolean = False
         self.org_img = self.choose_cut_method()
         self.main_win.unbind('<Key>')
@@ -349,6 +357,7 @@ class GUI(object):
             self.btn_panoramic.grid(row=0, column=1)
             self.btn_unwrapping.grid(row=0, column=2)
             self.btn_save_img.grid(row=0, column=3)
+
             self.btn_rotateR.grid(row=2, column=5)
             self.btn_rotateL.grid(row=2, column=4)
 
@@ -373,21 +382,23 @@ class GUI(object):
     def clean_btns(self) -> None:
         for wget in self.btns_fr.winfo_children():
             wget.grid_forget()
-        self.btn_img.grid(row=0, column=0, padx=5, pady=5)
+        self.btn_img.grid(row=0, column=0)
+        
 
     def create_btns(self) -> None:
         # Set buttons positions
         self.btn_3d.grid(row=0, column=1, padx=5, pady=5)
-        self.total_clusters.grid(row=0, column=2, padx=5, pady=5, ipadx=2, ipady=5)
+        self.total_clusters.grid(row=0, column=2, padx=5, pady=5)
         self.btn_split.grid(row=0, column=3, padx=5, pady=5)
         self.btn_merge.grid(row=0, column=4, padx=5, pady=5)
-        self.btn_sub.grid(row=0, column=5, padx=5, pady=5)      
+        self.btn_sub.grid(row=0, column=5, padx=5, pady=5)
         self.btn_undo.grid(row=1,column=0, padx=5, pady=5)
         self.btn_save.grid(row=1, column=1, padx=5, pady=5)
         self.btn_up.grid(row=1, column=2, padx=5, pady=5)
         self.btn_down.grid(row=1, column=3, padx=5, pady=5)
-        self.btn_contour.grid(row=1, column=4, padx=5, pady=5)
-        self.btn_update.grid(row=1, column=5, padx=5, pady=5)
+        self.btn_update.grid(row=1, column=4, padx=5, pady=5)
+        self.btn_analyze.grid(row=0, column=6, padx=5, pady=5)
+        self.btn_segmentate.grid(row=1, column=6, padx=5, pady=5)
 
     def clean_principal_frame(self) -> None:
         """
@@ -590,9 +601,33 @@ class GUI(object):
         self.segmentation = False
         self.update_screen()
     
+    def analyze(self) -> None:
+        """
+        This method is in charge of the shape detection at a cluster.
+        """
+        if len(self.selected_images_indices) > 1:
+            tk.messagebox.showwarning("Error", message="Por favor, seleccione solo una imagen.")
+            return
+        if len(self.selected_images_indices) == 1:
+            self.img_tree = self.img_tree.childs[self.selected_images_indices[0]]
+
+        self.clean_principal_frame()
+        self.clean_canvas_frame()
+
+        self.selected_images_indices = []
+        self.segmentation = True
+
+        self.contour = sc.contour_segmentation(self.img_tree.image)
+        self.segmentated = sc.cluster_segmentation(self.img_tree.image,self.contour, sc.DEF_COLOR)
+
+        self.update_screen()
+
+        results = sc.generate_results(self.contour, self.height_cm/self.segmentated.shape[0])
+        self.fill_table(results, sc.DEF_COLOR)
+
     def segmentate(self) -> None:
         """
-        This method is in charge of the body detection at a cluster
+        This method is in charge of the shape segmentation at a cluster.
         """
         if len(self.selected_images_indices) > 1:
             tk.messagebox.showwarning("Error", message="Por favor, seleccione solo una imagen.")
@@ -606,14 +641,14 @@ class GUI(object):
         self.selected_images_indices = []
         self.segmentation = True
         
-        self.contour = sc.contour_segmentation(self.img_tree.image) 
+        self.contour = sc.contour_segmentation(self.img_tree.image)
         sc.contour_agrupation(self.contour)
-        self.segmentated = sc.cluster_segmentation(self.img_tree.image,self.contour)
+        self.segmentated = sc.cluster_segmentation(self.img_tree.image,self.contour, sc.COLORS)
 
         self.update_screen()
 
         results = sc.generate_results(self.contour, self.height_cm/self.segmentated.shape[0])
-        self.fill_table(results)
+        self.fill_table(results, sc.COLORS)
 
     def aggregate(self, results) -> List:
         agg_results = []
@@ -633,10 +668,12 @@ class GUI(object):
                 agg_results[res[0]][i] += res[i+1]
         
         for i in range(len(agg_results)):
+            if color_count[i] == 0:
+                agg_results[i] = None
+                continue
             for j in range(len(sc.STATISTICS)):
-                if color_count[i] != 0:
-                    agg_results[i][j] /= color_count[i]
-                    agg_results[i][j] = np.round(agg_results[i][j], 2)
+                agg_results[i][j] /= color_count[i]
+                agg_results[i][j] = np.round(agg_results[i][j], 2)
         return agg_results
 
     def create_label(self, name, row, col):
@@ -644,7 +681,7 @@ class GUI(object):
         label.grid(row=row, column=col, sticky=tk.N+tk.S+tk.E+tk.W)
         return label
 
-    def fill_table(self, results) -> None:
+    def fill_table(self, results, colors) -> None:
         """
         This method fills and shows a table at the GUI.
         The data is given as an input.
@@ -658,7 +695,9 @@ class GUI(object):
             self.create_label(sc.STATISTICS[i], 0, i+2)
         
         for row_num in range(len(aggregated_results)):
-            (b, g, r) = sc.COLORS[row_num]
+            if aggregated_results[row_num] == None:
+                continue
+            (b, g, r) = colors[row_num]
             color = '#%02x%02x%02x' % (r, g, b)
             label_color = self.create_label("", row_num+1, 0)
             label_color.config(bg=color, width=1, height=1, justify=tk.CENTER)
@@ -725,6 +764,11 @@ class GUI(object):
 
         generate_zip(filepath, files)
         tk.messagebox.showinfo("Guardado", message="Las imagenes se han guardado correctamente")
+    def rotate_image(self) -> None:
+        self.clean_principal_frame()
+        self.org_img =  cv2.rotate(self.org_img, cv2.ROTATE_90_CLOCKWISE)
+        self.crop(self.org_img)
+
 
 
 ROOT.title("Cuantificador geologico")

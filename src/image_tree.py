@@ -1,6 +1,7 @@
 import color_segmentation
 import numpy as np
 import cv2
+from typing import List
 
 def clustering(image, N):
     """
@@ -77,7 +78,7 @@ class ImageNode(object):
         self.childs = [child for child in self.childs if child is not None]
         return acc
         
-    def delete(self, indices: list[int]) -> None:
+    def delete(self, indices: List[int]) -> None:
         """
         Deletes one or more ImageNodes and propagates 
         the deletion to the ancestors nodes.
@@ -85,7 +86,7 @@ class ImageNode(object):
         acc = self._collapse_image_nodes(indices)
         self._propagate_delete(acc)
     
-    def merge(self, indices: list[int]) -> None:
+    def merge(self, indices: List[int]) -> None:
         """
         Merges a list of ImageNodes into one, note that
         they must be brothers, i.e., have the same father.
