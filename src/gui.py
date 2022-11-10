@@ -1,18 +1,22 @@
 import csv
-from typing import Any, List
 import image_tree
-import tkinter as tk
+import tkinter
 import tkinter.font as tk_font
-import tkinter.messagebox
 import numpy as np
 import cv2
-from PIL import Image, ImageTk
 import image_managers, percent, tube, shape_detection as sc
+import sv_ttk
+from tkinter import ttk
+
+
+
+from PIL import Image, ImageTk
 from sample_extraction_refactor import ExtractorModeEnum, SampleExtractor, cut_image_from_vertex, resize_unwrapping
-from utils import EntryWithPlaceholder, generate_zip, get_file_filepath, get_path, get_results_filepath
+from utils import PlaceholderEntry, generate_zip, get_file_filepath, get_path, get_results_filepath
+from typing import Any, List
 
 CLUSTER_RESHAPE = 0.7
-ROOT = tk.Tk()
+ROOT = tkinter.Tk()
 SCREEN_WIDTH = ROOT.winfo_screenwidth()
 SCREEN_HEIGHT = ROOT.winfo_screenheight()
     
@@ -23,7 +27,7 @@ class GUI(object):
     the diferent scripts developed for the processing and quanitification
     of rock samples.
     """
-    def __init__(self, root: tk.Tk) -> None:
+    def __init__(self, root: tkinter.Tk) -> None:
         """
         Constructor of the class. Instantiates class parameters related
         to both the workflow of the app and the elements of the interface.
@@ -46,86 +50,64 @@ class GUI(object):
         self.data_font = tk_font.Font(size=16)
         
         # -- frames --
-        self.btns_fr = tk.Frame(self.main_win)
-        self.btns_fr.grid(row=0, column=1, columnspan=3, padx=10, pady=10, sticky=tk.NW)
+        self.btns_fr = ttk.Frame(self.main_win)
+        self.btns_fr.grid(row=0, column=1, columnspan=3, padx=10, pady=10, sticky=tkinter.NW)
         for i in range(6): self.btns_fr.columnconfigure(i, weight=1)
 
-        self.img_container_fr = tk.Frame(self.main_win)
+        self.img_container_fr = ttk.Frame(self.main_win)
         
-        self.img_container_canvas= tk.Canvas(self.img_container_fr)
+        self.img_container_canvas= tkinter.Canvas(self.img_container_fr)
 
-        self.canvas_fr = tk.Frame(self.img_container_canvas)
+        self.canvas_fr = ttk.Frame(self.img_container_canvas)
 
-        self.principal_fr = tk.Frame(self.main_win)
+        self.principal_fr = ttk.Frame(self.main_win)
         self.principal_fr.grid(row=1, column=1)
         
-        self.results_fr = tk.Frame(self.canvas_fr)
+        self.results_fr = ttk.Frame(self.canvas_fr)
 
         # -- buttons --
-        self.btn_img = tk.Button(self.btns_fr, text='Seleccionar imagen', width=20, command=self.select_img, cursor='arrow')
-        self.btn_img['font'] = self.my_font
+        self.btn_img = ttk.Button(self.btns_fr, text='Seleccionar imagen', width=20, command=self.select_img, cursor='arrow')
         self.btn_img.grid(row=0, column=0, padx=5, pady=5)
 
-        self.btn_panoramic = tk.Button(self.btns_fr, text='Modo panorámico', width=20, command=self.to_panoramic, cursor='arrow')
-        self.btn_panoramic['font'] = self.my_font
+        self.btn_panoramic = ttk.Button(self.btns_fr, text='Modo panorámico', width=20, command=self.to_panoramic, cursor='arrow')
 
-        self.btn_unwrapping = tk.Button(self.btns_fr, text='Modo unwrapping', width=20, command=self.to_unwrapping, cursor='arrow')
-        self.btn_unwrapping['font'] = self.my_font
+        self.btn_unwrapping = ttk.Button(self.btns_fr, text='Modo unwrapping', width=20, command=self.to_unwrapping, cursor='arrow')
 
-        self.btn_rotateR = tk.Button(self.btns_fr, text='Rotar imagen R', width=20, command=self.rotateR, cursor='arrow')
-        self.btn_rotateR['font'] = self.my_font
+        self.btn_rotateR = ttk.Button(self.btns_fr, text='Rotar imagen R', width=20, command=self.rotateR, cursor='arrow')
 
-        self.btn_rotateL = tk.Button(self.btns_fr, text='Rotar imagen L', width=20, command=self.rotateL, cursor='arrow')
-        self.btn_rotateL['font'] = self.my_font
+        self.btn_rotateL = ttk.Button(self.btns_fr, text='Rotar imagen L', width=20, command=self.rotateL, cursor='arrow')
 
-        self.btn_save_img = tk.Button(self.btns_fr, text='Guardar imagen', width=20, command=self.save_image, cursor='arrow')
-        self.btn_save_img['font'] = self.my_font
+        self.btn_save_img = ttk.Button(self.btns_fr, text='Guardar imagen', width=20, command=self.save_image, cursor='arrow')
 
-        self.btn_3d = tk.Button(self.btns_fr, text='3D', width=20, command=self.plot_3d, cursor='arrow')
-        self.btn_3d['font'] = self.my_font
+        self.btn_3d = ttk.Button(self.btns_fr, text='3D', width=20, command=self.plot_3d, cursor='arrow')
 
-        self.btn_split = tk.Button(self.btns_fr, text='Separar', width=20, command=self.split, cursor='arrow')
-        self.btn_split['font'] = self.my_font
+        self.btn_split = ttk.Button(self.btns_fr, text='Separar', width=20, command=self.split, cursor='arrow')
 
-        self.btn_merge = tk.Button(self.btns_fr, text='Combinar', width=20, command=self.merge, cursor='arrow')
-        self.btn_merge['font'] = self.my_font
+        self.btn_merge = ttk.Button(self.btns_fr, text='Combinar', width=20, command=self.merge, cursor='arrow')
         
-        self.btn_sub = tk.Button(self.btns_fr, text='Eliminar', width=20, command=self.delete, cursor='arrow')
-        self.btn_sub['font'] = self.my_font
+        self.btn_sub = ttk.Button(self.btns_fr, text='Eliminar', width=20, command=self.delete, cursor='arrow')
         
-        self.btn_up = tk.Button(self.btns_fr, text='Subir', width=20, command=self.up, cursor='arrow')
-        self.btn_up['font'] = self.my_font
+        self.btn_up = ttk.Button(self.btns_fr, text='Subir', width=20, command=self.up, cursor='arrow')
         
-        self.btn_down = tk.Button(self.btns_fr, text='Bajar', width=20, command=self.down, cursor='arrow')
-        self.btn_down['font'] = self.my_font
+        self.btn_down = ttk.Button(self.btns_fr, text='Bajar', width=20, command=self.down, cursor='arrow')
 
-        self.btn_undo = tk.Button(self.btns_fr, text='Deshacer', width=20, command=self.undo, cursor='arrow')
-        self.btn_undo['font'] = self.my_font
+        self.btn_undo = ttk.Button(self.btns_fr, text='Deshacer', width=20, command=self.undo, cursor='arrow')
 
-        self.btn_save = tk.Button(self.btns_fr, text='Guardar', width=20, command=self.save, cursor='arrow')
-        self.btn_save['font'] = self.my_font
+        self.btn_save = ttk.Button(self.btns_fr, text='Guardar', width=20, command=self.save, cursor='arrow')
 
-        self.btn_update = tk.Button(self.btns_fr, text='Actualizar', width=20, command=self.update_screen, cursor='arrow')
-        self.btn_update['font'] = self.my_font
+        self.btn_update = ttk.Button(self.btns_fr, text='Actualizar', width=20, command=self.update_screen, cursor='arrow')
 
-        self.btn_analyze = tk.Button(self.btns_fr, text='Analizar', width=20, command=self.analyze, cursor='arrow')
-        self.btn_analyze['font'] = self.my_font
+        self.btn_analyze = ttk.Button(self.btns_fr, text='Analizar', width=20, command=self.analyze, cursor='arrow')
 
-        self.btn_segmentate = tk.Button(self.btns_fr, text='Segmentar', width=20, command=self.segmentate, cursor='arrow')
-        self.btn_segmentate['font'] = self.my_font
+        self.btn_segmentate = ttk.Button(self.btns_fr, text='Segmentar', width=20, command=self.segmentate, cursor='arrow')
 
-        self.btn_rotate = tk.Button(self.btns_fr, text='Girar', width=20, command=self.rotate_image, cursor='arrow')
-        self.btn_rotate['font'] = self.my_font
+        self.btn_rotate = ttk.Button(self.btns_fr, text='Girar', width=20, command=self.rotate_image, cursor='arrow')
 
-        self.btn_height = tk.Button(self.btns_fr, text='Altura', width=20, command=self.set_height, cursor='arrow')
-        self.btn_height['font'] = self.my_font
+        self.btn_height = ttk.Button(self.btns_fr, text='Altura', width=20, command=self.set_height, cursor='arrow')
 
         # -- entries --
-        self.total_clusters = EntryWithPlaceholder(self.btns_fr, "Número de clusters", 'gray')
-        self.total_clusters.config(borderwidth=2)
-        self.total_clusters['font'] = self.my_font
-        self.entry_height_cm = EntryWithPlaceholder(self.btns_fr, "Altura recorte (cm)", 'gray')
-        self.entry_height_cm['font'] = self.my_font
+        self.total_clusters = PlaceholderEntry(self.btns_fr, "Número de clusters")
+        self.entry_height_cm = PlaceholderEntry(self.btns_fr, "Altura recorte (cm)")
 
         # -- extras --
         self.set_up_scrollbar()
@@ -134,22 +116,22 @@ class GUI(object):
         self.height_cm = 0
         self.mode = 'p'
         self.grados = 0
-        self.canvas_preview = tk.Canvas(self.principal_fr)
+        self.canvas_preview = tkinter.Canvas(self.principal_fr)
         self.prev_boolean = False
 
     def set_height(self):
         self.height_cm = int(self.entry_height_cm.get())
 
     def focus_win(self, event):
-        if not isinstance( event.widget, tk.Entry):
+        if not isinstance( event.widget, ttk.Entry):
             self.main_win.focus()
 
     def set_up_scrollbar(self):
         """
-        Sets up the scrollbar of the gui, instantiating tk.Scrollbar
+        Sets up the scrollbar of the gui, instantiating ttk.Scrollbar
         and positioning it.
         """
-        self.scrollbar = tk.Scrollbar(self.img_container_fr, orient=tk.HORIZONTAL , command = self.img_container_canvas.xview)
+        self.scrollbar = ttk.Scrollbar(self.img_container_fr, orient=tkinter.HORIZONTAL , command = self.img_container_canvas.xview)
 
         self.canvas_fr.bind(
             "<Configure>",
@@ -174,8 +156,8 @@ class GUI(object):
         self.canvas_fr.bind('<Leave>', self._unbound_to_mousewheel)
 
         self.img_container_canvas.configure(xscrollcommand= self.scrollbar.set)
-        self.scrollbar.grid(row = 1, column=0, sticky=tk.N+tk.EW)
-        self.img_container_canvas.grid(row=0, column=0, sticky=tk.N+tk.S+tk.E+tk.W)
+        self.scrollbar.grid(row = 1, column=0, sticky=tkinter.N+tkinter.EW)
+        self.img_container_canvas.grid(row=0, column=0, sticky=tkinter.N+tkinter.S+tkinter.E+tkinter.W)
 
     def _bound_to_mousewheel(self, event):
         """
@@ -203,12 +185,12 @@ class GUI(object):
         try :
             n_childs = int(self.total_clusters.get())
         except:
-            tk.messagebox.showwarning("Error", message="Por favor ingresa un número.")
+            tkinter.messagebox.showwarning("Error", message="Por favor ingresa un número.")
             return
         selected_imgs = len(self.selected_images_indices)
         
         if selected_imgs > 1:
-            tk.messagebox.showwarning("Error", message="Por favor, seleccione solo una imagen.")
+            tkinter.messagebox.showwarning("Error", message="Por favor, seleccione solo una imagen.")
             return
         
         if selected_imgs == 1:
@@ -264,7 +246,7 @@ class GUI(object):
     def preview(self):
         if self.canvas_preview:
             self.canvas_preview.destroy()
-        self.canvas_preview = tk.Canvas(self.principal_fr)
+        self.canvas_preview = tkinter.Canvas(self.principal_fr)
         self.prev_boolean = True
         copy_img = np.copy(self.org_img)
         copy_img = self.choose_cut_method(copy_img)
@@ -311,7 +293,7 @@ class GUI(object):
     def crop(self, image, mode):
         self.sample_extractor = SampleExtractor(self._resize_img(image), mode)
         #se ingresa en un canvas
-        canvas_extractor = tk.Canvas(self.principal_fr)
+        canvas_extractor = tkinter.Canvas(self.principal_fr)
         self.label_extractor = self.add_img_to_canvas(canvas_extractor, self.sample_extractor.get_image())
         self.label_extractor.bind('<1>', self.click_check)
         self.label_extractor.bind('<B1-Motion>',self.click_pos)
@@ -406,7 +388,7 @@ class GUI(object):
         for wget in self.principal_fr.winfo_children():
             wget.destroy()
         self.principal_fr.destroy()
-        self.principal_fr = tk.Frame(self.main_win)
+        self.principal_fr = ttk.Frame(self.main_win)
         self.principal_fr.grid(row=1, column=1)
     
     def clean_canvas_frame(self) -> None:
@@ -419,22 +401,22 @@ class GUI(object):
 
         for wget in self.canvas_fr.winfo_children():
             wget.destroy()
-        self.results_fr = tk.Frame(self.canvas_fr)
-        self.img_container_fr.grid(row=1, column=2, sticky=tk.N+tk.E+tk.W+tk.S)
+        self.results_fr = ttk.Frame(self.canvas_fr)
+        self.img_container_fr.grid(row=1, column=2, sticky=tkinter.N+tkinter.E+tkinter.W+tkinter.S)
     
-    def add_img_to_canvas(self, canvas: tk.Canvas, img: cv2.Mat) -> None:
+    def add_img_to_canvas(self, canvas: tkinter.Canvas, img: cv2.Mat) -> None:
         """
         Adds an image to the canvas.
         """
         photo_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         photo_img = Image.fromarray(photo_img)
         img_for_label = ImageTk.PhotoImage(photo_img)
-        label_img = tk.Label(canvas, image=img_for_label)
+        label_img = ttk.Label(canvas, image=img_for_label)
         label_img.image = img_for_label
         label_img.grid(row=0, column=0, padx=10, pady=10)
         return label_img
         
-    def click(self, image: cv2.Mat, key: Any, canvas: tk.Canvas) -> None:
+    def click(self, image: cv2.Mat, key: Any, canvas: tkinter.Canvas) -> None:
         """
         Handles the clicks on screen, unselecting previous images if needed
         or selecting new ones.
@@ -450,7 +432,7 @@ class GUI(object):
             canvas.configure(bg='red')
 
             color_percent = percent.percent(image)
-            widgetP = tk.Label(canvas, text=f"Porcentaje de pixeles: {color_percent}%", fg='white', bg='black')
+            widgetP = ttk.Label(canvas, text=f"Porcentaje de pixeles: {color_percent}%")
             widgetP.grid(row = 1,column=0 )
 
     def _resize_img(self, img):
@@ -498,12 +480,12 @@ class GUI(object):
         if self.segmentation:
             principal_image = self.img_tree.image
             principal_image_res = self._resize_img(principal_image)
-            principal_canva = tk.Canvas(self.principal_fr, width=principal_image_res.shape[1], height=principal_image_res.shape[0])
+            principal_canva = tkinter.Canvas(self.principal_fr, width=principal_image_res.shape[1], height=principal_image_res.shape[0])
             self.add_img_to_canvas(principal_canva, principal_image_res)
             principal_canva.grid(row=0, column=0)
 
             self.segmentated = self._resize_img(self.segmentated)
-            canva = tk.Canvas(self.principal_fr, width=self.segmentated.shape[1], height=self.segmentated.shape[0])
+            canva = tkinter.Canvas(self.principal_fr, width=self.segmentated.shape[1], height=self.segmentated.shape[0])
             self.add_img_to_canvas(canva, self.segmentated)
             if self.segmentated.shape[0] > self.segmentated.shape[1]:
                 canva.grid(row=0, column=1)
@@ -513,7 +495,7 @@ class GUI(object):
         else:
             self.clean_canvas_frame()
             # Set image for cropped image frame
-            canva = tk.Canvas(self.principal_fr, width=img.shape[1], height=img.shape[0])
+            canva = tkinter.Canvas(self.principal_fr, width=img.shape[1], height=img.shape[0])
             _ = self.add_img_to_canvas(canva, img)
             canva.grid(row=0, column=0)
 
@@ -523,7 +505,7 @@ class GUI(object):
             for child in self.img_tree.childs:
                 child_img = self._resize_img(child.image)
                 child_img = cv2.resize(child.image, (int(child_img.shape[1]*CLUSTER_RESHAPE), int(child_img.shape[0]*CLUSTER_RESHAPE)))
-                canva = tk.Canvas(self.canvas_fr, width=child_img.shape[1], height=child_img.shape[0])
+                canva = tkinter.Canvas(self.canvas_fr, width=child_img.shape[1], height=child_img.shape[0])
                 label = self.add_img_to_canvas(canva, child_img)
                 label.bind('<ButtonPress-1>', lambda event, image=child.image, key=i, canvas=canva: self.click(image, key, canvas))
                 canva.grid(row=i%img_row_shape, column=i//img_row_shape)
@@ -534,7 +516,7 @@ class GUI(object):
         This method merges 2 or more clusters, updating the image tree.
         """
         if len(self.selected_images_indices) < 2:
-            tk.messagebox.showwarning("Error", message="Por favor, seleccione 2 o más imágenes.")
+            tkinter.messagebox.showwarning("Error", message="Por favor, seleccione 2 o más imágenes.")
             return
         self.img_tree.merge(self.selected_images_indices)
         self.segmentation = False
@@ -546,7 +528,7 @@ class GUI(object):
         This method deletes at least 1 cluster, updating the image tree.
         """
         if len(self.selected_images_indices) == 0:
-            tk.messagebox.showwarning("Error", message="Por favor, seleccione al menos una imagen.")
+            tkinter.messagebox.showwarning("Error", message="Por favor, seleccione al menos una imagen.")
             return
         self.img_tree.delete(self.selected_images_indices)
         self.segmentation = False
@@ -558,7 +540,7 @@ class GUI(object):
         This method plots the image of the current node of the image tree
         in a 3D model of a cilinder.
         """
-        # tk.messagebox.showinfo("Proximamente", message="Esta funcionalidad estará disponible proximamente.")
+        # tkinter.messagebox.showinfo("Proximamente", message="Esta funcionalidad estará disponible proximamente.")
 
         img = self.img_tree.image
         # # Use the loaded img to fill a 3D tube surface.
@@ -580,7 +562,7 @@ class GUI(object):
         call functions on it.
         """
         if len(self.selected_images_indices) != 1:
-            tk.messagebox.showwarning("Error", message="Por favor, seleccione una imagen.")
+            tkinter.messagebox.showwarning("Error", message="Por favor, seleccione una imagen.")
             return
         self.img_tree = self.img_tree.childs[self.selected_images_indices[0]]
         self.selected_images_indices = []
@@ -593,7 +575,7 @@ class GUI(object):
         related to the parent of the current node.
         """
         if self.img_tree.parent == None:
-            tk.messagebox.showwarning("Error", message="Esta es la imagen original.")
+            tkinter.messagebox.showwarning("Error", message="Esta es la imagen original.")
             return
         self.img_tree = self.img_tree.parent
         self.selected_images_indices = []
@@ -605,7 +587,7 @@ class GUI(object):
         This method is in charge of the shape detection at a cluster.
         """
         if len(self.selected_images_indices) > 1:
-            tk.messagebox.showwarning("Error", message="Por favor, seleccione solo una imagen.")
+            tkinter.messagebox.showwarning("Error", message="Por favor, seleccione solo una imagen.")
             return
         if len(self.selected_images_indices) == 1:
             self.img_tree = self.img_tree.childs[self.selected_images_indices[0]]
@@ -629,7 +611,7 @@ class GUI(object):
         This method is in charge of the shape segmentation at a cluster.
         """
         if len(self.selected_images_indices) > 1:
-            tk.messagebox.showwarning("Error", message="Por favor, seleccione solo una imagen.")
+            tkinter.messagebox.showwarning("Error", message="Por favor, seleccione solo una imagen.")
             return
         if len(self.selected_images_indices) == 1:
             self.img_tree = self.img_tree.childs[self.selected_images_indices[0]]
@@ -676,8 +658,8 @@ class GUI(object):
         return agg_results
 
     def create_label(self, name, row, col):
-        label = tk.Label(self.results_fr, text=name, highlightthickness=1, highlightbackground="black")
-        label.grid(row=row, column=col, sticky=tk.N+tk.S+tk.E+tk.W)
+        label = ttk.Label(self.results_fr, text=name, highlightthickness=1, highlightbackground="black")
+        label.grid(row=row, column=col, sticky=tkinter.N+tkinter.S+tkinter.E+tkinter.W)
         return label
 
     def fill_table(self, results, colors) -> None:
@@ -699,18 +681,16 @@ class GUI(object):
             (b, g, r) = colors[row_num]
             color = '#%02x%02x%02x' % (r, g, b)
             label_color = self.create_label("", row_num+1, 0)
-            label_color.config(bg=color, width=1, height=1, justify=tk.CENTER)
+            label_color.config(bg=color, width=1, height=1, justify=tkinter.CENTER)
             
-            name = EntryWithPlaceholder(self.results_fr, f"Mineral {row_num}")
+            name = PlaceholderEntry(self.results_fr, f"Mineral {row_num}")
             name.config(highlightthickness=1, highlightbackground="black")
-            name['font'] = self.my_font
-            name.grid(row=row_num+1, column=1, sticky=tk.W+tk.E)
+            name.grid(row=row_num+1, column=1, sticky=tkinter.W+tkinter.E)
 
             for col_num in range(len(sc.STATISTICS)):
                 self.create_label(aggregated_results[row_num][col_num], row_num+1, col_num+2)
 
-        self.btnExport = tk.Button(self.results_fr, text="Descargar", width=15, command=lambda : self.table_to_csv(results) , cursor='arrow')
-        self.btnExport['font'] = self.my_font
+        self.btnExport = ttk.Button(self.results_fr, text="Descargar", width=15, command=lambda : self.table_to_csv(results) , cursor='arrow')
         self.btnExport.grid(row=len(aggregated_results) + 1, column=len(sc.STATISTICS) // 2 + 1)
     
     def table_to_csv(self, results) -> None:
@@ -745,7 +725,7 @@ class GUI(object):
                 wrtr.writerow(row)
         images = sc.image_agrupation(self.org_img,self.contour,3)
         generate_zip(f'{filepath}_images', images)
-        tk.messagebox.showinfo("Guardado", message="Los resultados se han guardado correctamente")
+        tkinter.messagebox.showinfo("Guardado", message="Los resultados se han guardado correctamente")
     
     def save(self) -> None:
         """
@@ -762,7 +742,7 @@ class GUI(object):
             return
 
         generate_zip(filepath, files)
-        tk.messagebox.showinfo("Guardado", message="Las imagenes se han guardado correctamente")
+        tkinter.messagebox.showinfo("Guardado", message="Las imagenes se han guardado correctamente")
     def rotate_image(self) -> None:
         self.clean_principal_frame()
         self.org_img =  cv2.rotate(self.org_img, cv2.ROTATE_90_CLOCKWISE)
@@ -780,5 +760,7 @@ ROOT.geometry(f"{SCREEN_WIDTH * 19 // 20}x{SCREEN_HEIGHT * 17 // 20}+0+0")
 # Set min and max window size to avoid incorrect displays
 ROOT.minsize(SCREEN_WIDTH * 2 // 3, SCREEN_HEIGHT * 2 // 3)
 ROOT.maxsize(SCREEN_WIDTH, SCREEN_HEIGHT)
-gg = GUI(ROOT)        
+gg = GUI(ROOT)
+
+sv_ttk.set_theme("dark")
 ROOT.mainloop()

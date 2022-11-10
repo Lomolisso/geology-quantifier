@@ -4,52 +4,36 @@ Utility functions/classes of the project.
 
 
 import tkinter as tk
+from tkinter import ttk
 from zipfile import ZipFile
 import cv2
 import sys
 import os
 
-class EntryWithPlaceholder(tk.Entry):
-    """
-    This class contains the behaviour of a new type of Entry
-    for the GUI. It simplifies the handling of a placeholder.
-    """
-
-    def __init__(self, master=None, placeholder="PLACEHOLDER", color='black'):
-        super().__init__(master)
-
+class PlaceholderEntry(ttk.Entry):
+    def __init__(self, container, placeholder, *args, **kwargs):
+        super().__init__(container, *args, **kwargs)
         self.placeholder = placeholder
-        self.placeholder_color = color
-        self.default_fg_color = self['fg']
 
-        self.bind("<FocusIn>", self.foc_in)
-        self.bind("<FocusOut>", self.foc_out)
+        self.field_style = kwargs.pop("style", "TEntry")
+        self.placeholder_style = kwargs.pop("placeholder_style", self.field_style)
+        self["style"] = self.placeholder_style
 
-        self.put_placeholder()
+        self.insert("0", self.placeholder)
+        self.bind("<FocusIn>", self._clear_placeholder)
+        self.bind("<FocusOut>", self._add_placeholder)
 
-    def put_placeholder(self) -> None:
-        """
-        Inserts a placeholder in the entry.
-        """
-        self.insert(0, self.placeholder)
-        self['fg'] = self.placeholder_color
+    def _clear_placeholder(self, e):
+        if self["style"] == self.placeholder_style:
+            self.delete("0", "end")
+            self["style"] = self.field_style
 
-    def foc_in(self, *_) -> None:
-        """
-        Handles when a user click the entry in order
-        to fill it.
-        """
-        if self['fg'] == self.placeholder_color:
-            self.delete('0', 'end')
-            self['fg'] = self.default_fg_color
-
-    def foc_out(self, *_) -> None:
-        """
-        Handles when a use stops interacting with
-        the entry.
-        """
+    def _add_placeholder(self, e):
         if not self.get():
-            self.put_placeholder()
+            self.insert("0", self.placeholder)
+            self["style"] = self.placeholder_style
+
+
 
 def get_results_filepath() -> str:
     """
