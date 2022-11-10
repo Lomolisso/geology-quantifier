@@ -8,7 +8,7 @@ import numpy as np
 import cv2
 from PIL import Image, ImageTk
 import image_managers, percent, tube, shape_detection as sc
-from sample_extraction import SampleExtractor, cut_image_from_vertex, resize_unwrapping
+from sample_extraction_refactor import ExtractorModeEnum, SampleExtractor, cut_image_from_vertex, resize_unwrapping
 from utils import EntryWithPlaceholder, generate_zip, get_file_filepath, get_path, get_results_filepath
 
 CLUSTER_RESHAPE = 0.7
@@ -31,6 +31,7 @@ class GUI(object):
 
         # --- workflow parameters ---
         self.org_img = None
+        self.clone_img = None
         self.img_tree = None
         self.selected_images_indices = []
         self.main_win = root
@@ -70,6 +71,12 @@ class GUI(object):
 
         self.btn_unwrapping = tk.Button(self.btns_fr, text='Modo unwrapping', width=20, command=self.to_unwrapping, cursor='arrow')
         self.btn_unwrapping['font'] = self.my_font
+
+        self.btn_rotateR = tk.Button(self.btns_fr, text='Rotar imagen R', width=20, command=self.rotateR, cursor='arrow')
+        self.btn_rotateR['font'] = self.my_font
+
+        self.btn_rotateL = tk.Button(self.btns_fr, text='Rotar imagen L', width=20, command=self.rotateL, cursor='arrow')
+        self.btn_rotateL['font'] = self.my_font
 
         self.btn_save_img = tk.Button(self.btns_fr, text='Guardar imagen', width=20, command=self.save_image, cursor='arrow')
         self.btn_save_img['font'] = self.my_font
@@ -126,7 +133,10 @@ class GUI(object):
         self.segmentation = False
         self.height_cm = 0
         self.mode = 'p'
-    
+        self.grados = 0
+        self.canvas_preview = tk.Canvas(self.principal_fr)
+        self.prev_boolean = False
+
     def set_height(self):
         self.height_cm = int(self.entry_height_cm.get())
 
@@ -210,7 +220,7 @@ class GUI(object):
         self.selected_images_indices=[]
     
     def click_check(self, event):
-        self.sample_extractor.check_circle_movement(event.x, event.y)
+        self.sample_extractor.check_mov(event.x, event.y)
     
     def click_pos(self, event):
         self.sample_extractor.move_vertex(event.x, event.y)
@@ -221,30 +231,63 @@ class GUI(object):
         self.label_extractor.image = img_for_label
         self.label_extractor.grid(row=0, column=0, padx=10, pady=10)
 
-    def choose_cut_method(self):
+    def choose_cut_method(self, img = None):
+        if not self.prev_boolean:
+            img = self.org_img
         if self.mode == 'p':
-            return cut_image_from_vertex(self.org_img, self.sample_extractor)
+            return cut_image_from_vertex(img, self.sample_extractor)
         elif self.mode == 'w':
-            return resize_unwrapping(self.org_img, self.sample_extractor)
+            return resize_unwrapping(img, self.sample_extractor)
     
     def to_unwrapping(self):
-        self.crop(self.org_img, 6)  
+        self.crop(self.org_img, ExtractorModeEnum.UNWRAPPER)  
         self.mode = 'w'
 
+    def rotateR(self):
+        # degree = cv2.getTrackbarPos('degree','Cuantificador geologico')
+        image_center = tuple(np.array(self.clone_img.shape[1::-1]) / 2)
+        self.grados-=0.2
+        rotation_matrix = cv2.getRotationMatrix2D(image_center, angle=self.grados, scale=1)
+        # rotated_image = cv2.warpAffine(self.org_img, rotation_matrix,(self.org_img.shape[1],self.org_img.shape[0]))
+        self.org_img = cv2.warpAffine(self.clone_img, rotation_matrix,(self.clone_img.shape[1],self.clone_img.shape[0]))
+        self.crop(self.org_img, ExtractorModeEnum.PANORAMIC)
+    
+    def rotateL(self):
+        # degree = cv2.getTrackbarPos('degree','Frame')
+        image_center = tuple(np.array(self.clone_img.shape[1::-1]) / 2)
+        self.grados+=0.2
+        rotation_matrix = cv2.getRotationMatrix2D(image_center, angle=self.grados, scale=1)
+        # rotated_image = cv2.warpAffine(self.org_img, rotation_matrix,(self.org_img.shape[1],self.org_img.shape[0]))
+        self.org_img = cv2.warpAffine(self.clone_img, rotation_matrix,(self.clone_img.shape[1],self.clone_img.shape[0]))
+        self.crop(self.org_img, ExtractorModeEnum.PANORAMIC)
+
+    def preview(self):
+        if self.canvas_preview:
+            self.canvas_preview.destroy()
+        self.canvas_preview = tk.Canvas(self.principal_fr)
+        self.prev_boolean = True
+        copy_img = np.copy(self.org_img)
+        copy_img = self.choose_cut_method(copy_img)
+        self.label_extractor2 = self.add_img_to_canvas(self.canvas_preview, copy_img)
+        self.canvas_preview.grid(row=0,column=1)
+
     def to_panoramic(self):
-        self.crop(self.org_img, 4)
+        self.crop(self.org_img, ExtractorModeEnum.PANORAMIC)
         self.mode = 'p'
 
     def save_image(self):
-            self.org_img = self.choose_cut_method()
-            self.main_win.unbind('<Key>')
-            self.un_measures()
-            self.show_img()
-            self.btn_panoramic.grid_forget()
-            self.btn_unwrapping.grid_forget()
-            self.btn_save_img.grid_forget()
-            self.btn_rotate.grid_forget()
-                               
+        scale-img-extraction
+        self.prev_boolean = False
+        self.org_img = self.choose_cut_method()
+        self.main_win.unbind('<Key>')
+        self.un_measures()
+        self.show_img()
+        self.btn_panoramic.pack_forget()
+        self.btn_unwrapping.pack_forget()
+        self.btn_save_img.pack_forget()                
+        self.btn_rotateR.grid_forget()
+        self.btn_rotateL.grid_forget()
+
     def key_press(self, event):
         if event.char == "s":
             self.save_image()
@@ -253,7 +296,7 @@ class GUI(object):
         elif event.char == "w":
             self.to_unwrapping()
         elif event.char == "r":
-            self.sample_extractor.reset_vertexes_pos()
+            self.sample_extractor.reset_vertices()
             self.sample_extractor.refresh_image()
             photo_img = cv2.cvtColor(self.sample_extractor.get_image(), cv2.COLOR_BGR2RGB)
             photo_img = Image.fromarray(photo_img)
@@ -264,9 +307,10 @@ class GUI(object):
     
     def release_click(self, event):
         self.sample_extractor.refresh_image()
+        self.preview()
 
-    def crop(self, image, n=4):
-        self.sample_extractor = SampleExtractor(self._resize_img(image), n)
+    def crop(self, image, mode):
+        self.sample_extractor = SampleExtractor(self._resize_img(image), mode)
         #se ingresa en un canvas
         canvas_extractor = tk.Canvas(self.principal_fr)
         self.label_extractor = self.add_img_to_canvas(canvas_extractor, self.sample_extractor.get_image())
@@ -277,8 +321,8 @@ class GUI(object):
         canvas_extractor.grid(row=0, column=0)
 
     def measures(self):
-        self.entry_height_cm.grid(row=0, column=2)
-        self.btn_height.grid(row=0, column=3)
+        self.entry_height_cm.grid(row=0, column=4)
+        self.btn_height.grid(row=0, column=5)
 
     def un_measures(self):
         self.entry_height_cm.grid_forget()
@@ -292,28 +336,34 @@ class GUI(object):
             resize_height = SCREEN_HEIGHT
             resize_width = SCREEN_WIDTH
             resize_img = img
+            resize_scale = 4
             if img.shape[0] > resize_height:
                 # Adjust image to the define height
-                resize_img = cv2.resize(img, ((int(img.shape[1] * resize_height / img.shape[0])), resize_height))
+                resize_img = cv2.resize(img, ((int(img.shape[1] * resize_height / img.shape[0])), int(resize_height)))
                 # If its new width exceed the define width
             if resize_img.shape[1] > resize_width:
                 # Adjust image to the define width
-                resize_img = cv2.resize(resize_img, (resize_width, int(resize_img.shape[0] * resize_width / resize_img.shape[1])))
+                resize_img = cv2.resize(resize_img, (int(resize_width), int(resize_img.shape[0] * resize_width / resize_img.shape[1])))
 
             self.org_img = resize_img
+            self.clone_img = resize_img
             self.clean_principal_frame()
             self.clean_canvas_frame()
             self.clean_btns()
-            self.crop(resize_img)
+            
+            self.crop(resize_img, ExtractorModeEnum.PANORAMIC)
 
             self.measures()
             self.btn_panoramic.grid(row=0, column=1)
             self.btn_unwrapping.grid(row=0, column=2)
             self.btn_save_img.grid(row=0, column=3)
-            self.btn_rotate.grid(row=0, column=4)
+
+            self.btn_rotateR.grid(row=2, column=5)
+            self.btn_rotateL.grid(row=2, column=4)
 
             self.segmentation = False
             self.mode = 'p'
+            self.grados = 0
         except:
            pass
 
@@ -412,9 +462,10 @@ class GUI(object):
         win_height = self.main_win.winfo_height()
         win_width = self.main_win.winfo_width()
         padding_size = 10
+        resize_scale = 1
         # Define the desire height and width of the image
-        resize_height = int((win_height - self.btn_fr_size - padding_size) * 1 // 2)
-        resize_width = int((win_width - padding_size / 2) * 1 // 3)
+        resize_height = int((win_height - self.btn_fr_size - padding_size) * resize_scale // 2)
+        resize_width = int((win_width - padding_size / 2) * resize_scale // 3)
 
         # If the larger size of the image is its height (type TUBE)
         if img.shape[0] > img.shape[1]:

@@ -1,7 +1,5 @@
 import cv2
 import numpy as np
-import sample_extraction
-
 
 BLACK_COLOR = (0, 0, 0)
 WHITE_COLOR = (255, 255, 255)
@@ -376,6 +374,27 @@ def unwrapping(imcv, img_name, dots):
     for point in dots:
         points.append([point[0], point[1]])
 
+    distance = points[2][0] - points[0][0]
+    proportion = 0.1
+    correction = distance*proportion//2
+    # print(points)
+    points[0][0] = points[0][0] - correction
+    points[2][0] = points[2][0] + correction
+    points[3][0] = points[3][0] + correction
+    points[5][0] = points[5][0] - correction
+    # print(points)
+
+    # distance = v5[0]-v1[0]
+
+    # proportion = 0.1
+
+    # correction = distance*proportion//2
+
+    # v1[0] = v1[0] - correction
+    # v2[0] = v2[0] - correction
+    # v4[0] = v4[0] + correction
+    # v5[0] = v5[0] + correction
+
     unwrapper = LabelUnwrapper(src_image=imcv, percent_points=points)
 
     dst_image = unwrapper.unwrap(True)
@@ -384,5 +403,8 @@ def unwrapping(imcv, img_name, dots):
 
     # unwrapper.draw_mesh()
     #dst_image = cv2.resize(dst_image, (int(dst_image.shape[1]*0.2),int(dst_image.shape[0]*0.2)))
+    y, x, _ = dst_image.shape
+    interval = x//8
+    dst_image = dst_image[0:y, interval:(x - interval)]
     cv2.imwrite("./img/panoramic/samples_by_degree/diorite/recortada/" + img_name, dst_image)
     return dst_image

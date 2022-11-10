@@ -51,6 +51,44 @@ class SampleExtractor(object):
         """
         return self.vertex_data
 
+    def create_rectangle(self,x,y):
+        
+        # actions_dict = {
+        #     "vertex_1": (lambda v4: x, lambda v2: y),
+        #     "vertex_2": lambda x, y: x < min(v4[0], v3[0]) and y > max(v1[1], v4[1]),
+        #     "vertex_3": lambda x, y: x > max(v1[0], v2[0]) and y > max(v1[1], v4[1]),  
+        #     "vertex_4": lambda x, y: x > max(v1[0], v2[0]) and y < min(v2[1], v3[1]),
+        # }
+        v1, v2, v4, v5, v3, v6 = [self.vertex_data[v] for v in self.vertex_data]
+        if self.vertex_dirty== "vertex_1": # 0
+            v2[0] = x
+            v3[0] = (x + v5[0])//2
+            v3[1] = v2[1]
+            v5[1] = y
+            v6[0] = (x + v5[0])//2
+            v6[1] = y
+        if self.vertex_dirty== "vertex_2": # 1
+            v1[0] = x
+            v3[0] = (x + v4[0])//2
+            v3[1] = y
+            v4[1] = y
+            v6[0] = (x + v5[0])//2
+            v6[1] = v5[1]
+        if self.vertex_dirty== "vertex_4": # 3
+            v2[1] = y
+            v3[0] = (x + v2[0])//2
+            v3[1] = y
+            v5[0] = x
+            v6[0] = (x + v1[0])//2
+            v6[1] = v5[1]
+        if self.vertex_dirty== "vertex_5": # 4 
+            v1[1] = y
+            v3[0] = (x + v2[0])//2
+            v3[1] = v2[1]
+            v4[0] = x
+            v6[0] = (x + v1[0])//2
+            v6[1] = y
+
     def move_vertex(self, x, y):
         self.bg = self.original_image.copy()    
         if self.total_vertices == 4:
@@ -61,7 +99,7 @@ class SampleExtractor(object):
                 "vertex_3": lambda x, y: x > max(v1[0], v2[0]) and y > max(v1[1], v4[1]),   
                 "vertex_4": lambda x, y: x > max(v1[0], v2[0]) and y < min(v2[1], v3[1]),
             }
-            if self.vertex_dirty is not None and cond_dict[self.vertex_dirty](x, y) and self._margin_conditions(x, y):
+            if self.vertex_dirty is not None and cond_dict[self.vertex_dirty](x, y):
                 self.vertex_data[self.vertex_dirty] = np.array((x, y))
         else:
             v1, v2, v3, v4, v5, v6 = [self.vertex_data[v] for v in self.vertex_data]
@@ -73,17 +111,13 @@ class SampleExtractor(object):
                 "vertex_5": lambda x, y: True,
                 "vertex_6": lambda x, y: True,
             }
-            if self.vertex_dirty is not None and cond_dict[self.vertex_dirty](x, y) and self._margin_conditions(x, y):
+            if self.vertex_dirty is not None and cond_dict[self.vertex_dirty](x, y):
                 self.vertex_data[self.vertex_dirty] = np.array((x, y))
+                self.create_rectangle(x,y)
 
 
-
+        
         self._draw_circles_and_lines()
-
-    def _margin_conditions(self, x, y):
-        min_margins = x > 0 and y > 0
-        max_margins = x < self.bg_size[1] and y < self.bg_size[0]
-        return min_margins and max_margins 
 
     def _draw_circles_and_lines(self) -> None:
         """
@@ -111,17 +145,21 @@ class SampleExtractor(object):
         """
         Resets the vertices positions back to default.
         """
-        bg_rows, bg_cols, *_ = self.bg_size
-        step = 0 if self.total_vertices == 4 else 1
+        _, bg_cols, *_ = self.bg_size
+        bg_cols = bg_cols//4
+        bg_rows = 2*bg_cols
 
-        self.vertex_data["vertex_1"] = np.array((bg_cols//4, bg_rows//4))
-        self.vertex_data["vertex_2"] = np.array((bg_cols//4, bg_rows*3//4))
-        self.vertex_data[f"vertex_{3 + step}"] = np.array((bg_cols*3//4, bg_rows*3//4))
-        self.vertex_data[f"vertex_{4 + step}"] = np.array((bg_cols*3//4, bg_rows//4))
+
+        step = 0 if self.total_vertices == 4 else 1
+        d = np.array((self.bg_size[1]//2-bg_cols//2, self.bg_size[0]//2-bg_rows//2))
+        self.vertex_data["vertex_1"] = np.array((0, 0))+d
+        self.vertex_data["vertex_2"] = np.array((0, bg_rows))+d
+        self.vertex_data[f"vertex_{3 + step}"] = np.array((bg_cols, bg_rows))+d
+        self.vertex_data[f"vertex_{4 + step}"] = np.array((bg_cols, 0))+d
 
         if self.total_vertices == 6:
-            self.vertex_data["vertex_3"] = np.array((bg_cols//2, bg_rows*3//4))
-            self.vertex_data["vertex_6"] = np.array((bg_cols//2, bg_rows//4))
+            self.vertex_data["vertex_3"] = np.array((bg_cols//2, bg_rows))+d
+            self.vertex_data["vertex_6"] = np.array((bg_cols//2, 0))+d
     
     def _reset_vertex_dirty(self) -> None:
         """
@@ -170,6 +208,17 @@ class SampleExtractor(object):
     def unwrap(self):
         points = self.vertex_data['vertex_1'], self.vertex_data['vertex_6'], self.vertex_data['vertex_5'], self.vertex_data['vertex_4'], self.vertex_data['vertex_3'], self.vertex_data['vertex_2']
         return unwrapping(self.original_image, "awa.jpg", points)
+
+    def rotate_image(self) -> None:
+        self.org_img =  cv2.rotate(self.org_img, cv2.ROTATE_90_CLOCKWISE)
+        self.crop(self.org_img)
+    
+    def funcRotate(self, degree=0):
+        # degree = cv2.getTrackbarPos('degree','Frame')
+        image_center = tuple(np.array(self.bg.shape[1::-1]) / 2)
+        rotation_matrix = cv2.getRotationMatrix2D(image_center, angle=1, scale=1)
+        rotated_image = cv2.warpAffine(self.bg, rotation_matrix, image_center)
+        cv2.imshow('Rotate', rotated_image)
 
 
 def resize_unwrapping(img, sample_extractor):
