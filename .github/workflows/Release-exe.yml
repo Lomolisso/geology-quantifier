@@ -39,7 +39,7 @@ jobs:
     - name: Download binary
       uses: actions/download-artifact@v3.0.1
       with:
-        name: main
+        name: gui
     
     - name: Test download
       run: ls -R
@@ -56,7 +56,7 @@ jobs:
         artifacts: gui.exe
   
   release-unstable:
-      name: Release app
+      name: Release test app
       if: contains(github.ref, 'geo-q-dev')
       runs-on: ubuntu-latest
       needs: build-executable
@@ -65,7 +65,7 @@ jobs:
       - name: Download binary
         uses: actions/download-artifact@v3.0.1
         with:
-          name: main
+          name: gui
       
       - name: Test download
         run: ls -R
