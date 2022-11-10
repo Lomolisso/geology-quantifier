@@ -309,6 +309,9 @@ class SampleExtractor(object):
     def get_vertex_data(self):
         return self.ext.vertex_data
     
+    def reset_vertices(self):
+        self.ext.reset_vertices()
+
     def check_mov(self, x, y):
         self.ext.check_mov(x, y)
     

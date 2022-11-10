@@ -276,7 +276,6 @@ class GUI(object):
         self.mode = 'p'
 
     def save_image(self):
-        scale-img-extraction
         self.prev_boolean = False
         self.org_img = self.choose_cut_method()
         self.main_win.unbind('<Key>')
