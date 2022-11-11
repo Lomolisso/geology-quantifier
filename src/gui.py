@@ -62,10 +62,28 @@ class GUI(object):
         self.shape_seg_fr = tk.Frame(self.btns_fr, highlightbackground="light gray", highlightthickness=1)
         self.image_tools_fr = tk.Frame(self.btns_fr, highlightbackground="light gray", highlightthickness=1)
         self.gen_results_fr = tk.Frame(self.btns_fr, highlightbackground="light gray", highlightthickness=1)
-        self.navigate_fr = tk.Frame(self.btns_fr, highlightbackground="light gray", highlightthickness=1)
+        self.navigate_fr = tk.Frame(self.main_win, highlightbackground="light gray", highlightthickness=1)
         self.help_fr = tk.Frame(self.btns_fr)
+        
 
         for i in range(6): self.btns_fr.columnconfigure(i, weight=1)
+        self.file_fr.columnconfigure(0, weight=1)
+        self.command_fr.columnconfigure(0, weight=1)
+        self.command_fr.columnconfigure(1, weight=1)
+        self.crop_fr.columnconfigure(0, weight=1)
+        self.size_fr.columnconfigure(0, weight=1)
+        self.size_sub_fr.columnconfigure(0, weight=1)
+        self.size_sub_fr.columnconfigure(1, weight=1)
+        self.color_seg_fr.columnconfigure(0, weight=1)
+        self.color_seg_fr.columnconfigure(1, weight=1)
+        self.shape_seg_fr.columnconfigure(0, weight=1)
+        self.image_tools_fr.columnconfigure(0, weight=1)
+        self.gen_results_fr.columnconfigure(0, weight=1)
+        self.navigate_fr.columnconfigure(0, weight=1)
+        self.help_fr.columnconfigure(0, weight=1)
+        self.btns_fr.columnconfigure(5,minsize=50)
+
+
 
         self.img_container_fr = tk.Frame(self.main_win)
         
@@ -74,7 +92,7 @@ class GUI(object):
         self.canvas_fr = tk.Frame(self.img_container_canvas)
 
         self.principal_fr = tk.Frame(self.main_win)
-        self.principal_fr.grid(row=1, column=1)
+        self.principal_fr.grid(row=1, column=2, sticky = tk.N)
         
         self.results_fr = tk.Frame(self.canvas_fr)
 
@@ -215,9 +233,9 @@ class GUI(object):
             )
         )
 
-        self.img_container_canvas.create_window((0,0), window=self.canvas_fr, anchor="center")
+        self.img_container_canvas.create_window((0,0), window=self.canvas_fr, anchor="nw")
 
-        self.main_win.columnconfigure(2, weight=1)
+        self.main_win.columnconfigure(3, weight=1)
         self.main_win.rowconfigure(1, weight=1)
 
         self.img_container_fr.columnconfigure(0, weight=1)
@@ -409,6 +427,10 @@ class GUI(object):
             self.btn_unwrapping.grid(row=1, column=0, padx=5, pady=5)
             self.crop_fr_lbl.grid(column=0,padx=5, pady=5)
 
+            # -- help --
+            self.help_fr.grid(row=0, column=5, sticky=tk.N)
+            self.btn_doc.grid(row=0, column=0, padx=5, pady=5)
+
             self.segmentation = False
             self.mode = 'p'
         except:
@@ -481,7 +503,7 @@ class GUI(object):
         self.gen_results_lb.grid(column=0, padx=5, pady=5)
 
         # -- Navigate --
-        self.navigate_fr.grid(row=1, column=0, sticky=tk.N)
+        self.navigate_fr.grid(row=1, column=1, sticky=tk.N)
         self.btn_up.grid(row=0, column=0, padx=5, pady=5)
         self.btn_down.grid(row=0, column=1, padx=5, pady=5)
         self.navigate_lb.grid(column=0, padx=5, pady=5, columnspan=2)
@@ -499,7 +521,7 @@ class GUI(object):
             wget.destroy()
         self.principal_fr.destroy()
         self.principal_fr = tk.Frame(self.main_win)
-        self.principal_fr.grid(row=1, column=1)
+        self.principal_fr.grid(row=1, column=2, sticky=tk.N)
     
     def clean_canvas_frame(self) -> None:
         """
@@ -512,7 +534,7 @@ class GUI(object):
         for wget in self.canvas_fr.winfo_children():
             wget.destroy()
         self.results_fr = tk.Frame(self.canvas_fr)
-        self.img_container_fr.grid(row=1, column=2, sticky=tk.N+tk.E+tk.W+tk.S)
+        self.img_container_fr.grid(row=1, column=3, sticky=tk.N+tk.E+tk.W+tk.S)
     
     def add_img_to_canvas(self, canvas: tk.Canvas, img: cv2.Mat) -> None:
         """
@@ -523,7 +545,7 @@ class GUI(object):
         img_for_label = ImageTk.PhotoImage(photo_img)
         label_img = tk.Label(canvas, image=img_for_label)
         label_img.image = img_for_label
-        label_img.grid(row=0, column=0, padx=10, pady=10)
+        label_img.grid(row=0, column=0, padx=10, pady=5)
         return label_img
         
     def click(self, image: cv2.Mat, key: Any, canvas: tk.Canvas) -> None:
@@ -552,9 +574,9 @@ class GUI(object):
         # Get actual window size
         win_height = self.main_win.winfo_height()
         win_width = self.main_win.winfo_width()
-        padding_size = 10
+        padding_size = 20
         # Define the desire height and width of the image
-        resize_height = int((win_height - self.btn_fr_size - padding_size) * 1 // 2)
+        resize_height = int((win_height - self.btn_fr_size - padding_size - 40) * 1 // 2)
         resize_width = int((win_width - padding_size / 2) * 1 // 3)
 
         # If the larger size of the image is its height (type TUBE)
@@ -594,18 +616,18 @@ class GUI(object):
             self.add_img_to_canvas(principal_canva, principal_image_res)
             principal_canva.grid(row=0, column=0)
 
-            self.segmentated = self._resize_img(self.segmentated)
-            canva = tk.Canvas(self.principal_fr, width=self.segmentated.shape[1], height=self.segmentated.shape[0])
+            segmentated_img = self._resize_img(self.segmentated)
+            canva = tk.Canvas(self.principal_fr, width=segmentated_img.shape[1], height=segmentated_img.shape[0])
             canva_label = tk.Label(self.principal_fr, text=f"{self.img_tree.name} segmentada")
-            self.add_img_to_canvas(canva, self.segmentated)
-            if self.segmentated.shape[0] > self.segmentated.shape[1]:
+            self.add_img_to_canvas(canva, segmentated_img)
+            if segmentated_img.shape[0] > segmentated_img.shape[1]:
                 canva.grid(row=0, column=1)
                 principal_label.grid(row=1, column=0)
                 canva_label.grid(row=1, column=1)
             else:
-                canva.grid(row=1, column=0)
-                principal_label.grid(row=0, column=1)
-                canva_label.grid(row=1, column=1)
+                canva.grid(row=2, column=0)
+                principal_label.grid(row=1, column=0)
+                canva_label.grid(row=3, column=0)
             
         else:
             self.clean_canvas_frame()
@@ -767,7 +789,7 @@ class GUI(object):
         The data is given as an input.
         """
         aggregated_results = self.aggregate(results)
-        self.results_fr.grid(row=0,column=0)
+        self.results_fr.grid(row=0,column=0,padx=10, pady=5)
         self.img_container_canvas.xview('moveto', 0)
         self.create_label("Color", 0, 0)
         self.create_label("MIneral", 0, 1)
