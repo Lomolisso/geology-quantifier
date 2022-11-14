@@ -39,6 +39,12 @@ def math_area(array):
     else: 
         return -1/2*(detizq-detder)
 
+def poli_gen(n, center, radius):
+    x, y = center
+    theta = np.sort(np.random.rand(n))
+    theta = 2*np.pi*theta
+    points = [[round(x+radius*np.cos(a),0),round(y+radius*np.sin(a),0)] for a in theta]
+    return np.array(points, np.int32)
 
 def test_area():
     height = 400
@@ -82,7 +88,7 @@ def test_area():
     print(areas)
     for cnt in data:
         #TODO Assert with error.
-        cnt.get_area()
+        print(cnt.get_area())
     cv2.imshow("blank_image", img)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
@@ -108,25 +114,45 @@ def test_area():
     cv2.waitKey(0)
     cv2.destroyAllWindows()
     
+    areas = []
     img = np.zeros((height,width,channels), dtype=np.uint8)
+
     pts = np.array([[100,100],[100,200],[200,200],[150,150],[200,100]], np.int32)
-    print(math_area(pts))
+    areas.append(math_area(pts))
     pts = pts.reshape((-1,1,2))
     img = cv2.fillPoly(img,[pts],(0,255,255))
-    pts = np.array([[250,250], [350,250],[280,200],[300,300],[320,200]], np.int32)
-    print(math_area(pts))
+    pts = np.array([[250,250],[300,300], [350,250],[320,200],[280,200]], np.int32)
+    areas.append(math_area(pts))
     pts = pts.reshape((-1,1,2))
     img = cv2.fillPoly(img,[pts],(0,255,255))
-    pts = np.array([[0,200],[0,300],[100,260], [50,200]], np.int32)
-    print(math_area(pts))
+    pts = np.array([[0,200],[0,300],[100,260], [60,200]], np.int32)
+    areas.append(math_area(pts))
     pts = pts.reshape((-1,1,2))
     img = cv2.fillPoly(img,[pts],(0,255,255))
     data = contour_segmentation(img)
+    
     for cnt in data:
-        print(cnt.get_area())
+        #revisar diagonales dificiles
+        assert(cnt.get_area() in areas)
     cv2.imshow("blank_image", img)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
+
+    archivo = open("test.txt", 'w')
+    for i in range(3,100):
+        img = np.zeros((height,width,channels), dtype=np.uint8)
+        pts = poli_gen(i,(200,200),100)
+        area_math = math_area(pts)
+        pts = pts.reshape((-1,1,2))
+        img = cv2.fillPoly(img,[pts],(0,255,255))
+        data = contour_segmentation(img)
+        print(f"poligono de {i} lados")
+        print(f"area calculada de forma matematica: {area_math}")
+        print(f"area calculada por el programa: {data[0].get_area()}")
+        print(f"error: {(data[0].get_area()-area_math)/area_math}")
+        archivo.write(f"poligono de {i} lados\narea calculada de forma matematica: {area_math}\narea calculada por el programa: {data[0].get_area()}\nerror: {(data[0].get_area()-area_math)/area_math}\n")
+    archivo.close()
+
 
 
 
@@ -204,20 +230,3 @@ test_area()
 #test_aspect_ratio()
 
 
-"""
-height = 400
-width =400
-channels = 3
-img = np.zeros((height,width,channels), dtype=np.uint8)
-#chessboardPattern(img,8,3)
-img_with_percent(img,80)
-cv2.circle(img,(200,200), 20, [255,255,0], -1)
-perc_calc = pc.percent(img)
-
-
-
-print("Porcentaje de blanco calculado: " + str(perc_calc))
-cv2.imshow("blank_image", img)
-cv2.imwrite("img_test.png",img)
-cv2.waitKey(0)
-cv2.destroyAllWindows() """
