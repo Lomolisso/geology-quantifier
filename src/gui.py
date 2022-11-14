@@ -10,7 +10,7 @@ from tkinter import ttk
 import tkinter.messagebox
 
 from PIL import Image, ImageTk
-from sample_extraction_refactor import ExtractorModeEnum, SampleExtractor, cut_image_from_vertex, resize_unwrapping
+from sample_extraction import ExtractorModeEnum, SampleExtractor
 from utils import PlaceholderEntry, generate_zip, get_file_filepath, get_path, get_results_filepath
 from typing import Any, List
 
@@ -119,7 +119,9 @@ class GUI(object):
         self.prev_boolean = False
 
     def set_height(self):
-        self.height_cm = int(self.entry_height_cm.get())
+        entry_val = self.entry_height_cm.get()
+        if entry_val.isnumeric():
+            self.height_cm = int(entry_val)
 
     def focus_win(self, event):
         if not isinstance( event.widget, ttk.Entry):
@@ -215,10 +217,8 @@ class GUI(object):
     def choose_cut_method(self, img = None):
         if not self.prev_boolean:
             img = self.org_img
-        if self.mode == 'p':
-            return cut_image_from_vertex(img, self.sample_extractor)
-        elif self.mode == 'w':
-            return resize_unwrapping(img, self.sample_extractor)
+        
+        return self.sample_extractor.cut(img)
     
     def to_unwrapping(self):
         self.crop(self.org_img, ExtractorModeEnum.UNWRAPPER)  
