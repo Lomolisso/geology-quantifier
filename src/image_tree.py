@@ -92,7 +92,7 @@ class ImageNode(object):
         they must be brothers, i.e., have the same father.
         """
         acc = self._collapse_image_nodes(indices)
-        self.childs.append(ImageNode(self, acc))
+        self.childs.append(ImageNode(self, acc, f"{self.name} cluster {indices[0]}"))
         
     def split(self, n_childs: int) -> None:
         """
