@@ -49,23 +49,23 @@ class GUI(object):
         self.data_font = tk_font.Font(size=16)
         
         # -- frames --
-        self.btns_fr = ttk.Frame(self.main_win)
+        self.btns_fr = ttk.Frame(self.main_win, style='Card.TFrame', padding=(5, 6, 7, 8))
         self.btns_fr.grid(row=0, column=1, columnspan=3, padx=10, pady=10, sticky=tkinter.NW)
         for i in range(6): self.btns_fr.columnconfigure(i, weight=1)
 
-        self.img_container_fr = ttk.Frame(self.main_win)
+        self.img_container_fr = ttk.Frame(self.main_win, style='Card.TFrame', padding=(5, 6, 7, 8))
         
         self.img_container_canvas= tkinter.Canvas(self.img_container_fr)
 
-        self.canvas_fr = ttk.Frame(self.img_container_canvas)
+        self.canvas_fr = ttk.Frame(self.img_container_canvas, style='Card.TFrame', padding=(5, 6, 7, 8))
 
-        self.principal_fr = ttk.Frame(self.main_win)
+        self.principal_fr = ttk.Frame(self.main_win, style='Card.TFrame', padding=(5, 6, 7, 8))
         self.principal_fr.grid(row=1, column=1)
         
-        self.results_fr = ttk.Frame(self.canvas_fr)
+        self.results_fr = ttk.Frame(self.canvas_fr, style='Card.TFrame', padding=(5, 6, 7, 8))
 
         # -- buttons --
-        self.btn_img = ttk.Button(self.btns_fr, text='Seleccionar imagen', width=20, command=self.select_img, cursor='arrow')
+        self.btn_img = ttk.Button(self.btns_fr, style="Accent.TButton" ,text='Seleccionar imagen', width=20, command=self.select_img, cursor='arrow')
         self.btn_img.grid(row=0, column=0, padx=5, pady=5)
 
         self.btn_panoramic = ttk.Button(self.btns_fr, text='Modo panorámico', width=20, command=self.to_panoramic, cursor='arrow')
@@ -387,7 +387,7 @@ class GUI(object):
         for wget in self.principal_fr.winfo_children():
             wget.destroy()
         self.principal_fr.destroy()
-        self.principal_fr = ttk.Frame(self.main_win)
+        self.principal_fr = ttk.Frame(self.main_win, style='Card.TFrame', padding=(5, 6, 7, 8))
         self.principal_fr.grid(row=1, column=1)
     
     def clean_canvas_frame(self) -> None:
@@ -400,7 +400,7 @@ class GUI(object):
 
         for wget in self.canvas_fr.winfo_children():
             wget.destroy()
-        self.results_fr = ttk.Frame(self.canvas_fr)
+        self.results_fr = ttk.Frame(self.canvas_fr, style='Card.TFrame', padding=(5, 6, 7, 8))
         self.img_container_fr.grid(row=1, column=2, sticky=tkinter.N+tkinter.E+tkinter.W+tkinter.S)
     
     def add_img_to_canvas(self, canvas: tkinter.Canvas, img: cv2.Mat) -> None:
@@ -422,13 +422,13 @@ class GUI(object):
         """
         if key in self.selected_images_indices:
             self.selected_images_indices.remove(key)
-            canvas.configure(bg='white')
+            canvas.configure()
             for widget in canvas.winfo_children():
                 if widget.cget("text"):
                     widget.destroy()
         else:
             self.selected_images_indices.append(key)
-            canvas.configure(bg='red')
+            canvas.configure()
 
             color_percent = percent.percent(image)
             widgetP = ttk.Label(canvas, text=f"Porcentaje de pixeles: {color_percent}%")
@@ -657,7 +657,12 @@ class GUI(object):
         return agg_results
 
     def create_label(self, name, row, col):
-        label = ttk.Label(self.results_fr, text=name, highlightthickness=1, highlightbackground="black")
+        label = ttk.Label(self.results_fr, text=name, style="Heading.TLabel", padding=(5, 6, 7, 8))
+        label.grid(row=row, column=col)
+        return label
+    
+    def create_color_label(self, name, row, col):
+        label = tkinter.Label(self.results_fr, text=name, highlightthickness=1, highlightbackground="black")
         label.grid(row=row, column=col, sticky=tkinter.N+tkinter.S+tkinter.E+tkinter.W)
         return label
 
@@ -670,7 +675,7 @@ class GUI(object):
         self.results_fr.grid(row=0,column=0)
         self.img_container_canvas.xview('moveto', 0)
         self.create_label("Color", 0, 0)
-        self.create_label("MIneral", 0, 1)
+        self.create_label("Mineral", 0, 1)
         for i in range(len(sc.STATISTICS)):
             self.create_label(sc.STATISTICS[i], 0, i+2)
         
@@ -679,11 +684,10 @@ class GUI(object):
                 continue
             (b, g, r) = colors[row_num]
             color = '#%02x%02x%02x' % (r, g, b)
-            label_color = self.create_label("", row_num+1, 0)
+
+            label_color = self.create_color_label("", row_num+1, 0)
             label_color.config(bg=color, width=1, height=1, justify=tkinter.CENTER)
-            
             name = PlaceholderEntry(self.results_fr, f"Mineral {row_num}")
-            name.config(highlightthickness=1, highlightbackground="black")
             name.grid(row=row_num+1, column=1, sticky=tkinter.W+tkinter.E)
 
             for col_num in range(len(sc.STATISTICS)):
