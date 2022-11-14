@@ -111,7 +111,7 @@ class GUI(object):
         self.btn_reset_img, self.hover_reset_img = createButtonWithHover(self.command_fr, btn_reset_img_name, self.reset_image, self.my_font, btn_reset_img_description)
 
         btn_rotate_name = 'Girar'
-        btn_rotate_description = 'Gira 90 grados la imagen a recortar en sentido antihorario.'
+        btn_rotate_description = 'Gira 90 grados la imagen a recortar en sentido horario.'
         self.btn_rotate, self.hover_rotate = createButtonWithHover(self.command_fr, btn_rotate_name, self.rotate_image, self.my_font, btn_rotate_description)
 
         btn_panoramic_name = 'Modo panorámico'
