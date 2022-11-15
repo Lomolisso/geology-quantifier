@@ -4,6 +4,7 @@ Utility functions/classes of the project.
 
 
 import tkinter as tk
+from tkinter import ttk
 from zipfile import ZipFile
 import cv2
 import sys
@@ -67,7 +68,7 @@ def createButtonWithHover(master, name, command, font, description, image=None):
     """
     width = 20
     cursor = 'arrow'
-    btn = tk.Button(master=master, text=name, width=width, command=command, cursor=cursor, image=image)
+    btn = ttk.Button(master=master, text=name, width=width, command=command, cursor=cursor, image=image)
     btn['font'] = font
     hover = createBalloon(btn, name, description)
     return btn, hover
