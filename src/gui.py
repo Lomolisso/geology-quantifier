@@ -262,9 +262,9 @@ class GUI(object):
         self.main_win.unbind('<Key>')
         self.un_measures()
         self.show_img()
-        self.btn_panoramic.pack_forget()
-        self.btn_unwrapping.pack_forget()
-        self.btn_save_img.pack_forget()                
+        self.btn_panoramic.grid_forget()
+        self.btn_unwrapping.grid_forget()
+        self.btn_save_img.grid_forget()                
         self.btn_rotateR.grid_forget()
         self.btn_rotateL.grid_forget()
 
