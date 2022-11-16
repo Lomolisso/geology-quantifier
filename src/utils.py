@@ -3,13 +3,17 @@ Utility functions/classes of the project.
 """
 
 
-import tkinter as tk
+import tkinter
 from tkinter import ttk
 from zipfile import ZipFile
 import cv2
 import sys
 import os
 from ttkwidgets.frames import Balloon
+# import Pmw
+
+# def init_pmw(root):
+#     Pmw.initialise(root) #initializing it in the root window
 
 class PlaceholderEntry(ttk.Entry):
     def __init__(self, container, placeholder, *args, **kwargs):
@@ -45,14 +49,13 @@ def createBalloon(widget, button_name, text):
     timeout = 1
     return Balloon(master=widget, headertext=button_name, text=text, timeout=timeout, width=width)
 
-def createButtonWithHover(master, name, command, font, description, image=None):
+def createButtonWithHover(master, name, command, description, image=None):
     """
     Creates a new button with a hover balloon.
     """
     width = 20
     cursor = 'arrow'
     btn = ttk.Button(master=master, text=name, width=width, command=command, cursor=cursor, image=image)
-    btn['font'] = font
     hover = createBalloon(btn, name, description)
     return btn, hover
 
@@ -61,7 +64,7 @@ def get_results_filepath() -> str:
     Request the user to select where to store
     the results and with which name
     """
-    filepath = tk.filedialog.asksaveasfilename(
+    filepath = tkinter.filedialog.asksaveasfilename(
         initialdir=".",
         title="Elige donde guardar los resultados",
         filetypes=(
@@ -77,7 +80,7 @@ def get_file_filepath() -> str:
     Request the user to select where to store
     a file and with which name
     """
-    filepath = tk.filedialog.asksaveasfilename(
+    filepath = tkinter.filedialog.asksaveasfilename(
         initialdir="../img",
         title="Guardar como",
         filetypes=(
