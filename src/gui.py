@@ -112,16 +112,18 @@ class GUI(object):
         self.set_up_scrollbar()
         self.btn_fr_size = 200
         self.segmentation = False
-        self.height_cm = 0
+        self.height_cm = None
         self.mode = 'p'
         self.grados = 0
         self.canvas_preview = tkinter.Canvas(self.principal_fr)
         self.prev_boolean = False
 
     def set_height(self):
-        entry_val = self.entry_height_cm.get()
-        if entry_val.isnumeric():
-            self.height_cm = int(entry_val)
+        try:
+            self.height_cm = float(self.entry_height_cm.get())
+        except:
+            tkinter.messagebox.showwarning("Error", message="Por favor ingresa un número.")
+            return
 
     def focus_win(self, event):
         if not isinstance( event.widget, ttk.Entry):
@@ -257,6 +259,9 @@ class GUI(object):
         self.mode = 'p'
 
     def save_image(self):
+        if self.height_cm is None:
+            tkinter.messagebox.showwarning("Error", message="Por favor ingresa la altura.")
+            return
         self.prev_boolean = False
         self.org_img = self.choose_cut_method()
         self.main_win.unbind('<Key>')
@@ -267,6 +272,7 @@ class GUI(object):
         self.btn_save_img.grid_forget()                
         self.btn_rotateR.grid_forget()
         self.btn_rotateL.grid_forget()
+        self.entry_height_cm._clear_placeholder(None)
 
     def key_press(self, event):
         if event.char == "s":
@@ -344,6 +350,7 @@ class GUI(object):
             self.segmentation = False
             self.mode = 'p'
             self.grados = 0
+            self.height_cm = None
         except:
            pass
 
