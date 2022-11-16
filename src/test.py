@@ -2,8 +2,6 @@ import numpy as np
 import cv2
 import percent as pc
 import random
-import image_managers
-from tkinter import filedialog
 from shape_detection import contour_segmentation
 
 def img_with_percent(img, percent):
@@ -38,6 +36,22 @@ def math_area(array):
         return 1/2*(detizq-detder)
     else: 
         return -1/2*(detizq-detder)
+
+def math_aspect_ratio(array):
+    maxx=max(fila[0] for fila in array)
+    print(maxx)
+    minx=min(fila[0] for fila in array)
+    print(minx)
+    maxy=max(fila[1] for fila in array)
+    print(maxy)
+    miny=min(fila[1] for fila in array)
+    print(miny)
+    x = maxx-minx+1
+    y = maxy-miny+1
+    ratio = x/y
+    if ratio<1:
+        ratio = 1/ratio
+    return ratio
 
 def poli_gen(n, center, radius):
     x, y = center
@@ -138,13 +152,16 @@ def test_area():
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
-    archivo = open("test.txt", 'w')
+    archivo = open("test_area.txt", 'w')
     for i in range(3,100):
         img = np.zeros((height,width,channels), dtype=np.uint8)
         pts = poli_gen(i,(200,200),100)
         area_math = math_area(pts)
         pts = pts.reshape((-1,1,2))
         img = cv2.fillPoly(img,[pts],(0,255,255))
+        cv2.imshow("blank_image", img)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
         data = contour_segmentation(img)
         print(f"poligono de {i} lados")
         print(f"area calculada de forma matematica: {area_math}")
@@ -152,9 +169,6 @@ def test_area():
         print(f"error: {(data[0].get_area()-area_math)/area_math}")
         archivo.write(f"poligono de {i} lados\narea calculada de forma matematica: {area_math}\narea calculada por el programa: {data[0].get_area()}\nerror: {(data[0].get_area()-area_math)/area_math}\n")
     archivo.close()
-
-
-
 
 def test_aspect_ratio():
     height = 400
@@ -226,7 +240,25 @@ def test_aspect_ratio():
     for cnt in data:
         assert(cnt.aspect_ratio() == 1)
 
-test_area()
-#test_aspect_ratio()
+    archivo = open("test_ratio.txt", 'w')
+    for i in range(3,100):
+        img = np.zeros((height,width,channels), dtype=np.uint8)
+        pts = poli_gen(3,(200,200),100)
+        print(pts)
+        ratio_math = math_aspect_ratio(pts)
+        pts = pts.reshape((-1,1,2))
+        img = cv2.fillPoly(img,[pts],(0,255,255))
+        data = contour_segmentation(img)
+        print(f"poligono de {i} lados")
+        print(f"ratio calculado de forma matematica: {ratio_math}")
+        print(f"ratio calculado por el programa: {data[0].aspect_ratio()}")
+        print(f"error: {(data[0].aspect_ratio()-ratio_math)/ratio_math}")
+        archivo.write(f"poligono de {i} lados\nratio calculado de forma matematica: {ratio_math}\nratio calculado por el programa: {data[0].aspect_ratio()}\nerror: {(data[0].aspect_ratio()-ratio_math)/ratio_math}\n")
+    archivo.close()
 
+#test_area()
+test_aspect_ratio()
+
+#pts = np.array([[100,100],[100,200],[200,200],[150,150],[200,100]], np.int32)
+#print(math_aspect_ratio(pts))
 
