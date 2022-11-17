@@ -172,13 +172,4 @@ def image_agrupation(img_org,contours,groups):
     for i in range(groups):
         cv2.drawContours(masks[i], conts[i],-1, (255,255,255),-1)
         masks[i] = cv2.bitwise_and(img_org,img_org, mask = masks[i])
-    for i in range(len(contours)):
-        group = contours[i].group
-        x, y, _, _ =contours[i].r
-        position = (x,y)
-        font = cv2.FONT_HERSHEY_SIMPLEX
-        font_size = 0.5
-        font_color = (221,82,196)
-        font_thickness = 1
-        cv2.putText(masks[group],str(i), position, font, font_size, font_color, font_thickness)
     return masks

@@ -5,3 +5,4 @@ pyvista==0.36.1
 pyinstaller==5.6.1
 pyinstaller-hooks-contrib==2022.10
 sv-ttk==2.0
+ttkwidgets==0.12.1
