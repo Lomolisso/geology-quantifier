@@ -35,6 +35,9 @@ class GUI(object):
         # --- workflow parameters ---
         self.org_img = None
         self.clone_img = None
+
+        self.sample_extractor = SampleExtractor()
+
         self.img_tree = None
         self.selected_images_indices = []
         self.main_win = root
@@ -113,7 +116,6 @@ class GUI(object):
         self.btn_fr_size = 200
         self.segmentation = False
         self.height_cm = None
-        self.mode = 'p'
         self.grados = 0
         self.canvas_preview = tkinter.Canvas(self.principal_fr)
         self.prev_boolean = False
@@ -221,10 +223,6 @@ class GUI(object):
             img = self.org_img
         
         return self.sample_extractor.cut(img)
-    
-    def to_unwrapping(self):
-        self.crop(self.org_img, ExtractorModeEnum.UNWRAPPER)  
-        self.mode = 'w'
 
     def rotateR(self):
         # degree = cv2.getTrackbarPos('degree','Cuantificador geologico')
@@ -233,16 +231,24 @@ class GUI(object):
         rotation_matrix = cv2.getRotationMatrix2D(image_center, angle=self.grados, scale=1)
         # rotated_image = cv2.warpAffine(self.org_img, rotation_matrix,(self.org_img.shape[1],self.org_img.shape[0]))
         self.org_img = cv2.warpAffine(self.clone_img, rotation_matrix,(self.clone_img.shape[1],self.clone_img.shape[0]))
-        self.crop(self.org_img, ExtractorModeEnum.PANORAMIC)
+        
+        self.sample_extractor.set_image(self._resize_img(self.org_img), rotation=True)
+        self.sample_extractor.refresh_image()
+        self._set_extractor_canvas()
     
     def rotateL(self):
         # degree = cv2.getTrackbarPos('degree','Frame')
         image_center = tuple(np.array(self.clone_img.shape[1::-1]) / 2)
-        self.grados+=0.2
+        self.grados += 0.2
         rotation_matrix = cv2.getRotationMatrix2D(image_center, angle=self.grados, scale=1)
         # rotated_image = cv2.warpAffine(self.org_img, rotation_matrix,(self.org_img.shape[1],self.org_img.shape[0]))
         self.org_img = cv2.warpAffine(self.clone_img, rotation_matrix,(self.clone_img.shape[1],self.clone_img.shape[0]))
-        self.crop(self.org_img, ExtractorModeEnum.PANORAMIC)
+        
+        
+        self.sample_extractor.set_image(self._resize_img(self.org_img), rotation=True)
+        self.sample_extractor.refresh_image()
+        self._set_extractor_canvas()
+
 
     def preview(self):
         if self.canvas_preview:
@@ -253,10 +259,6 @@ class GUI(object):
         copy_img = self.choose_cut_method(copy_img)
         self.label_extractor2 = self.add_img_to_canvas(self.canvas_preview, copy_img)
         self.canvas_preview.grid(row=0,column=1)
-
-    def to_panoramic(self):
-        self.crop(self.org_img, ExtractorModeEnum.PANORAMIC)
-        self.mode = 'p'
 
     def save_image(self):
         if self.height_cm is None:
@@ -295,9 +297,7 @@ class GUI(object):
         self.sample_extractor.refresh_image()
         self.preview()
 
-    def crop(self, image, mode):
-        self.sample_extractor = SampleExtractor(self._resize_img(image), mode)
-        #se ingresa en un canvas
+    def _set_extractor_canvas(self):
         canvas_extractor = tkinter.Canvas(self.principal_fr)
         self.label_extractor = self.add_img_to_canvas(canvas_extractor, self.sample_extractor.get_image())
         self.label_extractor.bind('<1>', self.click_check)
@@ -305,6 +305,12 @@ class GUI(object):
         self.label_extractor.bind('<ButtonRelease-1>', self.release_click)
         self.main_win.bind('<Key>',self.key_press)
         canvas_extractor.grid(row=0, column=0)
+
+    def crop(self):
+        self.sample_extractor.init_extractor()
+
+        #se ingresa en un canvas
+        self._set_extractor_canvas()
 
     def measures(self):
         self.entry_height_cm.grid(row=0, column=4)
@@ -333,11 +339,13 @@ class GUI(object):
 
             self.org_img = resize_img
             self.clone_img = resize_img
+
             self.clean_principal_frame()
             self.clean_canvas_frame()
             self.clean_btns()
             
-            self.crop(resize_img, ExtractorModeEnum.PANORAMIC)
+            self.sample_extractor.set_image(self._resize_img(resize_img))
+            self.crop()
 
             self.measures()
             self.btn_panoramic.grid(row=0, column=1)
@@ -348,7 +356,6 @@ class GUI(object):
             self.btn_rotateL.grid(row=2, column=4)
 
             self.segmentation = False
-            self.mode = 'p'
             self.grados = 0
             self.height_cm = None
         except:
@@ -371,7 +378,6 @@ class GUI(object):
             wget.grid_forget()
         self.btn_img.grid(row=0, column=0)
         
-
     def create_btns(self) -> None:
         # Set buttons positions
         self.btn_3d.grid(row=0, column=1, padx=5, pady=5)
@@ -753,10 +759,20 @@ class GUI(object):
 
         generate_zip(filepath, files)
         tkinter.messagebox.showinfo("Guardado", message="Las imagenes se han guardado correctamente")
+    
     def rotate_image(self) -> None:
         self.clean_principal_frame()
         self.org_img =  cv2.rotate(self.org_img, cv2.ROTATE_90_CLOCKWISE)
         self.crop(self.org_img)
+
+    def to_panoramic(self):
+        self.sample_extractor.to_panoramic()
+        self._set_extractor_canvas()
+
+    def to_unwrapping(self):
+        self.sample_extractor.to_unwrapping()
+        self._set_extractor_canvas()
+
 
 
 
