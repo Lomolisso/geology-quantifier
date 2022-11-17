@@ -10,7 +10,16 @@ import cv2, numpy as np
 DEF_COLOR = [(255,255,0)]
 COLORS = [(255,0,0), (0,255,0), (0,0,255)]
 
-STATISTICS = ["Rel. de Aspecto", "Area", "Radio Equiv", "Largo Equiv", "Punto Medio X", "Punto Medio Y"]
+STATISTICS = ["Rel. de Aspecto", "Area (cm^2)", "Perimetro (cm)", "Radio Equiv. (cm)", "Largo Equiv. (cm)", "Punto Medio X (px)", "Punto Medio Y (px)"]
+STATISTICS_DESC = [
+    "Indica la relación que existe entre el alto y ancho de la figura, no toma en cuenta la orientación que esta tenga",
+    "Area promedio de las figuras",
+    "Perimetro promedio de las figuras",
+    "Se calcula mediante el area del figura suponiendo que esta es una circunferencia",
+    "Se calcula mediante el area del figura suponiendo que esta es un rectangulo con la misma relación de aspecto",
+    "Coordenada x del promedio de los puntos medios de todas las figuras del mineral",
+    "Coordenada y del promedio de los puntos medios de todas las figuras del mineral"
+]
 
 class ContourData(object):
     """
@@ -49,6 +58,13 @@ class ContourData(object):
         """
         return cv2.contourArea(self.contour)
     
+    def get_perimeter(self) -> float:
+        """
+        When called, this function returns
+        the total perimeter of the contour.
+        """
+        return cv2.arcLength(self.contour, True)
+    
     def get_equiv_radius(self) -> float:
         """
         When called, this function returns
@@ -84,6 +100,7 @@ class ContourData(object):
             self.group,
             np.round(self.aspect_ratio(), 2),
             np.round(self.get_area()*pixel2cm*pixel2cm, 3), 
+            np.round(self.get_perimeter()*pixel2cm, 3), 
             np.round(self.get_equiv_radius()*pixel2cm, 2), 
             np.round(self.get_equiv_lenght()*pixel2cm, 2),
             np.round(self.get_middle_point()[0], 0),

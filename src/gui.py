@@ -11,7 +11,7 @@ import tkinter.messagebox
 
 from PIL import Image, ImageTk
 from sample_extraction import ExtractorModeEnum, SampleExtractor
-from utils import PlaceholderEntry, generate_zip, get_file_filepath, get_path, get_results_filepath
+from utils import PlaceholderEntry, generate_zip, get_file_filepath, get_path, get_results_filepath, createBalloon
 from typing import Any, List
 
 CLUSTER_RESHAPE = 0.7
@@ -677,7 +677,8 @@ class GUI(object):
         self.create_label("Color", 0, 0)
         self.create_label("Mineral", 0, 1)
         for i in range(len(sc.STATISTICS)):
-            self.create_label(sc.STATISTICS[i], 0, i+2)
+            label = self.create_label(sc.STATISTICS[i], 0, i+2)
+            createBalloon(widget=label, header=sc.STATISTICS[i], text=sc.STATISTICS_DESC[i])
         
         for row_num in range(len(aggregated_results)):
             if aggregated_results[row_num] == None:
