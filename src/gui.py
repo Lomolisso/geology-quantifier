@@ -40,6 +40,9 @@ class GUI(object):
         # --- workflow parameters ---
         self.org_img = None
         self.clone_img = None
+
+        self.sample_extractor = SampleExtractor()
+
         self.img_tree = None
         self.selected_images_indices = []
         self.main_win = root
@@ -214,15 +217,14 @@ class GUI(object):
         self.set_up_scrollbar()
         self.btn_fr_size = 200
         self.segmentation = False
-        self.height_cm = 0
-        self.mode = 'p'
+        self.height_cm = None
         self.grados = 0
         self.canvas_preview = tkinter.Canvas(self.principal_fr)
         self.prev_boolean = False
    
     def set_height(self):
         try:
-            self.height_cm = int(self.entry_height_cm.get())
+            self.height_cm = float(self.entry_height_cm.get())
         except:
             tkinter.messagebox.showwarning("Error", message="Por favor ingresa un número.")
             return
@@ -323,10 +325,6 @@ class GUI(object):
             img = self.org_img
         
         return self.sample_extractor.cut(img)
-    
-    def to_unwrapping(self):
-        self.crop(self.org_img, ExtractorModeEnum.UNWRAPPER)  
-        self.mode = 'w'
 
     def rotateR(self):
         # degree = cv2.getTrackbarPos('degree','Cuantificador geologico')
@@ -335,16 +333,24 @@ class GUI(object):
         rotation_matrix = cv2.getRotationMatrix2D(image_center, angle=self.grados, scale=1)
         # rotated_image = cv2.warpAffine(self.org_img, rotation_matrix,(self.org_img.shape[1],self.org_img.shape[0]))
         self.org_img = cv2.warpAffine(self.clone_img, rotation_matrix,(self.clone_img.shape[1],self.clone_img.shape[0]))
-        self.crop(self.org_img, ExtractorModeEnum.PANORAMIC)
+        
+        self.sample_extractor.set_image(self._resize_img(self.org_img), rotation=True)
+        self.sample_extractor.refresh_image()
+        self._set_extractor_canvas()
     
     def rotateL(self):
         # degree = cv2.getTrackbarPos('degree','Frame')
         image_center = tuple(np.array(self.clone_img.shape[1::-1]) / 2)
-        self.grados+=0.2
+        self.grados += 0.2
         rotation_matrix = cv2.getRotationMatrix2D(image_center, angle=self.grados, scale=1)
         # rotated_image = cv2.warpAffine(self.org_img, rotation_matrix,(self.org_img.shape[1],self.org_img.shape[0]))
         self.org_img = cv2.warpAffine(self.clone_img, rotation_matrix,(self.clone_img.shape[1],self.clone_img.shape[0]))
-        self.crop(self.org_img, ExtractorModeEnum.PANORAMIC)
+        
+        
+        self.sample_extractor.set_image(self._resize_img(self.org_img), rotation=True)
+        self.sample_extractor.refresh_image()
+        self._set_extractor_canvas()
+
 
     def preview(self):
         if self.canvas_preview:
@@ -356,11 +362,10 @@ class GUI(object):
         self.label_extractor2 = self.add_img_to_canvas(self.canvas_preview, copy_img)
         self.canvas_preview.grid(row=0,column=1)
 
-    def to_panoramic(self):
-        self.crop(self.org_img, ExtractorModeEnum.PANORAMIC)
-        self.mode = 'p'
-
     def save_image(self):
+        if self.height_cm is None:
+            tkinter.messagebox.showwarning("Error", message="Por favor ingresa la altura.")
+            return
         self.prev_boolean = False
         self.org_img = self.choose_cut_method()
         self.main_win.unbind('<Key>')
@@ -377,6 +382,7 @@ class GUI(object):
         for wget in self.size_fr.winfo_children():
             wget.grid_forget()   
         self.size_fr.grid_forget()
+        self.entry_height_cm._clear_placeholder(None)
         self.show_img()            
 
     def reset_image(self):
@@ -403,9 +409,7 @@ class GUI(object):
         self.sample_extractor.refresh_image()
         self.preview()
 
-    def crop(self, image, mode):
-        self.sample_extractor = SampleExtractor(self._resize_img(image), mode)
-        #se ingresa en un canvas
+    def _set_extractor_canvas(self):
         canvas_extractor = tkinter.Canvas(self.principal_fr)
         self.label_extractor = self.add_img_to_canvas(canvas_extractor, self.sample_extractor.get_image())
         self.label_extractor.bind('<1>', self.click_check)
@@ -413,6 +417,12 @@ class GUI(object):
         self.label_extractor.bind('<ButtonRelease-1>', self.release_click)
         self.main_win.bind('<Key>',self.key_press)
         canvas_extractor.grid(row=0, column=0)
+
+    def crop(self):
+        self.sample_extractor.init_extractor()
+
+        #se ingresa en un canvas
+        self._set_extractor_canvas()
 
     def measures(self):
         self.size_fr.grid(row=0, column=4, sticky=tkinter.N)
@@ -448,11 +458,13 @@ class GUI(object):
 
             self.org_img = resize_img
             self.clone_img = resize_img
+
             self.clean_principal_frame()
             self.clean_canvas_frame()
             self.clean_btns()
             
-            self.crop(resize_img, ExtractorModeEnum.PANORAMIC)
+            self.sample_extractor.set_image(self._resize_img(resize_img))
+            self.crop()
 
             self.measures()
 
@@ -478,8 +490,8 @@ class GUI(object):
             self.btn_doc.grid(row=0, column=0, padx=5, pady=5)
 
             self.segmentation = False
-            self.mode = 'p'
             self.grados = 0
+            self.height_cm = None
         except:
            pass
 
@@ -955,6 +967,15 @@ class GUI(object):
             webbrowser.open_new(filepath)
         except: 
             webbrowser.open_new("https://github.com/Lomolisso/geology-quantifier/blob/ba67360da5f0c7dc3e2edac6996fc463c8b78599/Documentacion_Proyecto.pdf")
+
+    def to_panoramic(self):
+        self.sample_extractor.to_panoramic()
+        self._set_extractor_canvas()
+
+    def to_unwrapping(self):
+        self.sample_extractor.to_unwrapping()
+        self._set_extractor_canvas()
+
 
 
 

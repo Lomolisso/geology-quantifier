@@ -21,13 +21,16 @@ class ExtractorModeEnum(str, enum.Enum):
 
 class AbstractExtraction(object):
     def __init__(self, img: cv2.Mat) -> None:
-        self.image = img
-        self.image_size = self.image.shape
-        self.original_image = self.image.copy()
+        self.set_image(img)
         
         self.min_radius = 6
         self.radius = 7
     
+    def set_image(self, img: cv2.Mat):
+        self.image = np.copy(img)
+        self.image_size = self.image.shape
+        self.original_image = np.copy(self.image)
+        
     def _reset_vertex_dirty(self) -> None:
         """
         Resets the dirty vertex class attr. back to None.
@@ -77,6 +80,12 @@ class AbstractExtraction(object):
                 self.vertex_dirty = k
                 break
 
+    def _margin_conditions(self, x, y):
+        min_margins = x > 0 and y > 0
+        max_margins = x < self.image_size[1] and y < self.image_size[0]
+        return min_margins and max_margins
+
+    
     
 class PanoramicExtraction(AbstractExtraction):
     def __init__(self, img: cv2.Mat) -> None:
@@ -119,21 +128,6 @@ class PanoramicExtraction(AbstractExtraction):
         min_margins = x > 0 and y > 0
         max_margins = x < self.image_size[1] and y < self.image_size[0]
         return min_margins and max_margins 
-
-
-    def move_vertex(self, x, y):
-        self.image = self.original_image.copy()    
-        v1, v2, v3, v4 = self.vertex_data
-        cond_list = [
-            lambda x, y: x < min(v4[0], v3[0]) and y < min(v2[1], v3[1]),
-            lambda x, y: x < min(v4[0], v3[0]) and y > max(v1[1], v4[1]),
-            lambda x, y: x > max(v1[0], v2[0]) and y > max(v1[1], v4[1]),   
-            lambda x, y: x > max(v1[0], v2[0]) and y < min(v2[1], v3[1]),
-        ]
-        if self.vertex_dirty is not None and cond_list[self.vertex_dirty](x, y) and self._margin_conditions(x,y):
-            self.vertex_data[self.vertex_dirty] = np.array((x, y))
-
-        self._draw_circles_and_lines()
     
     def cut(self, img):
         """
@@ -172,6 +166,26 @@ class PanoramicExtraction(AbstractExtraction):
 
         return out
         
+    def move_vertex(self, x, y):
+        self.image = self.original_image.copy()    
+        v1, v2, v3, v4 = self.vertex_data
+        cond_list = [
+            lambda x, y: x < min(v4[0], v3[0]) and y < min(v2[1], v3[1]),
+            lambda x, y: x < min(v4[0], v3[0]) and y > max(v1[1], v4[1]),
+            lambda x, y: x > max(v1[0], v2[0]) and y > max(v1[1], v4[1]),   
+            lambda x, y: x > max(v1[0], v2[0]) and y < min(v2[1], v3[1]),
+        ]
+        margin_list = [
+            lambda x,y: x > 0 and y > 0,
+            lambda x,y: x < self.image_size[1] and y < self.image_size[0]
+        ]
+        if self.vertex_dirty is not None and cond_list[self.vertex_dirty](x, y) and self._margin_conditions(x, y):
+            self.vertex_data[self.vertex_dirty] = np.array((x, y))
+
+        if margin_list[0](x,y):
+            print("Funciona el margen 0")
+
+        self._draw_circles_and_lines()
 
 class UnwrapperExtraction(AbstractExtraction):
     def __init__(self, img: cv2.Mat) -> None: 
@@ -303,19 +317,6 @@ class UnwrapperExtraction(AbstractExtraction):
         }
         if self.vertex_dirty is not None:
             mov_dict[self.vertex_dirty](x, y)
-        
-        
-    def move_vertex(self, x, y):
-        self.image = self.original_image.copy()
-        is_free_vertex = lambda v: v == 6
-        
-        if is_free_vertex(self.vertex_dirty):
-            self.vertex_data[self.vertex_dirty] = np.array((x, y))
-
-        else:
-            self._process_scale_mov(x, y)
-        
-        self._draw_circles_and_lines()
     
     def cut(self, img):
         """
@@ -343,23 +344,37 @@ class UnwrapperExtraction(AbstractExtraction):
 
         return unwrapping(copy_img, "awa.jpg", points)
         
+    def move_vertex(self, x, y):
+        self.image = self.original_image.copy()
+
+        if self._margin_conditions(x, y):
+            self._process_scale_mov(x, y)
+        
+        self._draw_circles_and_lines()
+
 
 class SampleExtractor(object):
-    def __init__(self,img: cv2.Mat, mode: ExtractorModeEnum) -> None:
-        self.img = img
-        if mode == ExtractorModeEnum.PANORAMIC:
-            self.to_panoramic()
-        else:
-            self.to_unwrapper()
+    def __init__(self) -> None:
+        self.mode = ExtractorModeEnum.PANORAMIC
 
-    # --- Switch between states ---
+    def set_image(self, img: cv2.Mat, rotation: bool = False):
+        self.img = img
+        if rotation:
+            self.ext.set_image(img)
+    
     def to_panoramic(self):
         self.mode = ExtractorModeEnum.PANORAMIC
         self.ext = PanoramicExtraction(img=self.img)
     
-    def to_unwrapper(self):
+    def to_unwrapping(self):
         self.mode = ExtractorModeEnum.UNWRAPPER
         self.ext = UnwrapperExtraction(img=self.img)
+    
+    def init_extractor(self):
+        if self.mode == ExtractorModeEnum.PANORAMIC:
+            self.to_panoramic()
+        else:
+            self.to_unwrapping()
     
     # --- Public extraction methods ---
         
