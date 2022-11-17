@@ -3,6 +3,7 @@ import image_tree
 import tkinter
 import tkinter.font as tk_font
 import numpy as np
+import webbrowser
 import cv2
 import image_managers, percent, tube, shape_detection as sc
 import sv_ttk
@@ -11,14 +12,18 @@ import tkinter.messagebox
 
 from PIL import Image, ImageTk
 from sample_extraction import ExtractorModeEnum, SampleExtractor
-from utils import PlaceholderEntry, generate_zip, get_file_filepath, get_path, get_results_filepath
+from utils import PlaceholderEntry, createButtonWithHover, generate_zip, get_file_filepath, get_path, get_results_filepath
 from typing import Any, List
+
 
 CLUSTER_RESHAPE = 0.7
 ROOT = tkinter.Tk()
 SCREEN_WIDTH = ROOT.winfo_screenwidth()
 SCREEN_HEIGHT = ROOT.winfo_screenheight()
-    
+ARROW_LEFT = tkinter.PhotoImage(file="left_arrow.png")
+ARROW_RIGHT = tkinter.PhotoImage(file="right_arrow.png")
+HELP_ICON = tkinter.PhotoImage(file="help_icon.png")
+
 class GUI(object):
     """
     The GUI class holds the behaviour of the graphic user interface
@@ -50,11 +55,41 @@ class GUI(object):
         self.my_font = tk_font.Font(size=14)
         self.title_font = tk_font.Font(size=20)
         self.data_font = tk_font.Font(size=16)
+        self.section_font = tk_font.Font(size=10)
         
         # -- frames --
         self.btns_fr = ttk.Frame(self.main_win, style='Card.TFrame', padding=(5, 6, 7, 8))
         self.btns_fr.grid(row=0, column=1, columnspan=3, padx=10, pady=10, sticky=tkinter.NW)
+
+        self.file_fr = ttk.Frame(self.btns_fr, style='Card.TFrame', padding=(5, 6, 7, 8))
+        self.file_fr.grid(row = 0, column= 0, sticky=tkinter.N)
+        self.command_fr = ttk.Frame(self.btns_fr, style='Card.TFrame', padding=(5, 6, 7, 8))
+        self.crop_fr = ttk.Frame(self.btns_fr, style='Card.TFrame', padding=(5, 6, 7, 8))
+        self.size_fr = ttk.Frame(self.btns_fr, style='Card.TFrame', padding=(5, 6, 7, 8))
+        self.size_sub_fr = ttk.Frame(self.size_fr, style='Card.TFrame', padding=(5, 6, 7, 8))
+        self.color_seg_fr = ttk.Frame(self.btns_fr, style='Card.TFrame', padding=(5, 6, 7, 8))
+        self.shape_seg_fr = ttk.Frame(self.btns_fr, style='Card.TFrame', padding=(5, 6, 7, 8))
+        self.image_tools_fr = ttk.Frame(self.btns_fr, style='Card.TFrame', padding=(5, 6, 7, 8))
+        self.gen_results_fr = ttk.Frame(self.btns_fr, style='Card.TFrame', padding=(5, 6, 7, 8))
+        self.navigate_fr = ttk.Frame(self.main_win, style='Card.TFrame', padding=(5, 6, 7, 8))
+        self.help_fr = ttk.Frame(self.btns_fr, style='Card.TFrame', padding=(5, 6, 7, 8))
+        
         for i in range(6): self.btns_fr.columnconfigure(i, weight=1)
+        self.file_fr.columnconfigure(0, weight=1)
+        self.command_fr.columnconfigure(0, weight=1)
+        self.command_fr.columnconfigure(1, weight=1)
+        self.crop_fr.columnconfigure(0, weight=1)
+        self.size_fr.columnconfigure(0, weight=1)
+        self.size_sub_fr.columnconfigure(0, weight=1)
+        self.size_sub_fr.columnconfigure(1, weight=1)
+        self.color_seg_fr.columnconfigure(0, weight=1)
+        self.color_seg_fr.columnconfigure(1, weight=1)
+        self.shape_seg_fr.columnconfigure(0, weight=1)
+        self.image_tools_fr.columnconfigure(0, weight=1)
+        self.gen_results_fr.columnconfigure(0, weight=1)
+        self.navigate_fr.columnconfigure(0, weight=1)
+        self.help_fr.columnconfigure(0, weight=1)
+        self.btns_fr.columnconfigure(5,minsize=50)
 
         self.img_container_fr = ttk.Frame(self.main_win, style='Card.TFrame', padding=(5, 6, 7, 8))
         
@@ -63,53 +98,120 @@ class GUI(object):
         self.canvas_fr = ttk.Frame(self.img_container_canvas, style='Card.TFrame', padding=(5, 6, 7, 8))
 
         self.principal_fr = ttk.Frame(self.main_win, style='Card.TFrame', padding=(5, 6, 7, 8))
-        self.principal_fr.grid(row=1, column=1)
+        self.principal_fr.grid(row=1, column=1, sticky = tkinter.N)
         
         self.results_fr = ttk.Frame(self.canvas_fr, style='Card.TFrame', padding=(5, 6, 7, 8))
 
         # -- buttons --
-        self.btn_img = ttk.Button(self.btns_fr, style="Accent.TButton" ,text='Seleccionar imagen', width=20, command=self.select_img, cursor='arrow')
+        btn_img_name = 'Seleccionar imagen'
+        btn_img_description = 'Permite abrir una imagen desde su PC.'
+        self.btn_img, self.hover_img = createButtonWithHover(self.file_fr, btn_img_name, self.select_img, btn_img_description)
         self.btn_img.grid(row=0, column=0, padx=5, pady=5)
+        self.btn_img.config(style="Accent.TButton")
 
-        self.btn_panoramic = ttk.Button(self.btns_fr, text='Modo panorámico', width=20, command=self.to_panoramic, cursor='arrow')
+        btn_save_img_name = 'Recortar'
+        btn_save_img_description = 'Recorta la imagen encerrada en el rectangulo que se ve en pantalla.'
+        self.btn_save_img, self.hover_save_img = createButtonWithHover(self.command_fr, btn_save_img_name, self.save_image, btn_save_img_description)
 
-        self.btn_unwrapping = ttk.Button(self.btns_fr, text='Modo unwrapping', width=20, command=self.to_unwrapping, cursor='arrow')
+        btn_reset_img_name = 'Restablecer'
+        btn_reset_img_description = 'Reestablece la posición de los puntos usados para recortar la imagen.'
+        self.btn_reset_img, self.hover_reset_img = createButtonWithHover(self.command_fr, btn_reset_img_name, self.reset_image, btn_reset_img_description)
 
-        self.btn_rotateR = ttk.Button(self.btns_fr, text='Rotar imagen R', width=20, command=self.rotateR, cursor='arrow')
-
-        self.btn_rotateL = ttk.Button(self.btns_fr, text='Rotar imagen L', width=20, command=self.rotateL, cursor='arrow')
-
-        self.btn_save_img = ttk.Button(self.btns_fr, text='Guardar imagen', width=20, command=self.save_image, cursor='arrow')
-
-        self.btn_3d = ttk.Button(self.btns_fr, text='3D', width=20, command=self.plot_3d, cursor='arrow')
-
-        self.btn_split = ttk.Button(self.btns_fr, text='Separar', width=20, command=self.split, cursor='arrow')
-
-        self.btn_merge = ttk.Button(self.btns_fr, text='Combinar', width=20, command=self.merge, cursor='arrow')
+        btn_rotate_name = 'Girar'
+        btn_rotate_description = 'Gira 90 grados la imagen a recortar en sentido horario.'
+        self.btn_rotate, self.hover_rotate = createButtonWithHover(self.command_fr, btn_rotate_name, self.rotate_image, btn_rotate_description)
         
-        self.btn_sub = ttk.Button(self.btns_fr, text='Eliminar', width=20, command=self.delete, cursor='arrow')
+        btn_rotateR_name = 'Rotar imagen R'
+        btn_rotateR_description = 'gira levemente la imagen en sentido horario'
+        self.btn_rotateR, self.hover_rotateR = createButtonWithHover(self.command_fr, btn_rotateR_name, self.rotateR, btn_rotateR_description)
         
-        self.btn_up = ttk.Button(self.btns_fr, text='Subir', width=20, command=self.up, cursor='arrow')
+        btn_rotateL_name = 'Rotar imagen L'
+        btn_rotateL_description = 'gira levemente la imagen en sentido antihorario'
+        self.btn_rotateL, self.hover_rotateL = createButtonWithHover(self.command_fr, btn_rotateL_name, self.rotateL, btn_rotateL_description)
         
-        self.btn_down = ttk.Button(self.btns_fr, text='Bajar', width=20, command=self.down, cursor='arrow')
+        btn_panoramic_name = 'Modo panorámico'
+        btn_panoramic_description = 'Es necesario posicionar 4 puntos para realizar un recorte sin ajuste de perspectiva.'
+        self.btn_panoramic, self.hover_panoramic = createButtonWithHover(self.crop_fr, btn_panoramic_name, self.to_panoramic, btn_panoramic_description)
 
-        self.btn_undo = ttk.Button(self.btns_fr, text='Deshacer', width=20, command=self.undo, cursor='arrow')
+        btn_unwrapping_name = 'Modo unwrapping'
+        btn_unwrapping_description = 'Es necesario posicionar 6 puntos para realizar un recorte con ajuste de perspectiva.'
+        self.btn_unwrapping, self.hover_unwrapping = createButtonWithHover(self.crop_fr, btn_unwrapping_name, self.to_unwrapping, btn_unwrapping_description)
+        
+        btn_height_name = 'Altura'
+        btn_height_description = 'Permite guardar la altura (en cm) de la roca introdujida.'
+        self.btn_height, self.hover_height = createButtonWithHover(self.size_sub_fr, btn_height_name, self.set_height, btn_height_description)
 
-        self.btn_save = ttk.Button(self.btns_fr, text='Guardar', width=20, command=self.save, cursor='arrow')
+        btn_save_name = 'Guardar'
+        btn_save_description = 'Guarda la imagen actual junto con las imágenes obtenidas al segmentar por color.'
+        self.btn_save, self.hover_save = createButtonWithHover(self.file_fr, btn_save_name, self.save, btn_save_description)
+       
+        btn_split_name = 'Separar'
+        btn_split_description = 'Segmenta la imagen por colores, generando una cantidad de imagenes igual al número ingresado.'
+        self.btn_split, self.hover_split = createButtonWithHover(self.color_seg_fr, btn_split_name, self.split, btn_split_description)
 
-        self.btn_update = ttk.Button(self.btns_fr, text='Actualizar', width=20, command=self.update_screen, cursor='arrow')
+        btn_merge_name = 'Combinar'
+        btn_merge_description = 'Permite combinar 2 o más imagenes en una sola.'
+        self.btn_merge, self.hover_merge = createButtonWithHover(self.color_seg_fr, btn_merge_name, self.merge, btn_merge_description)
+        
+        btn_sub_name = 'Eliminar'
+        btn_sub_description = 'Permite eliminar 1 o más imagenes, también se refleja en la imagen original.'
+        self.btn_sub, self.hover_sub = createButtonWithHover(self.color_seg_fr, btn_sub_name, self.delete, btn_sub_description)
 
-        self.btn_analyze = ttk.Button(self.btns_fr, text='Analizar', width=20, command=self.analyze, cursor='arrow')
+        btn_outline_name = 'Perfilar'
+        btn_outline_description = 'Perfila la imagen seleccionada.'
+        self.btn_outline, self.hover_outline = createButtonWithHover(self.shape_seg_fr, btn_outline_name, self.outline, btn_outline_description)
 
-        self.btn_segmentate = ttk.Button(self.btns_fr, text='Segmentar', width=20, command=self.segmentate, cursor='arrow')
+        btn_segmentate_name = 'Segmentar'
+        btn_segmentate_description = 'Calcula resultados utilizando como base la imagen seleccionada.'
+        self.btn_segmentate, self.hover_segmentate = createButtonWithHover(self.shape_seg_fr, btn_segmentate_name, self.segmentate, btn_segmentate_description)
 
-        self.btn_rotate = ttk.Button(self.btns_fr, text='Girar', width=20, command=self.rotate_image, cursor='arrow')
+        btn_update_name = 'Actualizar'
+        btn_update_description = 'Actualiza la pantalla, ajustando el tamaño de las imágenes presentes en ella.'
+        self.btn_update, self.hover_update = createButtonWithHover(self.image_tools_fr, btn_update_name, self.update_screen, btn_update_description)
+ 
+        btn_undo_name = 'Deshacer'
+        btn_undo_description = 'Deshace todos los cambios hechos sobre la imagen.'
+        self.btn_undo, self.hover_undo = createButtonWithHover(self.image_tools_fr, btn_undo_name, self.undo, btn_undo_description)
 
-        self.btn_height = ttk.Button(self.btns_fr, text='Altura', width=20, command=self.set_height, cursor='arrow')
+        btn_3d_name = '3D'
+        btn_3d_description = 'Permite visualizar en 3D la imagen que se encuentra en la pantalla.'
+        self.btn_3d, self.hover_3d = createButtonWithHover(self.gen_results_fr, btn_3d_name, self.plot_3d, btn_3d_description)
+       
+        btn_analyze_name = 'Analizar'
+        btn_analyze_description = 'Permite analizar la imagen seleccionada, calculando las estadisticas presentes en el programa.'
+        self.btn_analyze, self.hover_analyze = createButtonWithHover(self.gen_results_fr, btn_analyze_name, self.analyze, btn_analyze_description)
+
+        btn_up_name = 'Subir'
+        btn_up_description = 'Permite acceder a la imagen que se tenia anteriormente.'
+        self.btn_up, self.hover_up = createButtonWithHover(self.navigate_fr, btn_up_name, self.up, btn_up_description, image=ARROW_LEFT)
+        
+        btn_down_name = 'Bajar'
+        btn_down_description = 'Permite cambiar la imagen actual por la imagen seleccionada.'
+        self.btn_down, self.hover_down = createButtonWithHover(self.navigate_fr, btn_down_name, self.down, btn_down_description,image=ARROW_RIGHT)
+
+        btn_doc_name = 'Ayuda'
+        btn_doc_description = 'Permite abrir la documentación completa de la aplicación.'
+        self.btn_doc, self.hover_doc = createButtonWithHover(self.help_fr, btn_doc_name, self.view_documentation, btn_doc_description,image=HELP_ICON)
 
         # -- entries --
-        self.total_clusters = PlaceholderEntry(self.btns_fr, "Número de clusters")
-        self.entry_height_cm = PlaceholderEntry(self.btns_fr, "Altura recorte (cm)")
+        self.total_clusters = PlaceholderEntry(self.color_seg_fr, "Número de clusters")
+        self.total_clusters['font'] = self.my_font
+
+        self.entry_height_cm = PlaceholderEntry(self.size_sub_fr, "Altura recorte (cm)")
+        self.entry_height_cm['font'] = self.my_font
+
+        # -- labels --
+        self.file_fr_lbl = tkinter.Label(self.file_fr, text = "Archivos", font= self.section_font)
+        self.file_fr_lbl.grid(column= 0)
+        self.command_fr_lbl = tkinter.Label(self.command_fr, text = "Comandos",  font= self.section_font)
+        self.crop_fr_lbl = tkinter.Label(self.crop_fr, text = "Modo de\n recorte", font= self.section_font)
+        self.size_fr_lbl = tkinter.Label(self.size_fr, text = "Tamaño", font= self.section_font)
+        self.color_seg_lb = tkinter.Label(self.color_seg_fr, text = "Segmentación color", font= self.section_font)
+        self.shape_seg_lb = tkinter.Label(self.shape_seg_fr, text = "Segmentación \n forma", font= self.section_font)
+        self.image_tools_lb = tkinter.Label(self.image_tools_fr, text = "Modificar imagen", font= self.section_font)
+        self.gen_results_lb = tkinter.Label(self.gen_results_fr, text = "Generación \n resultados", font= self.section_font)
+        self.navigate_lb = tkinter.Label(self.navigate_fr, text = "Navegar", font= self.section_font)
+
 
         # -- extras --
         self.set_up_scrollbar()
@@ -119,7 +221,7 @@ class GUI(object):
         self.grados = 0
         self.canvas_preview = tkinter.Canvas(self.principal_fr)
         self.prev_boolean = False
-
+   
     def set_height(self):
         try:
             self.height_cm = float(self.entry_height_cm.get())
@@ -145,9 +247,9 @@ class GUI(object):
             )
         )
 
-        self.img_container_canvas.create_window((0,0), window=self.canvas_fr, anchor="center")
+        self.img_container_canvas.create_window((0,0), window=self.canvas_fr, anchor="nw")
 
-        self.main_win.columnconfigure(2, weight=1)
+        self.main_win.columnconfigure(3, weight=1)
         self.main_win.rowconfigure(1, weight=1)
 
         self.img_container_fr.columnconfigure(0, weight=1)
@@ -268,13 +370,30 @@ class GUI(object):
         self.org_img = self.choose_cut_method()
         self.main_win.unbind('<Key>')
         self.un_measures()
-        self.show_img()
-        self.btn_panoramic.grid_forget()
-        self.btn_unwrapping.grid_forget()
-        self.btn_save_img.grid_forget()                
-        self.btn_rotateR.grid_forget()
-        self.btn_rotateL.grid_forget()
+        for wget in self.file_fr.winfo_children():
+            wget.grid_forget()
+        self.file_fr.grid_forget()
+        for wget in self.command_fr.winfo_children():
+            wget.grid_forget()
+        self.command_fr.grid_forget()
+        for wget in self.crop_fr.winfo_children():
+            wget.grid_forget()
+        self.crop_fr.grid_forget() 
+        for wget in self.size_fr.winfo_children():
+            wget.grid_forget()   
+        self.size_fr.grid_forget()
         self.entry_height_cm._clear_placeholder(None)
+        self.show_img()            
+
+    def reset_image(self):
+        self.sample_extractor.reset_vertices()
+        self.sample_extractor.refresh_image()
+        photo_img = cv2.cvtColor(self.sample_extractor.get_image(), cv2.COLOR_BGR2RGB)
+        photo_img = Image.fromarray(photo_img)
+        img_for_label = ImageTk.PhotoImage(photo_img)
+        self.label_extractor.configure(image=img_for_label)
+        self.label_extractor.image = img_for_label
+        self.label_extractor.grid(row=0, column=0, padx=10, pady=10)
 
     def key_press(self, event):
         if event.char == "s":
@@ -284,14 +403,7 @@ class GUI(object):
         elif event.char == "w":
             self.to_unwrapping()
         elif event.char == "r":
-            self.sample_extractor.reset_vertices()
-            self.sample_extractor.refresh_image()
-            photo_img = cv2.cvtColor(self.sample_extractor.get_image(), cv2.COLOR_BGR2RGB)
-            photo_img = Image.fromarray(photo_img)
-            img_for_label = ImageTk.PhotoImage(photo_img)
-            self.label_extractor.configure(image=img_for_label)
-            self.label_extractor.image = img_for_label
-            self.label_extractor.grid(row=0, column=0, padx=10, pady=10)
+            self.reset_image()
     
     def release_click(self, event):
         self.sample_extractor.refresh_image()
@@ -313,12 +425,19 @@ class GUI(object):
         self._set_extractor_canvas()
 
     def measures(self):
-        self.entry_height_cm.grid(row=0, column=4)
-        self.btn_height.grid(row=0, column=5)
+        self.size_fr.grid(row=0, column=4, sticky=tkinter.N)
+        self.size_sub_fr.grid(row=0, column=0)
+        self.entry_height_cm.grid(row=0, column=0)
+        self.btn_height.grid(row=0, column=1)
+        self.size_fr_lbl.grid(row=1, column=0)
 
     def un_measures(self):
+        
         self.entry_height_cm.grid_forget()
         self.btn_height.grid_forget()
+        self.size_fr_lbl.grid_forget()
+        self.size_fr.grid_forget()
+        self.size_sub_fr.grid_forget()
 
     def select_img(self):
         try:
@@ -348,12 +467,27 @@ class GUI(object):
             self.crop()
 
             self.measures()
-            self.btn_panoramic.grid(row=0, column=1)
-            self.btn_unwrapping.grid(row=0, column=2)
-            self.btn_save_img.grid(row=0, column=3)
 
-            self.btn_rotateR.grid(row=2, column=5)
-            self.btn_rotateL.grid(row=2, column=4)
+            # -- File managment
+            self.file_fr.grid(row=0, column=0, sticky=tkinter.N)
+            self.btn_img.grid(row=0, column=0, padx=5, pady=5)
+            self.file_fr_lbl.grid(column= 0)
+            # -- commands --
+            self.command_fr.grid(row=0, column=1, sticky=tkinter.N)
+            self.btn_save_img.grid(row=0, column=0, padx=5, pady=5)
+            self.btn_reset_img.grid(row=1, column=0, padx=5, pady=5)
+            self.btn_rotate.grid(row=0, column=1, padx=5, pady=5)
+            self.btn_rotateR.grid(row=0, column=2, padx=5, pady=5)
+            self.btn_rotateL.grid(row=1, column=2, padx=5, pady=5)
+            self.command_fr_lbl.grid(column=0, padx=5, pady=5, columnspan=3)
+            # -- crop types --
+            self.crop_fr.grid(row = 0, column= 2, sticky=tkinter.N)
+            self.btn_panoramic.grid(row=0, column=0,padx=5, pady=5)
+            self.btn_unwrapping.grid(row=1, column=0, padx=5, pady=5)
+            self.crop_fr_lbl.grid(column=0,padx=5, pady=5)
+            # -- help --
+            self.help_fr.grid(row=0, column=5, sticky=tkinter.N)
+            self.btn_doc.grid(row=0, column=0, padx=5, pady=5)
 
             self.segmentation = False
             self.grados = 0
@@ -366,7 +500,7 @@ class GUI(object):
         This method is called when a new image is uploaded. 
         """
         # self.clean_frames()
-        self.img_tree = image_tree.ImageNode(None, self.org_img)
+        self.img_tree = image_tree.ImageNode(None, self.org_img, "Imagen original")
         self.segmentation = False
         self.update_screen()
                 
@@ -374,24 +508,67 @@ class GUI(object):
         self.create_btns()
 
     def clean_btns(self) -> None:
-        for wget in self.btns_fr.winfo_children():
+        for wget in self.file_fr.winfo_children():
             wget.grid_forget()
-        self.btn_img.grid(row=0, column=0)
-        
-    def create_btns(self) -> None:
-        # Set buttons positions
-        self.btn_3d.grid(row=0, column=1, padx=5, pady=5)
-        self.total_clusters.grid(row=0, column=2, padx=5, pady=5)
-        self.btn_split.grid(row=0, column=3, padx=5, pady=5)
-        self.btn_merge.grid(row=0, column=4, padx=5, pady=5)
-        self.btn_sub.grid(row=0, column=5, padx=5, pady=5)
-        self.btn_undo.grid(row=1,column=0, padx=5, pady=5)
-        self.btn_save.grid(row=1, column=1, padx=5, pady=5)
-        self.btn_up.grid(row=1, column=2, padx=5, pady=5)
-        self.btn_down.grid(row=1, column=3, padx=5, pady=5)
-        self.btn_update.grid(row=1, column=4, padx=5, pady=5)
-        self.btn_analyze.grid(row=0, column=6, padx=5, pady=5)
-        self.btn_segmentate.grid(row=1, column=6, padx=5, pady=5)
+        self.file_fr.grid_forget()
+        for wget in self.color_seg_fr.winfo_children():
+            wget.grid_forget()
+        self.color_seg_fr.grid_forget()
+        for wget in self.shape_seg_fr.winfo_children():
+            wget.grid_forget()
+        self.shape_seg_fr.grid_forget()
+        for wget in self.image_tools_fr.winfo_children():
+            wget.grid_forget()
+        self.image_tools_fr.grid_forget()
+        for wget in self.gen_results_fr.winfo_children():
+            wget.grid_forget()
+        self.gen_results_fr.grid_forget()
+        for wget in self.navigate_fr.winfo_children():
+            wget.grid_forget()
+        self.navigate_fr.grid_forget()
+
+    def create_btns(self) -> None:      
+        # -- files --
+        self.file_fr.grid(row=0, column=0, sticky=tkinter.N)
+        self.btn_img.grid(row=0, column=0, padx=5, pady=5)
+        self.btn_save.grid(row=1, column=0, padx=5, pady=5)
+        self.file_fr_lbl.grid(column= 0, padx=5, pady=5)
+
+        # -- Color Segmentation --
+        self.color_seg_fr.grid(row=0, column=1, sticky=tkinter.N)
+        self.total_clusters.grid(row=0, column=0, padx=5, pady=5, ipadx=2, ipady=5)
+        self.btn_split.grid(row=0, column=1, padx=5, pady=5)
+        self.btn_merge.grid(row=1, column=0, padx=5, pady=5)
+        self.btn_sub.grid(row=1, column=1, padx=5, pady=5)
+        self.color_seg_lb.grid(padx=5, pady=5, columnspan=2)
+
+        # -- Shape Segmentation --
+        self.shape_seg_fr.grid(row=0, column=2, sticky=tkinter.N)
+        self.btn_outline.grid(row=0, column=0, padx=5, pady=5)
+        self.btn_segmentate.grid(row=1, column=0, padx=5, pady=5)
+        self.shape_seg_lb.grid(column=0, padx=5, pady=5)
+
+        # -- Image Tools
+        self.image_tools_fr.grid(row=0, column=3, sticky=tkinter.N)
+        self.btn_update.grid(row=0, column=0, padx=5, pady=5)
+        self.btn_undo.grid(row=1, column=0, padx=5, pady=5)
+        self.image_tools_lb.grid(column=0, padx=5, pady=5)
+
+        # -- Results generation --
+        self.gen_results_fr.grid(row=0, column=4, sticky=tkinter.N)
+        self.btn_3d.grid(row=0, column=0, padx=5, pady=5)
+        self.btn_analyze.grid(row=1, column=0, padx=5, pady=5)
+        self.gen_results_lb.grid(column=0, padx=5, pady=5)
+
+        # -- Navigate --
+        self.navigate_fr.grid(row=1, column=1, sticky=tkinter.N)
+        self.btn_up.grid(row=0, column=0, padx=5, pady=5)
+        self.btn_down.grid(row=0, column=1, padx=5, pady=5)
+        self.navigate_lb.grid(column=0, padx=5, pady=5, columnspan=2)
+
+        # -- Help --
+        self.help_fr.grid(row=0, column=5, sticky=tkinter.N)
+        self.btn_doc.grid(row=0, column=0, padx=5, pady=5)
 
     def clean_principal_frame(self) -> None:
         """
@@ -401,7 +578,7 @@ class GUI(object):
             wget.destroy()
         self.principal_fr.destroy()
         self.principal_fr = ttk.Frame(self.main_win, style='Card.TFrame', padding=(5, 6, 7, 8))
-        self.principal_fr.grid(row=1, column=1)
+        self.principal_fr.grid(row=1, column=2, sticky=tkinter.N)
     
     def clean_canvas_frame(self) -> None:
         """
@@ -414,7 +591,8 @@ class GUI(object):
         for wget in self.canvas_fr.winfo_children():
             wget.destroy()
         self.results_fr = ttk.Frame(self.canvas_fr, style='Card.TFrame', padding=(5, 6, 7, 8))
-        self.img_container_fr.grid(row=1, column=2, sticky=tkinter.N+tkinter.E+tkinter.W+tkinter.S)
+        self.img_container_fr.grid(row=1, column=3, sticky=tkinter.N+tkinter.E+tkinter.W+tkinter.S)
+
     
     def add_img_to_canvas(self, canvas: tkinter.Canvas, img: cv2.Mat) -> None:
         """
@@ -425,7 +603,7 @@ class GUI(object):
         img_for_label = ImageTk.PhotoImage(photo_img)
         label_img = ttk.Label(canvas, image=img_for_label)
         label_img.image = img_for_label
-        label_img.grid(row=0, column=0, padx=10, pady=10)
+        label_img.grid(row=0, column=0, padx=10, pady=5)
         return label_img
         
     def click(self, image: cv2.Mat, key: Any, canvas: tkinter.Canvas) -> None:
@@ -493,16 +671,22 @@ class GUI(object):
             principal_image = self.img_tree.image
             principal_image_res = self._resize_img(principal_image)
             principal_canva = tkinter.Canvas(self.principal_fr, width=principal_image_res.shape[1], height=principal_image_res.shape[0])
+            principal_label = tkinter.Label(self.principal_fr, text=self.img_tree.name)
             self.add_img_to_canvas(principal_canva, principal_image_res)
             principal_canva.grid(row=0, column=0)
 
-            self.segmentated = self._resize_img(self.segmentated)
-            canva = tkinter.Canvas(self.principal_fr, width=self.segmentated.shape[1], height=self.segmentated.shape[0])
-            self.add_img_to_canvas(canva, self.segmentated)
-            if self.segmentated.shape[0] > self.segmentated.shape[1]:
+            segmentated_img = self._resize_img(self.segmentated)
+            canva = tkinter.Canvas(self.principal_fr, width=segmentated_img.shape[1], height=segmentated_img.shape[0])
+            canva_label = tkinter.Label(self.principal_fr, text=f"{self.img_tree.name} segmentada")
+            self.add_img_to_canvas(canva, segmentated_img)
+            if segmentated_img.shape[0] > segmentated_img.shape[1]:
                 canva.grid(row=0, column=1)
+                principal_label.grid(row=1, column=0)
+                canva_label.grid(row=1, column=1)
             else:
-                canva.grid(row=1, column=0)
+                canva.grid(row=2, column=0)
+                principal_label.grid(row=1, column=0)
+                canva_label.grid(row=3, column=0)
             
         else:
             self.clean_canvas_frame()
@@ -510,6 +694,8 @@ class GUI(object):
             canva = tkinter.Canvas(self.principal_fr, width=img.shape[1], height=img.shape[0])
             _ = self.add_img_to_canvas(canva, img)
             canva.grid(row=0, column=0)
+            principal_label = tkinter.Label(self.principal_fr, text=self.img_tree.name)
+            principal_label.grid(row=1, column=0)
 
             # draws image node childs
             img_row_shape = 2
@@ -520,7 +706,9 @@ class GUI(object):
                 canva = tkinter.Canvas(self.canvas_fr, width=child_img.shape[1], height=child_img.shape[0])
                 label = self.add_img_to_canvas(canva, child_img)
                 label.bind('<ButtonPress-1>', lambda event, image=child.image, key=i, canvas=canva: self.click(image, key, canvas))
-                canva.grid(row=i%img_row_shape, column=i//img_row_shape)
+                canva.grid(row=2*(i%img_row_shape), column=i//img_row_shape)
+                name_label = tkinter.Label(self.canvas_fr, text=child.name)
+                name_label.grid(row=2*(i%img_row_shape) + 1, column=i//img_row_shape)
                 i+=1
 
     def merge(self) -> None:
@@ -528,7 +716,7 @@ class GUI(object):
         This method merges 2 or more clusters, updating the image tree.
         """
         if len(self.selected_images_indices) < 2:
-            tkinter.messagebox.showwarning("Error", message="Por favor, seleccione 2 o más imágenes.")
+            tkinter.messagebox.showwarning("Error", message="Por favor, seleccione 2 o más imagenes.")
             return
         self.img_tree.merge(self.selected_images_indices)
         self.segmentation = False
@@ -562,7 +750,7 @@ class GUI(object):
         """
         Resets the image tree back to it's original form.
         """
-        self.img_tree = image_tree.ImageNode(None,self.org_img)
+        self.img_tree = image_tree.ImageNode(None,self.org_img,"Imagen original")
         self.selected_images_indices = []
         self.segmentation = False
         self.update_screen()
@@ -617,6 +805,9 @@ class GUI(object):
 
         results = sc.generate_results(self.contour, self.height_cm/self.segmentated.shape[0])
         self.fill_table(results, sc.DEF_COLOR)
+
+    def outline(self) -> None:
+        tkinter.messagebox.showwarning("Proximamente", message="Esta funcionalidad estara disponible proximamente.")
 
     def segmentate(self) -> None:
         """
@@ -675,7 +866,7 @@ class GUI(object):
         return label
     
     def create_color_label(self, name, row, col):
-        label = tkinter.Label(self.results_fr, text=name, highlightthickness=1, highlightbackground="black")
+        label = tkinter.Label(self.results_fr, text=name)
         label.grid(row=row, column=col, sticky=tkinter.N+tkinter.S+tkinter.E+tkinter.W)
         return label
 
@@ -685,7 +876,7 @@ class GUI(object):
         The data is given as an input.
         """
         aggregated_results = self.aggregate(results)
-        self.results_fr.grid(row=0,column=0)
+        self.results_fr.grid(row=0,column=0,padx=10, pady=5)
         self.img_container_canvas.xview('moveto', 0)
         self.create_label("Color", 0, 0)
         self.create_label("Mineral", 0, 1)
@@ -748,22 +939,34 @@ class GUI(object):
         This method saves both the current image and it's clusters if they exist.
         """
         files = [self.img_tree.image]
+        files_names = [self.img_tree.name]
         
         for child in self.img_tree.childs:
             files.append(child.image)
-        
+            files_names.append(child.name)
 
         filepath = get_file_filepath()
         if not filepath:
             return
 
-        generate_zip(filepath, files)
+        generate_zip(filepath, files, files_names)
         tkinter.messagebox.showinfo("Guardado", message="Las imagenes se han guardado correctamente")
-    
+
     def rotate_image(self) -> None:
         self.clean_principal_frame()
         self.org_img =  cv2.rotate(self.org_img, cv2.ROTATE_90_CLOCKWISE)
-        self.crop(self.org_img)
+        self.crop(self.org_img, ExtractorModeEnum.PANORAMIC)
+
+    def view_documentation(self) -> None:
+        """
+        This method open the documentation file. It opens de file that is save in the proyect or, if it fails,
+        open the file that is save in the repository.
+        """
+        try:
+            filepath = get_path("Documentacion_Proyecto.pdf")
+            webbrowser.open_new(filepath)
+        except: 
+            webbrowser.open_new("https://github.com/Lomolisso/geology-quantifier/blob/ba67360da5f0c7dc3e2edac6996fc463c8b78599/Documentacion_Proyecto.pdf")
 
     def to_panoramic(self):
         self.sample_extractor.to_panoramic()
@@ -788,5 +991,5 @@ ROOT.minsize(SCREEN_WIDTH * 2 // 3, SCREEN_HEIGHT * 2 // 3)
 ROOT.maxsize(SCREEN_WIDTH, SCREEN_HEIGHT)
 gg = GUI(ROOT)
 
-sv_ttk.set_theme("dark")
+sv_ttk.set_theme("light")
 ROOT.mainloop()

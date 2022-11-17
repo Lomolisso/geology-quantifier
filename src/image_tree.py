@@ -44,7 +44,7 @@ class ImageNode(object):
     This data structure allows the user to travel the each
     status of the gui without lossing information.
     """
-    def __init__(self, parent, image) -> None:
+    def __init__(self, parent, image, name) -> None:
         """
         Class constructor, instantiates key parameters.
         Note that each node has edges to it's father and
@@ -52,6 +52,7 @@ class ImageNode(object):
         """
         self.parent = parent
         self.image = image
+        self.name = name
         self.childs = []
 
     def _propagate_delete(self, deleted_component):
@@ -92,7 +93,7 @@ class ImageNode(object):
         they must be brothers, i.e., have the same father.
         """
         acc = self._collapse_image_nodes(indices)
-        self.childs.append(ImageNode(self, acc))
+        self.childs.append(ImageNode(self, acc, f"{self.name} cluster {indices[0]}"))
         
     def split(self, n_childs: int) -> None:
         """
@@ -100,6 +101,9 @@ class ImageNode(object):
         parameter to the result of calling the clustering
         algorithm on it's image. 
         """
-        self.childs = [ImageNode(self, c_image) for c_image in clustering(self.image, n_childs)]
+        self.childs = []
+        cluster_images = clustering(self.image, n_childs)
+        for i in range(len(cluster_images)):
+            self.childs.append(ImageNode(self, cluster_images[i], f"{self.name} cluster {i}"))
 
 
