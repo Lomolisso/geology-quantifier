@@ -955,7 +955,8 @@ class GUI(object):
     def rotate_image(self) -> None:
         self.clean_principal_frame()
         self.org_img =  cv2.rotate(self.org_img, cv2.ROTATE_90_CLOCKWISE)
-        self.crop(self.org_img, ExtractorModeEnum.PANORAMIC)
+        self.sample_extractor.set_image(self._resize_img(self.org_img), True)
+        self.crop()
 
     def view_documentation(self) -> None:
         """
@@ -963,7 +964,7 @@ class GUI(object):
         open the file that is save in the repository.
         """
         try:
-            filepath = get_path("./assets/Documentacion_Proyecto.pdf")
+            filepath = get_path("assets/Documentacion_Proyecto.pdf")
             webbrowser.open_new(filepath)
         except: 
             webbrowser.open_new("https://github.com/Lomolisso/geology-quantifier/blob/ba67360da5f0c7dc3e2edac6996fc463c8b78599/Documentacion_Proyecto.pdf")
