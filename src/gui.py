@@ -20,9 +20,9 @@ CLUSTER_RESHAPE = 0.7
 ROOT = tkinter.Tk()
 SCREEN_WIDTH = ROOT.winfo_screenwidth()
 SCREEN_HEIGHT = ROOT.winfo_screenheight()
-ARROW_LEFT = tkinter.PhotoImage(file="left_arrow.png")
-ARROW_RIGHT = tkinter.PhotoImage(file="right_arrow.png")
-HELP_ICON = tkinter.PhotoImage(file="help_icon.png")
+ARROW_LEFT = tkinter.PhotoImage(file=get_path("./assets/left_arrow.png"))
+ARROW_RIGHT = tkinter.PhotoImage(file=get_path("./assets/right_arrow.png"))
+HELP_ICON = tkinter.PhotoImage(file=get_path("./assets/help_icon.png"))
 
 class GUI(object):
     """
@@ -963,7 +963,7 @@ class GUI(object):
         open the file that is save in the repository.
         """
         try:
-            filepath = get_path("Documentacion_Proyecto.pdf")
+            filepath = get_path("./assets/Documentacion_Proyecto.pdf")
             webbrowser.open_new(filepath)
         except: 
             webbrowser.open_new("https://github.com/Lomolisso/geology-quantifier/blob/ba67360da5f0c7dc3e2edac6996fc463c8b78599/Documentacion_Proyecto.pdf")
@@ -980,7 +980,7 @@ class GUI(object):
 
 
 ROOT.title("Cuantificador geologico")
-ROOT.wm_iconbitmap(get_path('icon.ico'))
+ROOT.wm_iconbitmap(get_path('./assets/icon.ico'))
 ROOT.config(cursor='plus')
 # Get user screen size
 
