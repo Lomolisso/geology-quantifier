@@ -17,7 +17,7 @@ jobs:
         ref: ${{ github.ref }}
   
     - name: Package Application
-      uses: JackMcKew/pyinstaller-action-windows@main
+      uses: fossesv17/pyinstaller-action-windows@main
       with:
         path: src
         spec: ../gui.spec
