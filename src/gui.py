@@ -422,7 +422,7 @@ class GUI(object):
         self.label_extractor.bind('<B1-Motion>',self.click_pos)
         self.label_extractor.bind('<ButtonRelease-1>', self.release_click)
         self.main_win.bind('<Key>',self.key_press)
-        canvas_extractor.grid(row=0, column=0)
+        canvas_extractor.grid(row=0, column=0, sticky= tkinter.N)
         self.preview()
 
     def crop(self):
