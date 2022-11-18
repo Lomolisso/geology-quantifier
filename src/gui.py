@@ -313,12 +313,11 @@ class GUI(object):
     
     def click_pos(self, event):
         self.sample_extractor.move_vertex(event.x, event.y)
-        photo_img = cv2.cvtColor(self.sample_extractor.get_image(), cv2.COLOR_BGR2RGB)
-        photo_img = Image.fromarray(photo_img)
-        img_for_label = ImageTk.PhotoImage(photo_img)
-        self.label_extractor.configure(image=img_for_label)
-        self.label_extractor.image = img_for_label
-        self.label_extractor.grid(row=0, column=0, padx=10, pady=10)
+        self.update_image(self.label_extractor, self.sample_extractor.get_image())
+        copy_img = np.copy(self.org_img)
+        copy_img = self.choose_cut_method(copy_img)
+        self.update_image(self.label_extractor2, self._resize_img( copy_img, 2))
+
 
     def choose_cut_method(self, img = None):
         if not self.prev_boolean:
@@ -351,6 +350,14 @@ class GUI(object):
         self.sample_extractor.refresh_image()
         self._set_extractor_canvas()
 
+    def update_image(self, label, image):
+        photo_img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        photo_img = Image.fromarray(photo_img)
+        img_for_label = ImageTk.PhotoImage(photo_img)
+        label.configure(image=img_for_label)
+        label.image = img_for_label
+        label.grid(row=0, column=0, padx=10, pady=10)
+
 
     def preview(self):
         if self.canvas_preview:
@@ -359,7 +366,7 @@ class GUI(object):
         self.prev_boolean = True
         copy_img = np.copy(self.org_img)
         copy_img = self.choose_cut_method(copy_img)
-        self.label_extractor2 = self.add_img_to_canvas(self.canvas_preview, copy_img)
+        self.label_extractor2 = self.add_img_to_canvas(self.canvas_preview, self._resize_img(copy_img,2))
         self.canvas_preview.grid(row=0,column=1)
 
     def save_image(self):
@@ -407,7 +414,6 @@ class GUI(object):
     
     def release_click(self, event):
         self.sample_extractor.refresh_image()
-        self.preview()
 
     def _set_extractor_canvas(self):
         canvas_extractor = tkinter.Canvas(self.principal_fr)
@@ -417,6 +423,7 @@ class GUI(object):
         self.label_extractor.bind('<ButtonRelease-1>', self.release_click)
         self.main_win.bind('<Key>',self.key_press)
         canvas_extractor.grid(row=0, column=0)
+        self.preview()
 
     def crop(self):
         self.sample_extractor.init_extractor()
@@ -625,7 +632,7 @@ class GUI(object):
             widgetP = ttk.Label(canvas, text=f"Porcentaje de pixeles: {color_percent}%")
             widgetP.grid(row = 1,column=0 )
 
-    def _resize_img(self, img):
+    def _resize_img(self, img, resize_scale = 1):
         """
         Resize the image acording to the actual window size of the aplication.
         """
@@ -633,7 +640,7 @@ class GUI(object):
         win_height = self.main_win.winfo_height()
         win_width = self.main_win.winfo_width()
         padding_size = 10
-        resize_scale = 1
+        
         # Define the desire height and width of the image
         resize_height = int((win_height - self.btn_fr_size - padding_size) * resize_scale // 2)
         resize_width = int((win_width - padding_size / 2) * resize_scale // 3)
