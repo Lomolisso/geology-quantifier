@@ -2,9 +2,9 @@ name: Package Application
 
 on:
   push:
-    branches: [ main, geo-q-dev ]
+    branches: [ main ]
   pull_request:
-    branches: [ main, geo-q-dev ]
+    branches: [ main ]
 
 jobs:
   build-executable:
@@ -29,13 +29,23 @@ jobs:
         name: gui
         path: src/dist/windows/gui.exe
   
-  release-stable:
+  release:
     name: Release app
     if: contains(github.ref, 'main')
     runs-on: ubuntu-latest
     needs: build-executable
     
-    steps: 
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    
+    - name: Update tag
+      uses: rickstaa/action-create-tag@v1
+      with:
+        tag: stable
+        message: Stable app version
+        force_push_tag: true 
+
     - name: Download binary
       uses: actions/download-artifact@v3.0.1
       with:
@@ -54,31 +64,3 @@ jobs:
         allowUpdates: true
         body: Stable app version
         artifacts: gui.exe
-  
-  release-unstable:
-      name: Release test app
-      if: contains(github.ref, 'geo-q-dev')
-      runs-on: ubuntu-latest
-      needs: build-executable
-      
-      steps: 
-      - name: Download binary
-        uses: actions/download-artifact@v3.0.1
-        with:
-          name: gui
-      
-      - name: Test download
-        run: ls -R
-
-      - name: Publish release
-        uses: ncipollo/release-action@v1.11.1
-        with:
-          name: Test release
-          token: ${{ secrets.GITHUB_TOKEN }}
-          commit: ${{ github.sha }}
-          tag: test
-          allowUpdates: true
-          body: Executable for testing purposes
-          artifacts: gui.exe      
-
-    
