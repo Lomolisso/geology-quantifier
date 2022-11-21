@@ -12,7 +12,7 @@ import tkinter.messagebox
 
 from PIL import Image, ImageTk
 from sample_extraction import ExtractorModeEnum, SampleExtractor
-from utils import PlaceholderEntry, createButtonWithHover, generate_zip, get_file_filepath, get_path, get_results_filepath
+from utils import PlaceholderEntry, createBalloon, createButtonWithHover, generate_zip, get_file_filepath, get_path, get_results_filepath
 from typing import Any, List
 
 
@@ -877,8 +877,13 @@ class GUI(object):
         self.create_label("Color", 0, 0)
         self.create_label("Mineral", 0, 1)
         for i in range(len(sc.STATISTICS)):
-            self.create_label(sc.STATISTICS[i], 0, i+2)
-        
+            label = self.create_label(sc.STATISTICS[i], 0, i+2)
+            createBalloon(widget=label, header=sc.STATISTICS[i], text=sc.STATISTICS_DESC[i])
+        label = self.create_label("Area total (%)", 0, len(sc.STATISTICS)+2)
+        createBalloon(widget=label, header="Area total (%)", text="Indica el area total del mineral en relación al resto del testigo de roca.")
+
+        images = sc.image_agrupation(self.img_tree.image, self.contour, len(colors))
+
         for row_num in range(len(aggregated_results)):
             if aggregated_results[row_num] == None:
                 continue
@@ -892,11 +897,12 @@ class GUI(object):
 
             for col_num in range(len(sc.STATISTICS)):
                 self.create_label(aggregated_results[row_num][col_num], row_num+1, col_num+2)
+            self.create_label(percent.percent(images[row_num]) ,row_num+1, len(sc.STATISTICS)+2)
 
-        self.btnExport = ttk.Button(self.results_fr, text="Descargar", width=15, command=lambda : self.table_to_csv(results) , cursor='arrow')
+        self.btnExport = ttk.Button(self.results_fr, text="Descargar", width=15, command=lambda : self.table_to_csv(results, len(colors)) , cursor='arrow')
         self.btnExport.grid(row=len(aggregated_results) + 1, column=len(sc.STATISTICS) // 2 + 1)
     
-    def table_to_csv(self, results) -> None:
+    def table_to_csv(self, results, cluster_num) -> None:
         """
         This method takes the data from a table at the GUI
         and generates a csv with it.
@@ -909,24 +915,22 @@ class GUI(object):
         # Get the names the user set
         names = []
         wgets = self.results_fr.winfo_children()[:-1]
-        entrys = [wgets[i+1] for i in range(len(sc.STATISTICS)+2, len(wgets), len(sc.STATISTICS)+2)]
+        entrys = [wgets[i] for i in range(len(sc.STATISTICS)+4, len(wgets), len(sc.STATISTICS)+3)]
         for entry in entrys:
             names.append(entry.get())
 
         header_row = ["Nombre Mineral", "ID imagen", *sc.STATISTICS]
-        # images = []
         with open(f'{filepath}_data.csv', 'w', newline='') as f:
             wrtr = csv.writer(f, delimiter=',')
             wrtr.writerow(header_row)
             for i in range(len(results)):
                 row = []
                 row.append(names[results[i][0]])
-                # images.append(contour[i].img)
                 row.append(str(i))
                 for j in range(len(sc.STATISTICS)):
                     row.append(results[i][j+1])
                 wrtr.writerow(row)
-        images = sc.image_agrupation(self.org_img,self.contour,3)
+        images = sc.image_agrupation(self.img_tree.image, self.contour, cluster_num)
         generate_zip(f'{filepath}_images', images)
         tkinter.messagebox.showinfo("Guardado", message="Los resultados se han guardado correctamente")
     
