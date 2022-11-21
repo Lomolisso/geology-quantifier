@@ -314,23 +314,14 @@ class GUI(object):
     def click_pos(self, event):
         self.sample_extractor.move_vertex(event.x, event.y)
         self.update_image(self.label_extractor, self.sample_extractor.get_image())
-        copy_img = np.copy(self.org_img)
-        copy_img = self.choose_cut_method(copy_img)
-        self.update_image(self.label_extractor2, self._resize_img( copy_img, 2))
 
-
-    def choose_cut_method(self, img = None):
-        if not self.prev_boolean:
-            img = self.org_img
-        
+    def choose_cut_method(self, img):
         return self.sample_extractor.cut(img)
 
     def rotateR(self):
-        # degree = cv2.getTrackbarPos('degree','Cuantificador geologico')
         image_center = tuple(np.array(self.clone_img.shape[1::-1]) / 2)
         self.grados-=0.2
         rotation_matrix = cv2.getRotationMatrix2D(image_center, angle=self.grados, scale=1)
-        # rotated_image = cv2.warpAffine(self.org_img, rotation_matrix,(self.org_img.shape[1],self.org_img.shape[0]))
         self.org_img = cv2.warpAffine(self.clone_img, rotation_matrix,(self.clone_img.shape[1],self.clone_img.shape[0]))
         
         self.sample_extractor.set_image(self._resize_img(self.org_img), rotation=True)
@@ -338,11 +329,9 @@ class GUI(object):
         self._set_extractor_canvas()
     
     def rotateL(self):
-        # degree = cv2.getTrackbarPos('degree','Frame')
         image_center = tuple(np.array(self.clone_img.shape[1::-1]) / 2)
         self.grados += 0.2
         rotation_matrix = cv2.getRotationMatrix2D(image_center, angle=self.grados, scale=1)
-        # rotated_image = cv2.warpAffine(self.org_img, rotation_matrix,(self.org_img.shape[1],self.org_img.shape[0]))
         self.org_img = cv2.warpAffine(self.clone_img, rotation_matrix,(self.clone_img.shape[1],self.clone_img.shape[0]))
         
         
@@ -358,15 +347,13 @@ class GUI(object):
         label.image = img_for_label
         label.grid(row=0, column=0, padx=10, pady=10)
 
-
     def preview(self):
         if self.canvas_preview:
             self.canvas_preview.destroy()
         self.canvas_preview = tkinter.Canvas(self.principal_fr)
         self.prev_boolean = True
-        copy_img = np.copy(self.org_img)
-        copy_img = self.choose_cut_method(copy_img)
-        self.label_extractor2 = self.add_img_to_canvas(self.canvas_preview, self._resize_img(copy_img,2))
+        copy_img = self.choose_cut_method(self.org_img)
+        self.label_extractor2 = self.add_img_to_canvas(self.canvas_preview, self._resize_img(copy_img, 2))
         self.canvas_preview.grid(row=0,column=1)
 
     def save_image(self):
@@ -374,7 +361,7 @@ class GUI(object):
             tkinter.messagebox.showwarning("Error", message="Por favor ingresa la altura.")
             return
         self.prev_boolean = False
-        self.org_img = self.choose_cut_method()
+        self.org_img = self.choose_cut_method(self.org_img)
         self.main_win.unbind('<Key>')
         self.un_measures()
         for wget in self.file_fr.winfo_children():
@@ -413,6 +400,8 @@ class GUI(object):
             self.reset_image()
     
     def release_click(self, event):
+        copy_img = self.choose_cut_method(self.org_img)
+        self.update_image(self.label_extractor2, self._resize_img(copy_img, 2))
         self.sample_extractor.refresh_image()
 
     def _set_extractor_canvas(self):
@@ -599,8 +588,7 @@ class GUI(object):
             wget.destroy()
         self.results_fr = ttk.Frame(self.canvas_fr, style='Card.TFrame', padding=(5, 6, 7, 8))
         self.img_container_fr.grid(row=1, column=3, sticky=tkinter.N+tkinter.E+tkinter.W+tkinter.S)
-
-    
+   
     def add_img_to_canvas(self, canvas: tkinter.Canvas, img: cv2.Mat) -> None:
         """
         Adds an image to the canvas.

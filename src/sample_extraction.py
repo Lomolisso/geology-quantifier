@@ -182,9 +182,6 @@ class PanoramicExtraction(AbstractExtraction):
         if self.vertex_dirty is not None and cond_list[self.vertex_dirty](x, y) and self._margin_conditions(x, y):
             self.vertex_data[self.vertex_dirty] = np.array((x, y))
 
-        if margin_list[0](x,y):
-            print("Funciona el margen 0")
-
         self._draw_circles_and_lines()
 
 class UnwrapperExtraction(AbstractExtraction):
@@ -342,7 +339,7 @@ class UnwrapperExtraction(AbstractExtraction):
         vertex_1, vertex_2, vertex_3, vertex_4, vertex_5, vertex_6 = [v for v in vertex]
         points = vertex_1, vertex_2, vertex_3, vertex_4, vertex_5, vertex_6
 
-        return unwrapping(copy_img, "awa.jpg", points)
+        return unwrapping(copy_img, points)
         
     def move_vertex(self, x, y):
         self.image = self.original_image.copy()
