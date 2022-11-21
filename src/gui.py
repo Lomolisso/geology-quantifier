@@ -620,13 +620,13 @@ class GUI(object):
         """
         if key in self.selected_images_indices:
             self.selected_images_indices.remove(key)
-            canvas.configure()
+            canvas.configure(bg='white')
             for widget in canvas.winfo_children():
                 if widget.cget("text"):
                     widget.destroy()
         else:
             self.selected_images_indices.append(key)
-            canvas.configure()
+            canvas.configure(bg='red')
 
             color_percent = percent.percent(image)
             widgetP = ttk.Label(canvas, text=f"Porcentaje de pixeles: {color_percent}%")
