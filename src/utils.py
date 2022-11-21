@@ -10,10 +10,6 @@ import cv2
 import sys
 import os
 from ttkwidgets.frames import Balloon
-# import Pmw
-
-# def init_pmw(root):
-#     Pmw.initialise(root) #initializing it in the root window
 
 class PlaceholderEntry(ttk.Entry):
     def __init__(self, container, placeholder, *args, **kwargs):
@@ -38,16 +34,14 @@ class PlaceholderEntry(ttk.Entry):
             self.insert("0", self.placeholder)
             self["style"] = self.placeholder_style
 
-
-
-def createBalloon(widget, button_name, text):
+def createBalloon(widget, header, text):
     """
     Creates a Balloon object to display a description of the widget.
     The description is displayed after 1 second.
     """
     width = 200
     timeout = 1
-    return Balloon(master=widget, headertext=button_name, text=text, timeout=timeout, width=width)
+    return Balloon(master=widget, headertext=header, text=text, timeout=timeout, width=width)
 
 def createButtonWithHover(master, name, command, description, image=None):
     """
