@@ -43,15 +43,6 @@ def createBalloon(widget, header, text):
     timeout = 1
     return Balloon(master=widget, headertext=header, text=text, timeout=timeout, width=width)
 
-def createBalloon(widget, button_name, text):
-    """
-    Creates a Balloon object to display a description of the widget.
-    The description is displayed after 1 second.
-    """
-    width = 200
-    timeout = 1
-    return Balloon(master=widget, headertext=button_name, text=text, timeout=timeout, width=width)
-
 def createButtonWithHover(master, name, command, description, image=None):
     """
     Creates a new button with a hover balloon.

@@ -175,15 +175,8 @@ class PanoramicExtraction(AbstractExtraction):
             lambda x, y: x > max(v1[0], v2[0]) and y > max(v1[1], v4[1]),   
             lambda x, y: x > max(v1[0], v2[0]) and y < min(v2[1], v3[1]),
         ]
-        margin_list = [
-            lambda x,y: x > 0 and y > 0,
-            lambda x,y: x < self.image_size[1] and y < self.image_size[0]
-        ]
         if self.vertex_dirty is not None and cond_list[self.vertex_dirty](x, y) and self._margin_conditions(x, y):
             self.vertex_data[self.vertex_dirty] = np.array((x, y))
-
-        if margin_list[0](x,y):
-            print("Funciona el margen 0")
 
         self._draw_circles_and_lines()
 
