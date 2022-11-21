@@ -326,7 +326,7 @@ class GUI(object):
         
         self.sample_extractor.set_image(self._resize_img(self.org_img), rotation=True)
         self.sample_extractor.refresh_image()
-        self._set_extractor_canvas()
+        self.update_image(self.label_extractor, self.sample_extractor.get_image())
     
     def rotateL(self):
         image_center = tuple(np.array(self.clone_img.shape[1::-1]) / 2)
@@ -334,10 +334,9 @@ class GUI(object):
         rotation_matrix = cv2.getRotationMatrix2D(image_center, angle=self.grados, scale=1)
         self.org_img = cv2.warpAffine(self.clone_img, rotation_matrix,(self.clone_img.shape[1],self.clone_img.shape[0]))
         
-        
         self.sample_extractor.set_image(self._resize_img(self.org_img), rotation=True)
         self.sample_extractor.refresh_image()
-        self._set_extractor_canvas()
+        self.update_image(self.label_extractor, self.sample_extractor.get_image())
 
     def update_image(self, label, image):
         photo_img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
