@@ -387,6 +387,6 @@ def unwrapping(imcv, dots):
 
     dst_image = unwrapper.unwrap(False)
     y, x, _ = dst_image.shape
-    interval = x//8
+    interval = x//7
     dst_image = dst_image[0:y, interval:(x - interval)]
     return dst_image

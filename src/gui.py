@@ -327,6 +327,7 @@ class GUI(object):
         self.sample_extractor.set_image(self._resize_img(self.org_img), rotation=True)
         self.sample_extractor.refresh_image()
         self.update_image(self.label_extractor, self.sample_extractor.get_image())
+        self.preview()
     
     def rotateL(self):
         image_center = tuple(np.array(self.clone_img.shape[1::-1]) / 2)
@@ -337,6 +338,7 @@ class GUI(object):
         self.sample_extractor.set_image(self._resize_img(self.org_img), rotation=True)
         self.sample_extractor.refresh_image()
         self.update_image(self.label_extractor, self.sample_extractor.get_image())
+        self.preview()
 
     def update_image(self, label, image):
         photo_img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
