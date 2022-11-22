@@ -68,7 +68,6 @@ class GUI(object):
         self.size_fr = ttk.Frame(self.btns_fr, style='Card.TFrame', padding=(5, 6, 7, 8))
         self.size_sub_fr = ttk.Frame(self.size_fr, style='Card.TFrame', padding=(5, 6, 7, 8))
         self.color_seg_fr = ttk.Frame(self.btns_fr, style='Card.TFrame', padding=(5, 6, 7, 8))
-        self.shape_seg_fr = ttk.Frame(self.btns_fr, style='Card.TFrame', padding=(5, 6, 7, 8))
         self.image_tools_fr = ttk.Frame(self.btns_fr, style='Card.TFrame', padding=(5, 6, 7, 8))
         self.gen_results_fr = ttk.Frame(self.btns_fr, style='Card.TFrame', padding=(5, 6, 7, 8))
         self.navigate_fr = ttk.Frame(self.main_win, style='Card.TFrame', padding=(5, 6, 7, 8))
@@ -84,7 +83,6 @@ class GUI(object):
         self.size_sub_fr.columnconfigure(1, weight=1)
         self.color_seg_fr.columnconfigure(0, weight=1)
         self.color_seg_fr.columnconfigure(1, weight=1)
-        self.shape_seg_fr.columnconfigure(0, weight=1)
         self.image_tools_fr.columnconfigure(0, weight=1)
         self.gen_results_fr.columnconfigure(0, weight=1)
         self.navigate_fr.columnconfigure(0, weight=1)
@@ -157,14 +155,6 @@ class GUI(object):
         btn_sub_description = 'Permite eliminar 1 o más imagenes, también se refleja en la imagen original.'
         self.btn_sub, self.hover_sub = createButtonWithHover(self.color_seg_fr, btn_sub_name, self.delete, btn_sub_description)
 
-        btn_outline_name = 'Perfilar'
-        btn_outline_description = 'Perfila la imagen seleccionada.'
-        self.btn_outline, self.hover_outline = createButtonWithHover(self.shape_seg_fr, btn_outline_name, self.outline, btn_outline_description)
-
-        btn_segmentate_name = 'Segmentar'
-        btn_segmentate_description = 'Calcula resultados utilizando como base la imagen seleccionada.'
-        self.btn_segmentate, self.hover_segmentate = createButtonWithHover(self.shape_seg_fr, btn_segmentate_name, self.segmentate, btn_segmentate_description)
-
         btn_update_name = 'Actualizar'
         btn_update_description = 'Actualiza la pantalla, ajustando el tamaño de las imágenes presentes en ella.'
         self.btn_update, self.hover_update = createButtonWithHover(self.image_tools_fr, btn_update_name, self.update_screen, btn_update_description)
@@ -180,6 +170,10 @@ class GUI(object):
         btn_analyze_name = 'Analizar'
         btn_analyze_description = 'Permite analizar la imagen seleccionada, calculando las estadisticas presentes en el programa.'
         self.btn_analyze, self.hover_analyze = createButtonWithHover(self.gen_results_fr, btn_analyze_name, self.analyze, btn_analyze_description)
+
+        btn_segmentate_name = 'Segmentar'
+        btn_segmentate_description = 'Calcula resultados utilizando como base la imagen seleccionada.'
+        self.btn_segmentate, self.hover_segmentate = createButtonWithHover(self.gen_results_fr, btn_segmentate_name, self.segmentate, btn_segmentate_description)
 
         btn_up_name = 'Subir'
         btn_up_description = 'Permite acceder a la imagen que se tenia anteriormente.'
@@ -207,7 +201,6 @@ class GUI(object):
         self.crop_fr_lbl = tkinter.Label(self.crop_fr, text = "Modo de\n recorte", font= self.section_font)
         self.size_fr_lbl = tkinter.Label(self.size_fr, text = "Tamaño", font= self.section_font)
         self.color_seg_lb = tkinter.Label(self.color_seg_fr, text = "Segmentación color", font= self.section_font)
-        self.shape_seg_lb = tkinter.Label(self.shape_seg_fr, text = "Segmentación \n forma", font= self.section_font)
         self.image_tools_lb = tkinter.Label(self.image_tools_fr, text = "Modificar imagen", font= self.section_font)
         self.gen_results_lb = tkinter.Label(self.gen_results_fr, text = "Generación \n resultados", font= self.section_font)
         self.navigate_lb = tkinter.Label(self.navigate_fr, text = "Navegar", font= self.section_font)
@@ -511,9 +504,6 @@ class GUI(object):
         for wget in self.color_seg_fr.winfo_children():
             wget.grid_forget()
         self.color_seg_fr.grid_forget()
-        for wget in self.shape_seg_fr.winfo_children():
-            wget.grid_forget()
-        self.shape_seg_fr.grid_forget()
         for wget in self.image_tools_fr.winfo_children():
             wget.grid_forget()
         self.image_tools_fr.grid_forget()
@@ -539,12 +529,6 @@ class GUI(object):
         self.btn_sub.grid(row=1, column=1, padx=5, pady=5)
         self.color_seg_lb.grid(padx=5, pady=5, columnspan=2)
 
-        # -- Shape Segmentation --
-        self.shape_seg_fr.grid(row=0, column=2, sticky=tkinter.N)
-        self.btn_outline.grid(row=0, column=0, padx=5, pady=5)
-        self.btn_segmentate.grid(row=1, column=0, padx=5, pady=5)
-        self.shape_seg_lb.grid(column=0, padx=5, pady=5)
-
         # -- Image Tools
         self.image_tools_fr.grid(row=0, column=3, sticky=tkinter.N)
         self.btn_update.grid(row=0, column=0, padx=5, pady=5)
@@ -555,7 +539,8 @@ class GUI(object):
         self.gen_results_fr.grid(row=0, column=4, sticky=tkinter.N)
         self.btn_3d.grid(row=0, column=0, padx=5, pady=5)
         self.btn_analyze.grid(row=1, column=0, padx=5, pady=5)
-        self.gen_results_lb.grid(column=0, padx=5, pady=5)
+        self.btn_segmentate.grid(row=1, column=1, padx=5, pady=5)
+        self.gen_results_lb.grid(padx=5, pady=5, columnspan=2)
 
         # -- Navigate --
         self.navigate_fr.grid(row=1, column=1, sticky=tkinter.N)
@@ -801,9 +786,6 @@ class GUI(object):
 
         results = sc.generate_results(self.contour, self.height_cm/self.segmentated.shape[0])
         self.fill_table(results, sc.DEF_COLOR)
-
-    def outline(self) -> None:
-        tkinter.messagebox.showwarning("Proximamente", message="Esta funcionalidad estara disponible proximamente.")
 
     def segmentate(self) -> None:
         """
