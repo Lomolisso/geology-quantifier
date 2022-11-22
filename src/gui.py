@@ -431,7 +431,8 @@ class GUI(object):
 
     def select_img(self):
         try:
-            img = image_managers.load_image_from_window()
+            img, filename = image_managers.load_image_from_window()
+            self.filename = filename.split("/")[-1].split(".")[0]
             #set max resolution
             #TODO: Move to another module
             resize_height = SCREEN_HEIGHT
@@ -490,7 +491,7 @@ class GUI(object):
         This method is called when a new image is uploaded. 
         """
         # self.clean_frames()
-        self.img_tree = image_tree.ImageNode(None, self.org_img, "Imagen original")
+        self.img_tree = image_tree.ImageNode(None, self.org_img, self.filename)
         self.segmentation = False
         self.update_screen()
                 
@@ -731,7 +732,7 @@ class GUI(object):
         """
         Resets the image tree back to it's original form.
         """
-        self.img_tree = image_tree.ImageNode(None,self.org_img,"Imagen original")
+        self.img_tree = image_tree.ImageNode(None,self.org_img, self.filename)
         self.selected_images_indices = []
         self.segmentation = False
         self.update_screen()
