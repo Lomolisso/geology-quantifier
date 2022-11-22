@@ -136,7 +136,7 @@ class GUI(object):
         self.btn_unwrapping, self.hover_unwrapping = createButtonWithHover(self.crop_fr, btn_unwrapping_name, self.to_unwrapping, btn_unwrapping_description)
         
         btn_height_name = 'Altura'
-        btn_height_description = 'Permite guardar la altura (en cm) de la roca introdujida.'
+        btn_height_description = 'Permite guardar la altura (en mm) de la roca introdujida.'
         self.btn_height, self.hover_height = createButtonWithHover(self.size_sub_fr, btn_height_name, self.set_height, btn_height_description)
 
         btn_save_name = 'Guardar'
@@ -191,7 +191,7 @@ class GUI(object):
         self.total_clusters = PlaceholderEntry(self.color_seg_fr, "Número de clusters")
         self.total_clusters['font'] = self.my_font
 
-        self.entry_height_cm = PlaceholderEntry(self.size_sub_fr, "Altura recorte (cm)")
+        self.entry_height_cm = PlaceholderEntry(self.size_sub_fr, "Altura recorte (mm)")
         self.entry_height_cm['font'] = self.my_font
 
         # -- labels --

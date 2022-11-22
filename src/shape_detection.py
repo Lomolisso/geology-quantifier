@@ -10,7 +10,7 @@ import cv2, numpy as np
 DEF_COLOR = [(255,255,0)]
 COLORS = [(255,0,0), (0,255,0), (0,0,255)]
 
-STATISTICS = ["Rel. de Aspecto", "Area (cm^2)", "Perimetro (cm)", "Radio Equiv. (cm)", "Largo Equiv. (cm)", "Punto Medio X (px)", "Punto Medio Y (px)"]
+STATISTICS = ["Rel. de Aspecto", "Area (mm^2)", "Perimetro (mm)", "Radio Equiv. (mm)", "Largo Equiv. (mm)", "Punto Medio X (px)", "Punto Medio Y (px)"]
 STATISTICS_DESC = [
     "Indica la relación que existe entre el alto y ancho de la figura, no toma en cuenta la orientación que esta tenga",
     "Area promedio de las figuras",
@@ -90,7 +90,7 @@ class ContourData(object):
         x, y, w, h = self.r
         return (x+w/2, y+h/2)
     
-    def get_all_statistics(self, pixel2cm) -> List:
+    def get_all_statistics(self, pixel2mm) -> List:
         """
         When called, this function returns
         the results of all statistics implemented
@@ -99,10 +99,10 @@ class ContourData(object):
         return [
             self.group,
             np.round(self.aspect_ratio(), 2),
-            np.round(self.get_area()*pixel2cm*pixel2cm, 3), 
-            np.round(self.get_perimeter()*pixel2cm, 3), 
-            np.round(self.get_equiv_radius()*pixel2cm, 2), 
-            np.round(self.get_equiv_lenght()*pixel2cm, 2),
+            np.round(self.get_area()*pixel2mm*pixel2mm, 4), 
+            np.round(self.get_perimeter()*pixel2mm, 4), 
+            np.round(self.get_equiv_radius()*pixel2mm, 2), 
+            np.round(self.get_equiv_lenght()*pixel2mm, 2),
             np.round(self.get_middle_point()[0], 0),
             np.round(self.get_middle_point()[1], 0)
             ]
@@ -150,13 +150,13 @@ def cluster_segmentation(cluster, contours, colors):
         cv2.rectangle(im, c.r, color, 2)
     return im
 
-def generate_results(contours,pixel2cm):
+def generate_results(contours,pixel2mm):
     """
     Calculate statistics for each group.
     """
     final_results = []
     for c in contours:
-        final_results.append(c.get_all_statistics(pixel2cm))
+        final_results.append(c.get_all_statistics(pixel2mm))
     return final_results
 
 def image_agrupation(img_org,contours,groups):
