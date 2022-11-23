@@ -179,24 +179,24 @@ class GUI(object):
         btn_segmentate_description = 'Calcula resultados utilizando como base la imagen seleccionada.'
         self.btn_segmentate, self.hover_segmentate = createButtonWithHover(self.gen_results_fr, btn_segmentate_name, self.segmentate, btn_segmentate_description)
 
-        btn_up_name = 'Subir'
-        btn_up_description = 'Permite acceder a la imagen que se tenia anteriormente.'
-        self.btn_up, self.hover_up = createButtonWithHover(self.navigate_fr, btn_up_name, self.up, btn_up_description, image=ARROW_LEFT)
+        btn_back_name = 'Atras'
+        btn_back_description = 'Permite acceder a la imagen que se tenia anteriormente.'
+        self.btn_back, self.hover_back = createButtonWithHover(self.navigate_fr, btn_back_name, self.back, btn_back_description, image=ARROW_LEFT)
         
-        btn_down_name = 'Bajar'
-        btn_down_description = 'Permite cambiar la imagen actual por la imagen seleccionada.'
-        self.btn_down, self.hover_down = createButtonWithHover(self.navigate_fr, btn_down_name, self.down, btn_down_description,image=ARROW_RIGHT)
+        btn_forward_name = 'Adelante'
+        btn_forward_description = 'Permite cambiar la imagen actual por la imagen seleccionada.'
+        self.btn_forward, self.hover_forward = createButtonWithHover(self.navigate_fr, btn_forward_name, self.forward, btn_forward_description,image=ARROW_RIGHT)
 
         btn_doc_name = 'Ayuda'
         btn_doc_description = 'Permite abrir la documentación completa de la aplicación.'
         self.btn_doc, self.hover_doc = createButtonWithHover(self.help_fr, btn_doc_name, self.view_documentation, btn_doc_description,image=HELP_ICON)
 
         # -- entries --
-        self.total_clusters = PlaceholderEntry(self.color_seg_fr, "Número de clusters")
+        self.total_clusters = PlaceholderEntry(self.color_seg_fr, "3")
         self.total_clusters['font'] = self.my_font
 
-        self.entry_height_cm = PlaceholderEntry(self.size_sub_fr, "Altura recorte (mm)")
-        self.entry_height_cm['font'] = self.my_font
+        self.entry_height_mm = PlaceholderEntry(self.size_sub_fr, "Altura recorte (mm)")
+        self.entry_height_mm['font'] = self.my_font
 
         # -- labels --
         self.file_fr_lbl = tkinter.Label(self.file_fr, text = "Archivos", font= self.section_font)
@@ -214,14 +214,14 @@ class GUI(object):
         self.set_up_scrollbar()
         self.btn_fr_size = 200
         self.segmentation = False
-        self.height_cm = None
+        self.height_mm = 100
         self.grados = 0
         self.canvas_preview = tkinter.Canvas(self.principal_fr)
         self.prev_boolean = False
    
     def set_height(self):
         try:
-            self.height_cm = float(self.entry_height_cm.get())
+            self.height_mm = float(self.entry_height_mm.get())
         except:
             tkinter.messagebox.showwarning("Error", message="Por favor ingresa un número.")
             return
@@ -362,9 +362,6 @@ class GUI(object):
         self.canvas_preview.grid(row=0,column=1)
 
     def save_image(self):
-        if self.height_cm is None:
-            tkinter.messagebox.showwarning("Error", message="Por favor ingresa la altura.")
-            return
         self.prev_boolean = False
         self.org_img = self.choose_cut_method(self.org_img)
         self.main_win.unbind('<Key>')
@@ -381,7 +378,7 @@ class GUI(object):
         for wget in self.size_fr.winfo_children():
             wget.grid_forget()   
         self.size_fr.grid_forget()
-        self.entry_height_cm._clear_placeholder(None)
+        self.entry_height_mm._clear_placeholder(None)
         self.show_img()            
 
     def reset_image(self):
@@ -429,13 +426,13 @@ class GUI(object):
     def measures(self):
         self.size_fr.grid(row=0, column=4, sticky=tkinter.N)
         self.size_sub_fr.grid(row=0, column=0)
-        self.entry_height_cm.grid(row=0, column=0)
+        self.entry_height_mm.grid(row=0, column=0)
         self.btn_height.grid(row=0, column=1)
         self.size_fr_lbl.grid(row=1, column=0)
 
     def un_measures(self):
         
-        self.entry_height_cm.grid_forget()
+        self.entry_height_mm.grid_forget()
         self.btn_height.grid_forget()
         self.size_fr_lbl.grid_forget()
         self.size_fr.grid_forget()
@@ -495,7 +492,7 @@ class GUI(object):
 
             self.segmentation = False
             self.grados = 0
-            self.height_cm = None
+            self.height_mm = 100
         except:
            pass
 
@@ -558,8 +555,8 @@ class GUI(object):
 
         # -- Navigate --
         self.navigate_fr.grid(row=1, column=1, sticky=tkinter.N)
-        self.btn_up.grid(row=0, column=0, padx=5, pady=5)
-        self.btn_down.grid(row=0, column=1, padx=5, pady=5)
+        self.btn_back.grid(row=0, column=0, padx=5, pady=5)
+        self.btn_forward.grid(row=0, column=1, padx=5, pady=5)
         self.navigate_lb.grid(column=0, padx=5, pady=5, columnspan=2)
 
         # -- Help --
@@ -750,7 +747,7 @@ class GUI(object):
         self.segmentation = False
         self.update_screen()
 
-    def down(self) -> None:
+    def forward(self) -> None:
         """
         Travels one level downwards in the image tree, this means that the GUI
         will show a cluster as a main image and the user will be able to
@@ -764,7 +761,7 @@ class GUI(object):
         self.segmentation = False
         self.update_screen()
 
-    def up(self) -> None:
+    def back(self) -> None:
         """
         Travels one level upwards in the image tree, updates the GUI showing all the data
         related to the parent of the current node.
@@ -798,7 +795,7 @@ class GUI(object):
 
         self.update_screen()
 
-        results = sc.generate_results(self.contour, self.height_cm/self.segmentated.shape[0])
+        results = sc.generate_results(self.contour, self.height_mm/self.segmentated.shape[0])
         self.fill_table(results, sc.DEF_COLOR)
 
     def segmentate(self) -> None:
@@ -823,7 +820,7 @@ class GUI(object):
 
         self.update_screen()
 
-        results = sc.generate_results(self.contour, self.height_cm/self.segmentated.shape[0])
+        results = sc.generate_results(self.contour, self.height_mm/self.segmentated.shape[0])
         self.fill_table(results, sc.COLORS)
 
     def aggregate(self, results) -> List:
