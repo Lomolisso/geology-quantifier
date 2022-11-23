@@ -222,6 +222,7 @@ class GUI(object):
         self.grados = 0
         self.canvas_preview = tkinter.Canvas(self.principal_fr)
         self.prev_boolean = False
+        self.last_index_selected = []
    
     def set_height(self):
         try:
@@ -305,10 +306,10 @@ class GUI(object):
             self.img_tree = self.img_tree.childs[self.selected_images_indices[0]]
         
         self.img_tree.split(n_childs=n_childs)
+        self.selected_images_indices=[]
         self.segmentation = False
         self.update_screen()
-        self.selected_images_indices=[]
-    
+
     def click_check(self, event):
         self.sample_extractor.check_mov(event.x, event.y)
     
@@ -424,7 +425,7 @@ class GUI(object):
     def crop(self):
         self.sample_extractor.init_extractor()
 
-        #se ingresa en un canvas
+        #insert in  canvas
         self._set_extractor_canvas()
 
     def measures(self):
@@ -662,7 +663,6 @@ class GUI(object):
         self.clean_principal_frame()
 
         img = self._resize_img(self.img_tree.image) # image at the current node of the image_tree
-        self.selected_images_indices = [] # resets selected images
 
         if self.segmentation:
             principal_image = self.img_tree.image
@@ -706,6 +706,9 @@ class GUI(object):
                 canva.grid(row=2*(i%img_row_shape), column=i//img_row_shape)
                 name_label = tkinter.Label(self.canvas_fr, text=child.name)
                 name_label.grid(row=2*(i%img_row_shape) + 1, column=i//img_row_shape)
+                if i in self.selected_images_indices:
+                    label.event_generate("<ButtonPress-1>")
+                    label.event_generate("<ButtonPress-1>")
                 i+=1
 
     def merge(self) -> None:
@@ -716,9 +719,10 @@ class GUI(object):
             tkinter.messagebox.showwarning("Error", message="Por favor, seleccione 2 o más imagenes.")
             return
         self.img_tree.merge(self.selected_images_indices)
+        self.selected_images_indices=[]
         self.segmentation = False
         self.update_screen()
-        self.selected_images_indices=[]
+        
 
     def delete(self) -> None:
         """
@@ -728,9 +732,10 @@ class GUI(object):
             tkinter.messagebox.showwarning("Error", message="Por favor, seleccione al menos una imagen.")
             return
         self.img_tree.delete(self.selected_images_indices)
+        self.selected_images_indices=[]
         self.segmentation = False
         self.update_screen()
-        self.selected_images_indices=[]
+        
 
     def plot_3d(self) -> None:
         """
@@ -762,6 +767,7 @@ class GUI(object):
             tkinter.messagebox.showwarning("Error", message="Por favor, seleccione una imagen.")
             return
         self.img_tree = self.img_tree.childs[self.selected_images_indices[0]]
+        self.last_index_selected.append(self.selected_images_indices[0])
         self.selected_images_indices = []
         self.segmentation = False
         self.update_screen()
@@ -775,8 +781,8 @@ class GUI(object):
             tkinter.messagebox.showwarning("Error", message="Esta es la imagen original.")
             return
         self.img_tree = self.img_tree.parent
-        self.selected_images_indices = []
         self.segmentation = False
+        self.selected_images_indices = [self.last_index_selected.pop()]
         self.update_screen()
     
     def analyze(self) -> None:
