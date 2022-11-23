@@ -143,7 +143,7 @@ class GUI(object):
         btn_rectangle_description = 'Si'
         self.btn_rectangle, self.hover_rectangle = createButtonWithHover(self.crop_fr, btn_rectangle_name, self.to_rectangle, btn_rectangle_description)
 
-        btn_height_name = 'Altura'
+        btn_height_name = 'Altura (mm)'
         btn_height_description = 'Permite guardar la altura (en mm) de la roca introdujida.'
         self.btn_height, self.hover_height = createButtonWithHover(self.size_sub_fr, btn_height_name, self.set_height, btn_height_description)
 
@@ -199,7 +199,7 @@ class GUI(object):
         self.total_clusters = PlaceholderEntry(self.color_seg_fr, "3")
         self.total_clusters['font'] = self.my_font
 
-        self.entry_height_mm = PlaceholderEntry(self.size_sub_fr, "Altura recorte (mm)")
+        self.entry_height_mm = PlaceholderEntry(self.size_sub_fr, "100")
         self.entry_height_mm['font'] = self.my_font
 
         # -- labels --
