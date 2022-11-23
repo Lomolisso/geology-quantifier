@@ -220,8 +220,6 @@ class GUI(object):
         self.segmentation = False
         self.height_mm = 100
         self.grados = 0
-        self.canvas_preview = tkinter.Canvas(self.principal_fr)
-        self.prev_boolean = False
         self.last_index_selected = []
    
     def set_height(self):
@@ -360,16 +358,18 @@ class GUI(object):
         label.grid(row=0, column=0, padx=10, pady=10)
 
     def preview(self):
-        if self.canvas_preview:
-            self.canvas_preview.destroy()
+        if hasattr(self, "canvas_preview"):
+            #self.canvas_preview.destroy()
+            copy_img = self.choose_cut_method(self.org_img)
+            copy_img = self._resize_img(copy_img, 2)
+            self.update_image(self.label_extractor2, copy_img)
+            return
         self.canvas_preview = tkinter.Canvas(self.principal_fr)
-        self.prev_boolean = True
         copy_img = self.choose_cut_method(self.org_img)
         self.label_extractor2 = self.add_img_to_canvas(self.canvas_preview, self._resize_img(copy_img, 2))
         self.canvas_preview.grid(row=0,column=1)
 
     def save_image(self):
-        self.prev_boolean = False
         self.org_img = self.choose_cut_method(self.org_img)
         self.main_win.unbind('<Key>')
         self.un_measures()
