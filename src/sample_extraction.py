@@ -107,9 +107,9 @@ class PanoramicExtraction(AbstractExtraction):
         Resets the vertices positions back to default.
         """
 
-        _, image_cols, *_ = self.image_size
+        image_rows, image_cols, *_ = self.image_size
         image_cols = image_cols//4
-        image_rows = 2*image_cols
+        image_rows = image_rows//4
 
 
         d = np.array((
@@ -210,9 +210,9 @@ class UnwrapperExtraction(AbstractExtraction):
         """
         Resets the vertices positions back to default.
         """
-        _, image_cols, *_ = self.image_size
+        image_rows, image_cols, *_ = self.image_size
         image_cols = image_cols//4
-        image_rows = 2*image_cols
+        image_rows = image_rows//4
 
 
         d = np.array((
