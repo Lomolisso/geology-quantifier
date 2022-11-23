@@ -175,13 +175,13 @@ class GUI(object):
         btn_segmentate_description = 'Calcula resultados utilizando como base la imagen seleccionada.'
         self.btn_segmentate, self.hover_segmentate = createButtonWithHover(self.gen_results_fr, btn_segmentate_name, self.segmentate, btn_segmentate_description)
 
-        btn_up_name = 'Subir'
-        btn_up_description = 'Permite acceder a la imagen que se tenia anteriormente.'
-        self.btn_up, self.hover_up = createButtonWithHover(self.navigate_fr, btn_up_name, self.up, btn_up_description, image=ARROW_LEFT)
+        btn_back_name = 'Atras'
+        btn_back_description = 'Permite acceder a la imagen que se tenia anteriormente.'
+        self.btn_back, self.hover_back = createButtonWithHover(self.navigate_fr, btn_back_name, self.back, btn_back_description, image=ARROW_LEFT)
         
-        btn_down_name = 'Bajar'
-        btn_down_description = 'Permite cambiar la imagen actual por la imagen seleccionada.'
-        self.btn_down, self.hover_down = createButtonWithHover(self.navigate_fr, btn_down_name, self.down, btn_down_description,image=ARROW_RIGHT)
+        btn_forward_name = 'Adelante'
+        btn_forward_description = 'Permite cambiar la imagen actual por la imagen seleccionada.'
+        self.btn_forward, self.hover_forward = createButtonWithHover(self.navigate_fr, btn_forward_name, self.forward, btn_forward_description,image=ARROW_RIGHT)
 
         btn_doc_name = 'Ayuda'
         btn_doc_description = 'Permite abrir la documentación completa de la aplicación.'
@@ -546,8 +546,8 @@ class GUI(object):
 
         # -- Navigate --
         self.navigate_fr.grid(row=1, column=1, sticky=tkinter.N)
-        self.btn_up.grid(row=0, column=0, padx=5, pady=5)
-        self.btn_down.grid(row=0, column=1, padx=5, pady=5)
+        self.btn_back.grid(row=0, column=0, padx=5, pady=5)
+        self.btn_forward.grid(row=0, column=1, padx=5, pady=5)
         self.navigate_lb.grid(column=0, padx=5, pady=5, columnspan=2)
 
         # -- Help --
@@ -738,7 +738,7 @@ class GUI(object):
         self.segmentation = False
         self.update_screen()
 
-    def down(self) -> None:
+    def forward(self) -> None:
         """
         Travels one level downwards in the image tree, this means that the GUI
         will show a cluster as a main image and the user will be able to
@@ -752,7 +752,7 @@ class GUI(object):
         self.segmentation = False
         self.update_screen()
 
-    def up(self) -> None:
+    def back(self) -> None:
         """
         Travels one level upwards in the image tree, updates the GUI showing all the data
         related to the parent of the current node.
