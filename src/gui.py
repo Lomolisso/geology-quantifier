@@ -309,7 +309,7 @@ class GUI(object):
         self.update_image(self.label_extractor, self.sample_extractor.get_image())
 
     def choose_cut_method(self, img):
-        return self.sample_extractor.cut(img)
+        return self.sample_extractor.cut(img)        
 
     def rotateR(self):
         image_center = tuple(np.array(self.clone_img.shape[1::-1]) / 2)
@@ -382,6 +382,7 @@ class GUI(object):
         self.label_extractor.configure(image=img_for_label)
         self.label_extractor.image = img_for_label
         self.label_extractor.grid(row=0, column=0, padx=10, pady=10)
+        self.preview()
 
     def key_press(self, event):
         if event.char == "s":
