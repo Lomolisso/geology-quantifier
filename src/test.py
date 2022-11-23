@@ -1,25 +1,6 @@
 import numpy as np
 import cv2
-import percent as pc
-import random
 from shape_detection import contour_segmentation, ContourData
-
-def img_with_percent(img, percent):
-    shape_x,shape_y = img.shape[0], img.shape[1]
-    area = shape_x*shape_y
-    pixels_to_print = area*percent/100
-    while(pixels_to_print>0):
-        pixelx = random.randint(0, shape_x-1)
-        pixely = random.randint(0, shape_y-1)
-        if((img[pixelx,pixely]==0).any()):
-            img[pixelx,pixely]=[255,255,255]
-            pixels_to_print-=1
-
-def chessboardPattern(img,vertical,horizontal):
-    shape_x,shape_y = img.shape[0], img.shape[1]
-    for i in range(0,vertical):
-        for j in range(i%2,horizontal,2):
-            cv2.rectangle(img, ( j*shape_y//horizontal,i*shape_x//vertical),((j+1)*shape_y//horizontal-1,(i+1)*shape_x//vertical-1), (255,255,255),-1)
 
 def math_area(array):
     "calculo del area con determinante, los puntos deben estar ordenados y no crear agujeros en la figura"
@@ -39,13 +20,9 @@ def math_area(array):
 
 def math_aspect_ratio(array):
     maxx=max(fila[0] for fila in array)
-    print(maxx)
     minx=min(fila[0] for fila in array)
-    print(minx)
     maxy=max(fila[1] for fila in array)
-    print(maxy)
     miny=min(fila[1] for fila in array)
-    print(miny)
     x = maxx-minx+1
     y = maxy-miny+1
     ratio = x/y
@@ -64,20 +41,18 @@ def poli_gen_radio(n, center, radio_random):
     x, y = center
     theta = np.sort(np.random.rand(n))
     theta = 2*np.pi*theta
-    radio = (radio_random+20)-radio_random*np.random.rand(n)
+    radio = radio_random- (radio_random//2)*np.random.rand(n)
     points = [[round(x+radio[i]*np.cos(theta[i]),0),round(y+radio[i]*np.sin(theta[i]),0)] for i in range(len(theta))]
     return np.array(points, np.int32)
 
 def assert_error(estimate_value, calculated_value, error):
     error_calculado = (calculated_value-estimate_value)/estimate_value
-    print(error_calculado)
     assert(error>abs(error_calculado))
 
-def testing(funcion_programa, funcion_math):
+def testing(funcion_programa, funcion_math, error):
     height = 400
     width =400
     channels = 3
-    lados = [10, 50, 100]
     
     points = []
     points.append(np.array([[100,100],[100,200],[200,200]]))
@@ -94,7 +69,7 @@ def testing(funcion_programa, funcion_math):
         img = cv2.fillPoly(img,[pts],(0,255,255))
         data = contour_segmentation(img)
         #revisar diagonales dificiles
-        assert_error(value, funcion_programa(data[0]), 0.02)
+        assert_error(value, funcion_programa(data[0]), error)
     
     for i in range(3,100):
         img = np.zeros((height,width,channels), dtype=np.uint8)
@@ -103,27 +78,20 @@ def testing(funcion_programa, funcion_math):
         pts = pts.reshape((-1,1,2))
         img = cv2.fillPoly(img,[pts],(0,255,255))
         data = contour_segmentation(img)
-        assert_error(value, funcion_programa(data[0]), 0.02)
-    while(True):
-        for i in range(10,100):
-            img = np.zeros((height,width,channels), dtype=np.uint8)
-            pts = poli_gen_radio(i,(200,200),100)
-            value = funcion_math(pts)
-            pts = pts.reshape((-1,1,2))
-            img = cv2.fillPoly(img,[pts],(0,255,255))
-            
-            data = contour_segmentation(img)
-            value2 = [i[0] for i in data[0].contour]
-            a = funcion_math(value2)
-            try:
-                assert_error(value, funcion_programa(data[0]), 0.1)
-            except:
-                cv2.imshow("a",img)
-                cv2.waitKey(0)
-                cv2.destroyAllWindows()
+        assert_error(value, funcion_programa(data[0]), error)
+    for i in range(3,100):
+        img = np.zeros((height,width,channels), dtype=np.uint8)
+        pts = poli_gen_radio(i,(200,200),100)
+        value = funcion_math(pts)
+        pts = pts.reshape((-1,1,2))
+        img = cv2.fillPoly(img,[pts],(0,255,255))
+        
+        data = contour_segmentation(img)
+        assert_error(value, funcion_programa(data[0]), error)
         
 
-testing(ContourData.get_area, math_area)
+testing(ContourData.get_area, math_area, 0.03)
+testing(ContourData.aspect_ratio, math_aspect_ratio, 0.01)
 
 def test_area():
     height = 400
@@ -201,7 +169,6 @@ def test_aspect_ratio():
     data = contour_segmentation(img)
     aspect_ratios = [1.4, 2]
     for cnt in data:
-        print(cnt.aspect_ratio())
         assert(cnt.aspect_ratio() in aspect_ratios)
     
     #se limpia la imagen.
@@ -252,7 +219,6 @@ def test_aspect_ratio():
     for i in range(3,100):
         img = np.zeros((height,width,channels), dtype=np.uint8)
         pts = poli_gen(3,(200,200),100)
-        print(pts)
         ratio_math = math_aspect_ratio(pts)
         pts = pts.reshape((-1,1,2))
         img = cv2.fillPoly(img,[pts],(0,255,255))
@@ -260,7 +226,5 @@ def test_aspect_ratio():
         archivo.write(f"{i},{ratio_math},{data[0].aspect_ratio()},{(data[0].aspect_ratio()-ratio_math)/ratio_math}\n")
     archivo.close()
 
-#test_area()
-#test_aspect_ratio()
 
 
