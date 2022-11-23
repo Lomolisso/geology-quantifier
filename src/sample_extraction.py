@@ -179,6 +179,16 @@ class PanoramicExtraction(AbstractExtraction):
             self.vertex_data[self.vertex_dirty] = np.array((x, y))
 
         self._draw_circles_and_lines()
+    
+    def to_corners(self):
+        self.vertex_data = [
+            np.array((0,0)),
+            np.array((0,self.image_size[0])),
+            np.array((self.image_size[1], self.image_size[0])),
+            np.array((self.image_size[1], 0))
+        ]
+        self._draw_circles_and_lines()
+
 
 class UnwrapperExtraction(AbstractExtraction):
     def __init__(self, img: cv2.Mat) -> None: 
@@ -344,6 +354,18 @@ class UnwrapperExtraction(AbstractExtraction):
             self._process_scale_mov(x, y)
         
         self._draw_circles_and_lines()
+    
+    def to_corners(self):
+        self.vertex_data = [
+            np.array((0,0)),
+            np.array((0,self.image_size[0])),
+            np.array((self.image_size[1]//2,self.image_size[0])),
+            np.array((self.image_size[1], self.image_size[0])),
+            np.array((self.image_size[1], 0)),
+            np.array((self.image_size[1]//2,1))
+        ]
+        self._draw_circles_and_lines()
+
 
 
 class SampleExtractor(object):
@@ -388,6 +410,9 @@ class SampleExtractor(object):
     
     def move_vertex(self, x, y):
         self.ext.move_vertex(x, y)
+
+    def to_corners(self):
+        self.ext.to_corners()
     
     def cut(self, img):
         return self.ext.cut(img)

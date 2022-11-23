@@ -119,6 +119,10 @@ class GUI(object):
         btn_rotate_description = 'Gira 90 grados la imagen a recortar en sentido horario.'
         self.btn_rotate, self.hover_rotate = createButtonWithHover(self.command_fr, btn_rotate_name, self.rotate_image, btn_rotate_description)
         
+        btn_select_all_img_name = 'Seleccionar todo'
+        btn_select_all_img_description = "Mueve los puntos a las esquinas de la imagen"
+        self.btn_select_all_img, self.hover_select_all_img = createButtonWithHover(self.command_fr, btn_select_all_img_name, self.select_all_img, btn_select_all_img_description)
+
         btn_rotateR_name = 'Rotar imagen R'
         btn_rotateR_description = 'gira levemente la imagen en sentido horario'
         self.btn_rotateR, self.hover_rotateR = createButtonWithHover(self.command_fr, btn_rotateR_name, self.rotateR, btn_rotateR_description)
@@ -311,6 +315,13 @@ class GUI(object):
     def choose_cut_method(self, img):
         return self.sample_extractor.cut(img)        
 
+    def select_all_img(self):
+        self.sample_extractor.to_corners()
+        
+        self.sample_extractor.refresh_image()
+        self.update_image(self.label_extractor, self.sample_extractor.get_image())
+        self.preview()
+
     def rotateR(self):
         image_center = tuple(np.array(self.clone_img.shape[1::-1]) / 2)
         self.grados-=0.2
@@ -468,6 +479,7 @@ class GUI(object):
             self.command_fr.grid(row=0, column=1, sticky=tkinter.N)
             self.btn_save_img.grid(row=0, column=0, padx=5, pady=5)
             self.btn_reset_img.grid(row=1, column=0, padx=5, pady=5)
+            self.btn_select_all_img.grid(row=1, column=1, padx=5, pady=5)
             self.btn_rotate.grid(row=0, column=1, padx=5, pady=5)
             self.btn_rotateR.grid(row=0, column=2, padx=5, pady=5)
             self.btn_rotateL.grid(row=1, column=2, padx=5, pady=5)
