@@ -18,6 +18,7 @@ BLACK = (0, 0, 0)
 class ExtractorModeEnum(str, enum.Enum):
     PANORAMIC = "panoramic"
     UNWRAPPER = "unwrapper"
+    RECTANGLE = "rectangle"
 
 class AbstractExtraction(object):
     def __init__(self, img: cv2.Mat) -> None:
@@ -365,6 +366,42 @@ class UnwrapperExtraction(AbstractExtraction):
             np.array((self.image_size[1]//2,1))
         ]
         self._draw_circles_and_lines()
+    
+class RectangleExtraction(PanoramicExtraction):
+    def __init__(self, img: cv2.Mat) -> None:
+        """
+        Class constructor, sets the main attributes of the
+        instance acording to the input image.
+        """
+        super().__init__(img)
+
+        
+    def move_vertex(self, x, y):
+        self.image = self.original_image.copy()    
+        v1, v2, v3, v4 = self.vertex_data
+        cond_list = [
+            lambda x, y: x < min(v4[0], v3[0]) and y < min(v2[1], v3[1]),
+            lambda x, y: x < min(v4[0], v3[0]) and y > max(v1[1], v4[1]),
+            lambda x, y: x > max(v1[0], v2[0]) and y > max(v1[1], v4[1]),   
+            lambda x, y: x > max(v1[0], v2[0]) and y < min(v2[1], v3[1]),
+        ]
+        if self.vertex_dirty is not None and cond_list[self.vertex_dirty](x, y) and self._margin_conditions(x, y):
+            punto_posterior = self.vertex_dirty + 1
+            punto_anterior = self.vertex_dirty - 1
+            aprox_posterior = (punto_posterior)%2
+            if aprox_posterior==0:
+                self.vertex_data[(punto_anterior)%4][0] = x
+                self.vertex_data[(punto_posterior)%4][1] = y
+            else:
+                self.vertex_data[(punto_posterior)%4][0] = x
+                self.vertex_data[(punto_anterior)%4][1] = y
+
+            self.vertex_data[self.vertex_dirty] = np.array((x, y))
+            
+
+        self._draw_circles_and_lines()
+    
+
 
 
 
@@ -385,11 +422,17 @@ class SampleExtractor(object):
         self.mode = ExtractorModeEnum.UNWRAPPER
         self.ext = UnwrapperExtraction(img=self.img)
     
+    def to_rectangle(self):
+        self.mode = ExtractorModeEnum.RECTANGLE
+        self.ext = RectangleExtraction(img=self.img)
+    
     def init_extractor(self):
         if self.mode == ExtractorModeEnum.PANORAMIC:
             self.to_panoramic()
-        else:
+        elif self.mode == ExtractorModeEnum.UNWRAPPER:
             self.to_unwrapping()
+        else:
+            self.to_rectangle()
     
     # --- Public extraction methods ---
         
@@ -416,3 +459,4 @@ class SampleExtractor(object):
     
     def cut(self, img):
         return self.ext.cut(img)
+    

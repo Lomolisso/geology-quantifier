@@ -139,6 +139,10 @@ class GUI(object):
         btn_unwrapping_description = 'Es necesario posicionar 6 puntos para realizar un recorte con ajuste de perspectiva.'
         self.btn_unwrapping, self.hover_unwrapping = createButtonWithHover(self.crop_fr, btn_unwrapping_name, self.to_unwrapping, btn_unwrapping_description)
         
+        btn_rectangle_name = 'Modo rectangular'
+        btn_rectangle_description = 'Si'
+        self.btn_rectangle, self.hover_rectangle = createButtonWithHover(self.crop_fr, btn_rectangle_name, self.to_rectangle, btn_rectangle_description)
+
         btn_height_name = 'Altura'
         btn_height_description = 'Permite guardar la altura (en mm) de la roca introdujida.'
         self.btn_height, self.hover_height = createButtonWithHover(self.size_sub_fr, btn_height_name, self.set_height, btn_height_description)
@@ -485,6 +489,7 @@ class GUI(object):
             self.crop_fr.grid(row = 0, column= 2, sticky=tkinter.N)
             self.btn_panoramic.grid(row=0, column=0,padx=5, pady=5)
             self.btn_unwrapping.grid(row=1, column=0, padx=5, pady=5)
+            self.btn_rectangle.grid(row=2, column=0, padx=5, pady=5)
             self.crop_fr_lbl.grid(column=0,padx=5, pady=5)
             # -- help --
             self.help_fr.grid(row=0, column=5, sticky=tkinter.N)
@@ -968,6 +973,10 @@ class GUI(object):
 
     def to_unwrapping(self):
         self.sample_extractor.to_unwrapping()
+        self._set_extractor_canvas()
+    
+    def to_rectangle(self):
+        self.sample_extractor.to_rectangle()
         self._set_extractor_canvas()
 
 
