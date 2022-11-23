@@ -188,11 +188,11 @@ class GUI(object):
         self.btn_doc, self.hover_doc = createButtonWithHover(self.help_fr, btn_doc_name, self.view_documentation, btn_doc_description,image=HELP_ICON)
 
         # -- entries --
-        self.total_clusters = PlaceholderEntry(self.color_seg_fr, "Número de clusters")
+        self.total_clusters = PlaceholderEntry(self.color_seg_fr, "3")
         self.total_clusters['font'] = self.my_font
 
-        self.entry_height_cm = PlaceholderEntry(self.size_sub_fr, "Altura recorte (mm)")
-        self.entry_height_cm['font'] = self.my_font
+        self.entry_height_mm = PlaceholderEntry(self.size_sub_fr, "Altura recorte (mm)")
+        self.entry_height_mm['font'] = self.my_font
 
         # -- labels --
         self.file_fr_lbl = tkinter.Label(self.file_fr, text = "Archivos", font= self.section_font)
@@ -210,14 +210,14 @@ class GUI(object):
         self.set_up_scrollbar()
         self.btn_fr_size = 200
         self.segmentation = False
-        self.height_cm = None
+        self.height_mm = 100
         self.grados = 0
         self.canvas_preview = tkinter.Canvas(self.principal_fr)
         self.prev_boolean = False
    
     def set_height(self):
         try:
-            self.height_cm = float(self.entry_height_cm.get())
+            self.height_mm = float(self.entry_height_mm.get())
         except:
             tkinter.messagebox.showwarning("Error", message="Por favor ingresa un número.")
             return
@@ -351,9 +351,6 @@ class GUI(object):
         self.canvas_preview.grid(row=0,column=1)
 
     def save_image(self):
-        if self.height_cm is None:
-            tkinter.messagebox.showwarning("Error", message="Por favor ingresa la altura.")
-            return
         self.prev_boolean = False
         self.org_img = self.choose_cut_method(self.org_img)
         self.main_win.unbind('<Key>')
@@ -370,7 +367,7 @@ class GUI(object):
         for wget in self.size_fr.winfo_children():
             wget.grid_forget()   
         self.size_fr.grid_forget()
-        self.entry_height_cm._clear_placeholder(None)
+        self.entry_height_mm._clear_placeholder(None)
         self.show_img()            
 
     def reset_image(self):
@@ -418,13 +415,13 @@ class GUI(object):
     def measures(self):
         self.size_fr.grid(row=0, column=4, sticky=tkinter.N)
         self.size_sub_fr.grid(row=0, column=0)
-        self.entry_height_cm.grid(row=0, column=0)
+        self.entry_height_mm.grid(row=0, column=0)
         self.btn_height.grid(row=0, column=1)
         self.size_fr_lbl.grid(row=1, column=0)
 
     def un_measures(self):
         
-        self.entry_height_cm.grid_forget()
+        self.entry_height_mm.grid_forget()
         self.btn_height.grid_forget()
         self.size_fr_lbl.grid_forget()
         self.size_fr.grid_forget()
@@ -483,7 +480,7 @@ class GUI(object):
 
             self.segmentation = False
             self.grados = 0
-            self.height_cm = None
+            self.height_mm = 100
         except:
            pass
 
@@ -786,7 +783,7 @@ class GUI(object):
 
         self.update_screen()
 
-        results = sc.generate_results(self.contour, self.height_cm/self.segmentated.shape[0])
+        results = sc.generate_results(self.contour, self.height_mm/self.segmentated.shape[0])
         self.fill_table(results, sc.DEF_COLOR)
 
     def segmentate(self) -> None:
@@ -811,7 +808,7 @@ class GUI(object):
 
         self.update_screen()
 
-        results = sc.generate_results(self.contour, self.height_cm/self.segmentated.shape[0])
+        results = sc.generate_results(self.contour, self.height_mm/self.segmentated.shape[0])
         self.fill_table(results, sc.COLORS)
 
     def aggregate(self, results) -> List:
