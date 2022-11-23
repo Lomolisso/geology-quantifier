@@ -334,6 +334,7 @@ class GUI(object):
         self.org_img = cv2.warpAffine(self.clone_img, rotation_matrix,(self.clone_img.shape[1],self.clone_img.shape[0]))
         
         self.sample_extractor.set_image(self._resize_img(self.org_img), rotation=True)
+        self.sample_extractor.reset_vertices()
         self.sample_extractor.refresh_image()
         self.update_image(self.label_extractor, self.sample_extractor.get_image())
         self.preview()
@@ -345,6 +346,7 @@ class GUI(object):
         self.org_img = cv2.warpAffine(self.clone_img, rotation_matrix,(self.clone_img.shape[1],self.clone_img.shape[0]))
         
         self.sample_extractor.set_image(self._resize_img(self.org_img), rotation=True)
+        self.sample_extractor.reset_vertices()
         self.sample_extractor.refresh_image()
         self.update_image(self.label_extractor, self.sample_extractor.get_image())
         self.preview()
@@ -975,15 +977,19 @@ class GUI(object):
 
     def to_panoramic(self):
         self.sample_extractor.to_panoramic()
-        self._set_extractor_canvas()
+        self.sample_extractor.refresh_image()
+        self.update_image(self.label_extractor, self.sample_extractor.get_image())
+        
 
     def to_unwrapping(self):
         self.sample_extractor.to_unwrapping()
-        self._set_extractor_canvas()
+        self.sample_extractor.refresh_image()
+        self.update_image(self.label_extractor, self.sample_extractor.get_image())        
     
     def to_rectangle(self):
         self.sample_extractor.to_rectangle()
-        self._set_extractor_canvas()
+        self.sample_extractor.refresh_image()
+        self.update_image(self.label_extractor, self.sample_extractor.get_image())        
 
 
 
