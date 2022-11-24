@@ -364,6 +364,7 @@ class GUI(object):
             copy_img = self.choose_cut_method(self.org_img)
             copy_img = self._resize_img(copy_img, 2)
             self.label_extractor2 = self.add_img_to_canvas(self.canvas_preview, copy_img)
+            self.canvas_preview.grid(row=0,column=1)
             self.update_image(self.label_extractor2, copy_img)
             return
         self.canvas_preview = tkinter.Canvas(self.principal_fr)
@@ -387,7 +388,7 @@ class GUI(object):
         for wget in self.size_fr.winfo_children():
             wget.grid_forget()   
         self.size_fr.grid_forget()
-        self.entry_height_mm._clear_placeholder(None)
+        # self.entry_height_mm._clear_placeholder(None)
         self.show_img()            
 
     def reset_image(self):
@@ -503,8 +504,8 @@ class GUI(object):
             self.segmentation = False
             self.grados = 0
             self.height_mm = 100
-        except Exception as e:
-           print(e)
+        except:
+            pass
 
     def show_img(self) -> None:
         """
