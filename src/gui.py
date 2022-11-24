@@ -359,9 +359,11 @@ class GUI(object):
 
     def preview(self):
         if hasattr(self, "canvas_preview"):
-            #self.canvas_preview.destroy()
+            self.canvas_preview.destroy()
+            self.canvas_preview = tkinter.Canvas(self.principal_fr)
             copy_img = self.choose_cut_method(self.org_img)
             copy_img = self._resize_img(copy_img, 2)
+            self.label_extractor2 = self.add_img_to_canvas(self.canvas_preview, copy_img)
             self.update_image(self.label_extractor2, copy_img)
             return
         self.canvas_preview = tkinter.Canvas(self.principal_fr)
@@ -465,7 +467,7 @@ class GUI(object):
 
             self.org_img = resize_img
             self.clone_img = resize_img
-
+        
             self.clean_principal_frame()
             self.clean_canvas_frame()
             self.clean_btns()
@@ -474,7 +476,7 @@ class GUI(object):
             self.crop()
 
             self.measures()
-
+        
             # -- File managment
             self.file_fr.grid(row=0, column=0, sticky=tkinter.N)
             self.btn_img.grid(row=0, column=0, padx=5, pady=5)
@@ -501,8 +503,8 @@ class GUI(object):
             self.segmentation = False
             self.grados = 0
             self.height_mm = 100
-        except:
-           pass
+        except Exception as e:
+           print(e)
 
     def show_img(self) -> None:
         """
