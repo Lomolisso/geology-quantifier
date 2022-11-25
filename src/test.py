@@ -30,6 +30,9 @@ def math_aspect_ratio(array):
         ratio = 1/ratio
     return ratio
 
+def math_equiv_ratio(array):
+    pass
+
 def poli_gen(n, center, radius):
     x, y = center
     theta = np.sort(np.random.rand(n))
