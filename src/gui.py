@@ -23,8 +23,8 @@ SCREEN_HEIGHT = ROOT.winfo_screenheight()
 ARROW_LEFT = tkinter.PhotoImage(file=get_path("./assets/left_arrow.png"))
 ARROW_RIGHT = tkinter.PhotoImage(file=get_path("./assets/right_arrow.png"))
 HELP_ICON = tkinter.PhotoImage(file=get_path("./assets/help_icon.png"))
-OFF = tkinter.PhotoImage(file=get_path("./assets/on_off.png"))
-ON = ImageTk.PhotoImage( Image.open(get_path("./assets/on_off.png")).rotate(180) )
+OFF = tkinter.PhotoImage(file=get_path("./assets/off.png"))
+ON = tkinter.PhotoImage(file=get_path("./assets/on.png"))
 
 
 class GUI(object):
@@ -225,6 +225,7 @@ class GUI(object):
         self.canvas_preview = tkinter.Canvas(self.principal_fr)
         self.prev_boolean = False
         self.cm = False
+        self.switch_btn_image = OFF
    
     def set_height(self):
         try:
@@ -876,6 +877,8 @@ class GUI(object):
         This method fills and shows a table at the GUI.
         The data is given as an input.
         """
+        for widget in self.results_fr.winfo_children():
+            widget.destroy()
         aggregated_results = self.aggregate(results)
         self.results_fr.grid(row=0,column=0,padx=10, pady=5)
         self.img_container_canvas.xview('moveto', 0)
@@ -907,7 +910,7 @@ class GUI(object):
         self.btnExport = ttk.Button(self.results_fr, text="Descargar", width=15, command=lambda : self.table_to_csv(results, len(colors)) , cursor='arrow')
         btn_switch_unit_name = 'Cambiar unidad'
         btn_switch_unit_description = 'Permite cambiar la unidad de medida entre centímetro o milímetros.'
-        self.btn_switch_unit, self.hover_units = createButtonWithHover(self.results_fr, btn_switch_unit_name, self.switch_unit, btn_switch_unit_description,image=ON)
+        self.btn_switch_unit, self.hover_units = createButtonWithHover(self.results_fr, btn_switch_unit_name, self.switch_unit, btn_switch_unit_description,image=self.switch_btn_image)
         self.btn_switch_unit.config(padding=0)
         self.btnExport.grid(row=len(aggregated_results) + 1, column=len(sc.STATISTICS) // 2 + 1)
         self.btn_switch_unit.grid(row=len(aggregated_results) + 1, column=len(sc.STATISTICS) // 2 + 2)
@@ -988,13 +991,18 @@ class GUI(object):
         self._set_extractor_canvas()
 
     def switch_unit(self) -> None:
-        
-        if self.cm:
-            self.btn_switch_unit.config(image=ON)
-        else:
-            self.btn_switch_unit.config(image= OFF)
-        # print(self.btn_switch_unit.image)
+        # print(self.cm)
         self.cm = not self.cm
+        if self.cm:
+            self.switch_btn_image = ON
+            self.height_cm *= 0.1
+        else:
+            self.switch_btn_image = OFF
+            self.height_cm *= 10
+        
+        results = sc.generate_results(self.contour, self.height_cm/self.segmentated.shape[0])
+        self.fill_table(results, sc.COLORS)
+        
 
 
 
