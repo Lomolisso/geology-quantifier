@@ -329,9 +329,9 @@ class GUI(object):
         image_center = tuple(np.array(self.clone_img.shape[1::-1]) / 2)
         self.grados-=0.2
         rotation_matrix = cv2.getRotationMatrix2D(image_center, angle=self.grados, scale=1)
-        self.org_img = cv2.warpAffine(self.clone_img, rotation_matrix,(self.clone_img.shape[1],self.clone_img.shape[0]))
+        self.rot_img = cv2.warpAffine(self.clone_img, rotation_matrix,(self.clone_img.shape[1],self.clone_img.shape[0]))
         
-        self.sample_extractor.set_image(self._resize_img(self.org_img), rotation=True)
+        self.sample_extractor.set_image(self._resize_img(self.rot_img), rotation=True)
         self.sample_extractor.reset_vertices()
         self.sample_extractor.refresh_image()
         self.update_image(self.label_extractor, self.sample_extractor.get_image())
@@ -341,9 +341,9 @@ class GUI(object):
         image_center = tuple(np.array(self.clone_img.shape[1::-1]) / 2)
         self.grados += 0.2
         rotation_matrix = cv2.getRotationMatrix2D(image_center, angle=self.grados, scale=1)
-        self.org_img = cv2.warpAffine(self.clone_img, rotation_matrix,(self.clone_img.shape[1],self.clone_img.shape[0]))
+        self.rot_img = cv2.warpAffine(self.clone_img, rotation_matrix,(self.clone_img.shape[1],self.clone_img.shape[0]))
         
-        self.sample_extractor.set_image(self._resize_img(self.org_img), rotation=True)
+        self.sample_extractor.set_image(self._resize_img(self.rot_img), rotation=True)
         self.sample_extractor.reset_vertices()
         self.sample_extractor.refresh_image()
         self.update_image(self.label_extractor, self.sample_extractor.get_image())
@@ -362,14 +362,14 @@ class GUI(object):
             self.canvas_preview.destroy()
             self.canvas_preview = tkinter.Canvas(self.principal_fr)
             copy_img = self.choose_cut_method(self.org_img)
-            copy_img = self._resize_img(copy_img, 2)
+            copy_img = self._resize_img(copy_img, 1.7)
             self.label_extractor2 = self.add_img_to_canvas(self.canvas_preview, copy_img)
             self.canvas_preview.grid(row=0,column=1)
             self.update_image(self.label_extractor2, copy_img)
             return
         self.canvas_preview = tkinter.Canvas(self.principal_fr)
         copy_img = self.choose_cut_method(self.org_img)
-        self.label_extractor2 = self.add_img_to_canvas(self.canvas_preview, self._resize_img(copy_img, 2))
+        self.label_extractor2 = self.add_img_to_canvas(self.canvas_preview, self._resize_img(copy_img, 1.7))
         self.canvas_preview.grid(row=0,column=1)
 
     def save_image(self):
@@ -392,14 +392,13 @@ class GUI(object):
         self.show_img()            
 
     def reset_image(self):
+        self.clone_img = self.org_img
+        self.rot_img = self.org_img
+        self.grados = 0
+        self.sample_extractor.set_image(self._resize_img(self.org_img), rotation=True)
         self.sample_extractor.reset_vertices()
         self.sample_extractor.refresh_image()
-        photo_img = cv2.cvtColor(self.sample_extractor.get_image(), cv2.COLOR_BGR2RGB)
-        photo_img = Image.fromarray(photo_img)
-        img_for_label = ImageTk.PhotoImage(photo_img)
-        self.label_extractor.configure(image=img_for_label)
-        self.label_extractor.image = img_for_label
-        self.label_extractor.grid(row=0, column=0, padx=10, pady=10)
+        self.update_image(self.label_extractor, self.sample_extractor.get_image())
         self.preview()
 
     def key_press(self, event):
@@ -414,7 +413,7 @@ class GUI(object):
     
     def release_click(self, event):
         copy_img = self.choose_cut_method(self.org_img)
-        self.update_image(self.label_extractor2, self._resize_img(copy_img, 2))
+        self.update_image(self.label_extractor2, self._resize_img(copy_img, 1.7))
         self.sample_extractor.refresh_image()
 
     def _set_extractor_canvas(self):
@@ -468,6 +467,7 @@ class GUI(object):
 
             self.org_img = resize_img
             self.clone_img = resize_img
+            self.rot_img = resize_img
         
             self.clean_principal_frame()
             self.clean_canvas_frame()
@@ -628,7 +628,7 @@ class GUI(object):
             widgetP = ttk.Label(canvas, text=f"Porcentaje de pixeles: {color_percent}%")
             widgetP.grid(row = 1,column=0 )
 
-    def _resize_img(self, img, resize_scale = 1):
+    def _resize_img(self, img, resize_scale: float = 1):
         """
         Resize the image acording to the actual window size of the aplication.
         """
@@ -963,8 +963,9 @@ class GUI(object):
 
     def rotate_image(self) -> None:
         self.clean_principal_frame()
-        self.org_img =  cv2.rotate(self.org_img, cv2.ROTATE_90_CLOCKWISE)
-        self.sample_extractor.set_image(self._resize_img(self.org_img), True)
+        self.rot_img =  cv2.rotate(self.rot_img, cv2.ROTATE_90_CLOCKWISE)
+        self.clone_img = self.rot_img
+        self.sample_extractor.set_image(self._resize_img(self.rot_img), True)
         self.crop()
 
     def view_documentation(self) -> None:
