@@ -23,7 +23,9 @@ SCREEN_HEIGHT = ROOT.winfo_screenheight()
 ARROW_LEFT = tkinter.PhotoImage(file=get_path("./assets/left_arrow.png"))
 ARROW_RIGHT = tkinter.PhotoImage(file=get_path("./assets/right_arrow.png"))
 HELP_ICON = tkinter.PhotoImage(file=get_path("./assets/help_icon.png"))
-ON = tkinter.PhotoImage(file=get_path("./assets/on_off2.png"))
+OFF = tkinter.PhotoImage(file=get_path("./assets/on_off.png"))
+ON = ImageTk.PhotoImage( Image.open(get_path("./assets/on_off.png")).rotate(180) )
+
 
 class GUI(object):
     """
@@ -189,10 +191,6 @@ class GUI(object):
         btn_down_name = 'Bajar'
         btn_down_description = 'Permite cambiar la imagen actual por la imagen seleccionada.'
         self.btn_down, self.hover_down = createButtonWithHover(self.navigate_fr, btn_down_name, self.down, btn_down_description,image=ARROW_RIGHT)
-        
-        btn_switch_unit_name = 'CM'
-        btn_switch_unit_description = 'Permite cambiar la unidad de medida entre centímetro o milímetros.'
-        self.btn_switch_unit, self.hover_units = createButtonWithHover(self.results_fr, btn_switch_unit_name, self.switch_unit, btn_switch_unit_description,image=ON)
 
         btn_doc_name = 'Ayuda'
         btn_doc_description = 'Permite abrir la documentación completa de la aplicación.'
@@ -230,10 +228,9 @@ class GUI(object):
    
     def set_height(self):
         try:
-            if not self.cm:
-                self.height_cm = self.height_cm*0.1
             self.height_cm = float(self.entry_height_cm.get())
-        except:
+        except Exception as e:
+            print(e)
             tkinter.messagebox.showwarning("Error", message="Por favor ingresa un número.")
             return
 
@@ -908,6 +905,10 @@ class GUI(object):
             self.create_label(percent.percent(images[row_num]) ,row_num+1, len(sc.STATISTICS)+2)
         
         self.btnExport = ttk.Button(self.results_fr, text="Descargar", width=15, command=lambda : self.table_to_csv(results, len(colors)) , cursor='arrow')
+        btn_switch_unit_name = 'Cambiar unidad'
+        btn_switch_unit_description = 'Permite cambiar la unidad de medida entre centímetro o milímetros.'
+        self.btn_switch_unit, self.hover_units = createButtonWithHover(self.results_fr, btn_switch_unit_name, self.switch_unit, btn_switch_unit_description,image=ON)
+        self.btn_switch_unit.config(padding=0)
         self.btnExport.grid(row=len(aggregated_results) + 1, column=len(sc.STATISTICS) // 2 + 1)
         self.btn_switch_unit.grid(row=len(aggregated_results) + 1, column=len(sc.STATISTICS) // 2 + 2)
     
@@ -987,7 +988,12 @@ class GUI(object):
         self._set_extractor_canvas()
 
     def switch_unit(self) -> None:
-
+        
+        if self.cm:
+            self.btn_switch_unit.config(image=ON)
+        else:
+            self.btn_switch_unit.config(image= OFF)
+        # print(self.btn_switch_unit.image)
         self.cm = not self.cm
 
 
