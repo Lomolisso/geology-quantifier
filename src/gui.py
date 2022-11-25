@@ -12,7 +12,7 @@ import tkinter.messagebox
 
 from PIL import Image, ImageTk
 from sample_extraction import ExtractorModeEnum, SampleExtractor
-from utils import PlaceholderEntry, createBalloon, createButtonWithHover, generate_zip, get_file_filepath, get_path, get_results_filepath
+from utils import PlaceholderEntry, createBalloon, createCheckBoxWithHover, createButtonWithHover, generate_zip, get_file_filepath, get_path, get_results_filepath
 from typing import Any, List
 
 
@@ -157,14 +157,6 @@ class GUI(object):
         btn_sub_description = 'Permite eliminar 1 o más imagenes, también se refleja en la imagen original.'
         self.btn_sub, self.hover_sub = createButtonWithHover(self.color_seg_fr, btn_sub_name, self.delete, btn_sub_description)
 
-        btn_outline_name = 'Perfilar'
-        btn_outline_description = 'Perfila la imagen seleccionada.'
-        self.btn_outline, self.hover_outline = createButtonWithHover(self.shape_seg_fr, btn_outline_name, self.outline, btn_outline_description)
-
-        btn_segmentate_name = 'Segmentar'
-        btn_segmentate_description = 'Calcula resultados utilizando como base la imagen seleccionada.'
-        self.btn_segmentate, self.hover_segmentate = createButtonWithHover(self.shape_seg_fr, btn_segmentate_name, self.segmentate, btn_segmentate_description)
-
         btn_update_name = 'Actualizar'
         btn_update_description = 'Actualiza la pantalla, ajustando el tamaño de las imágenes presentes en ella.'
         self.btn_update, self.hover_update = createButtonWithHover(self.image_tools_fr, btn_update_name, self.update_screen, btn_update_description)
@@ -179,8 +171,13 @@ class GUI(object):
        
         btn_analyze_name = 'Analizar'
         btn_analyze_description = 'Permite analizar la imagen seleccionada, calculando las estadisticas presentes en el programa.'
-        self.btn_analyze, self.hover_analyze = createButtonWithHover(self.gen_results_fr, btn_analyze_name, self.analyze, btn_analyze_description)
+        self.btn_analyze, self.hover_analyze = createButtonWithHover(self.gen_results_fr, btn_analyze_name, self.process_image, btn_analyze_description)
 
+        toggle_seg_name = 'Segmentar por formas'
+        toggle_seg_description = 'Permite activar o desactivar la segmentacion por formas al momento de analizar la imagen seleccionada.'
+        self.toggle_var = tkinter.BooleanVar()
+        self.toggle_seg, self.hover_toggle = createCheckBoxWithHover(self.gen_results_fr, toggle_seg_name, toggle_seg_description, self.toggle_var)
+        
         btn_up_name = 'Subir'
         btn_up_description = 'Permite acceder a la imagen que se tenia anteriormente.'
         self.btn_up, self.hover_up = createButtonWithHover(self.navigate_fr, btn_up_name, self.up, btn_up_description, image=ARROW_LEFT)
@@ -539,12 +536,6 @@ class GUI(object):
         self.btn_sub.grid(row=1, column=1, padx=5, pady=5)
         self.color_seg_lb.grid(padx=5, pady=5, columnspan=2)
 
-        # -- Shape Segmentation --
-        self.shape_seg_fr.grid(row=0, column=2, sticky=tkinter.N)
-        self.btn_outline.grid(row=0, column=0, padx=5, pady=5)
-        self.btn_segmentate.grid(row=1, column=0, padx=5, pady=5)
-        self.shape_seg_lb.grid(column=0, padx=5, pady=5)
-
         # -- Image Tools
         self.image_tools_fr.grid(row=0, column=3, sticky=tkinter.N)
         self.btn_update.grid(row=0, column=0, padx=5, pady=5)
@@ -555,6 +546,7 @@ class GUI(object):
         self.gen_results_fr.grid(row=0, column=4, sticky=tkinter.N)
         self.btn_3d.grid(row=0, column=0, padx=5, pady=5)
         self.btn_analyze.grid(row=1, column=0, padx=5, pady=5)
+        self.toggle_seg.grid(row=2, column=0, padx=5, pady=5)
         self.gen_results_lb.grid(column=0, padx=5, pady=5)
 
         # -- Navigate --
@@ -778,6 +770,12 @@ class GUI(object):
         self.segmentation = False
         self.update_screen()
     
+    def process_image(self):
+        if self.toggle_var.get() == 1:
+            self.segmentate()
+        else:
+            self.analyze()
+        
     def analyze(self) -> None:
         """
         This method is in charge of the shape detection at a cluster.

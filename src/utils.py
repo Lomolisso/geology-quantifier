@@ -53,6 +53,16 @@ def createButtonWithHover(master, name, command, description, image=None):
     hover = createBalloon(btn, name, description)
     return btn, hover
 
+def createCheckBoxWithHover(master, name, description, variable):
+    """
+    Creates a new checkbox with a hover balloon.
+    """
+    width = 20
+    cursor = 'arrow'
+    switch = ttk.Checkbutton(master=master, width=width, text='Segmentar', cursor=cursor, style='Switch.TCheckbutton', variable=variable)
+    hover = createBalloon(switch, name, description)
+    return switch, hover
+
 def get_results_filepath() -> str:
     """
     Request the user to select where to store
