@@ -14,9 +14,9 @@ def math_area(array):
             detizq += array[i][0]*array[i+1][1]
             detder += array[i][1]*array[i+1][0]
     if 1/2*(detizq-detder)>0: 
-        return 1/2*(detizq-detder)
+        return np.round(1/2*(detizq-detder),2)
     else: 
-        return -1/2*(detizq-detder)
+        return np.round(-1/2*(detizq-detder),2)
 
 def math_aspect_ratio(array):
     maxx=max(fila[0] for fila in array)
@@ -28,10 +28,22 @@ def math_aspect_ratio(array):
     ratio = x/y
     if ratio<1:
         ratio = 1/ratio
-    return ratio
+    return np.round(ratio, 2)
 
-def math_equiv_ratio(array):
-    pass
+def math_equiv_radio(array):
+    return np.sqrt(math_area(array)/np.pi)
+
+def math_equiv_length(array):
+    return np.round(np.sqrt(math_area(array)/math_aspect_ratio(array)), 1)
+
+def math_middle_point(array):
+    maxx=max(fila[0] for fila in array)
+    x=min(fila[0] for fila in array)
+    maxy=max(fila[1] for fila in array)
+    y=min(fila[1] for fila in array)
+    h =maxy-y
+    w = maxx-x
+    return (np.round(x+w/2,0), np.round(y+h/2,0))
 
 def poli_gen(n, center, radius):
     x, y = center
@@ -40,17 +52,31 @@ def poli_gen(n, center, radius):
     points = [[round(x+radius*np.cos(a),0),round(y+radius*np.sin(a),0)] for a in theta]
     return np.array(points, np.int32)
 
-def poli_gen_radio(n, center, radio_random):
+def poli_gen_radio(n, center, radio, min):
     x, y = center
-    theta = np.sort(np.random.rand(n))
+    theta = np.sort(np.random.uniform(0,1,n))
     theta = 2*np.pi*theta
-    radio = radio_random- (radio_random//2)*np.random.rand(n)
-    points = [[round(x+radio[i]*np.cos(theta[i]),0),round(y+radio[i]*np.sin(theta[i]),0)] for i in range(len(theta))]
+    ran = radio*np.random.uniform(min,1,n)
+    points = [[round(x+ran[i]*np.cos(theta[i]),0),round(y+ran[i]*np.sin(theta[i]),0)] for i in range(len(theta))]
     return np.array(points, np.int32)
 
-def assert_error(estimate_value, calculated_value, error):
+def assert_error_tuple(estimate_value: tuple, calculated_value: tuple, error:float):
+    est_x, est_y = estimate_value
+    cal_x, cal_y = calculated_value
+    error_calculado = (cal_x-est_x)/est_x
+    assert(error>abs(error_calculado))
+    error_calculado = (cal_y-est_y)/est_y
+    assert(error>abs(error_calculado))
+
+def assert_error_float(estimate_value: np.float64, calculated_value: np.float64, error:float):
     error_calculado = (calculated_value-estimate_value)/estimate_value
     assert(error>abs(error_calculado))
+
+def assert_error(estimate_value, calculated_value, error:float):
+    if type(estimate_value)==tuple:
+        assert_error_tuple(estimate_value, calculated_value, error)
+    else:
+        assert_error_float(estimate_value, calculated_value, error)
 
 def testing(funcion_programa, funcion_math, error):
     height = 400
@@ -74,160 +100,38 @@ def testing(funcion_programa, funcion_math, error):
         #revisar diagonales dificiles
         assert_error(value, funcion_programa(data[0]), error)
     
-    for i in range(3,100):
+    for i in range(10,100):
         img = np.zeros((height,width,channels), dtype=np.uint8)
         pts = poli_gen(i,(200,200),100)
         value = funcion_math(pts)
         pts = pts.reshape((-1,1,2))
         img = cv2.fillPoly(img,[pts],(0,255,255))
         data = contour_segmentation(img)
-        assert_error(value, funcion_programa(data[0]), error)
-    for i in range(3,100):
+        try: 
+            assert_error(value, funcion_programa(data[0]), error)
+        except:
+            cv2.imshow(f"{funcion_programa}", img)
+            cv2.waitKey(0)
+            cv2.destroyAllWindows()
+    for i in range(10,100):
         img = np.zeros((height,width,channels), dtype=np.uint8)
-        pts = poli_gen_radio(i,(200,200),100)
+        pts = poli_gen_radio(i,(200,200),100, 0.8)
         value = funcion_math(pts)
         pts = pts.reshape((-1,1,2))
         img = cv2.fillPoly(img,[pts],(0,255,255))
-        
         data = contour_segmentation(img)
-        assert_error(value, funcion_programa(data[0]), error)
-        
+        try: 
+            assert_error(value, funcion_programa(data[0]), error)
+        except:
+            cv2.imshow(f"{funcion_programa}", img)
+            cv2.waitKey(0)
+            cv2.destroyAllWindows()
 
-testing(ContourData.get_area, math_area, 0.03)
-testing(ContourData.aspect_ratio, math_aspect_ratio, 0.01)
-
-def test_area():
-    height = 400
-    width =400
-    channels = 3
-    img = np.zeros((height,width,channels), dtype=np.uint8)
-    #se testea cuadrado
-    cv2.rectangle(img, (0,0),(100,100), (255,255,255), -1)
-    cv2.rectangle(img, (150,150),(200,200), (255,0,255), -1)
-    cv2.rectangle(img, (200,0),(210,10), (255,255,0), -1)
-    areas = [100,2500,10000]
-    data = contour_segmentation(img)
-    for cnt in data:
-        assert((cnt.get_area() in areas))
-
-    img = np.zeros((height,width,channels), dtype=np.uint8)
-    #se testea rectangulos
-    cv2.rectangle(img, (0,0),(140,100), (255,255,255), -1)
-    #1.4
-    cv2.rectangle(img, (150,150),(250,200), (255,0,255), -1)
-    #2 rectangle considera el pixel final como perteneciente a rectangulo a dibujar.
-    cv2.rectangle(img, (200,0),(220,10), (255,255,0), -1)
-    #2
-    areas = [14000,5000,200]
-    data = contour_segmentation(img)
-    for cnt in data:
-        assert((cnt.get_area() in areas)) 
-    
-
-    #se testea circulos
-    areas = np.pi*np.array([10*10,40*40,50*50])
-    radio = range(10, 150, 10)
-    for r in radio:
-        img = np.zeros((height,width,channels), dtype=np.uint8)
-        cv2.circle(img, (200,200),r, (255,255,255), -1,cv2.FILLED)
-        data = contour_segmentation(img)
-        area_math = np.pi*r*r
-        assert_error(area_math,data[0].get_area(), 0.02)
-
-
-    archivo = open("test_area.txt", 'w')
-    archivo.write("lados,area_matematica,area_programa,error\n")
-    for i in range(3,100):
-        img = np.zeros((height,width,channels), dtype=np.uint8)
-        pts = poli_gen(i,(200,200),100)
-        area_math = math_area(pts)
-        pts = pts.reshape((-1,1,2))
-        img = cv2.fillPoly(img,[pts],(0,255,255))
-        data = contour_segmentation(img)
-        archivo.write(f"{i},{area_math},{data[0].get_area()},{(data[0].get_area()-area_math)/area_math}\n")
-        
-    archivo.close()
-
-def test_aspect_ratio():
-    height = 400
-    width =400
-    channels = 3
-    img = np.zeros((height,width,channels), dtype=np.uint8)
-    #se testea cuadrado
-    cv2.rectangle(img, (0,0),(100,100), (255,255,255), -1)
-    cv2.rectangle(img, (150,150),(200,200), (255,0,255), -1)
-    cv2.rectangle(img, (200,0),(210,10), (255,255,0), -1)
-    data = contour_segmentation(img)
-    #los cuadrados tienen ratio 1 siempre
-    for cnt in data:
-        assert(cnt.aspect_ratio() == 1)
-
-    #se limpia la imagen.
-    img = np.zeros((height,width,channels), dtype=np.uint8)
-    #se testea rectangulos
-    cv2.rectangle(img, (0,0),(140,100), (255,255,255), -1)
-    cv2.rectangle(img, (150,150),(249,199), (255,0,255), -1)
-    #rectangle considera el pixel final e inicial como perteneciente a rectangulo a dibujar, por lo que su aspect ratio es mayor.
-    cv2.rectangle(img, (200,0),(219,9), (255,255,0), -1)
-    data = contour_segmentation(img)
-    aspect_ratios = [1.4, 2]
-    for cnt in data:
-        assert(cnt.aspect_ratio() in aspect_ratios)
-    
-    #se limpia la imagen.
-    img = np.zeros((height,width,channels), dtype=np.uint8)
-
-    #se testea circulos
-    cv2.circle(img, (10,10),10, (255,255,255), -1)
-    cv2.circle(img, (150,150),40, (255,0,255), -1)
-    cv2.circle(img, (300,50),50, (255,255,0), -1)
-    data = contour_segmentation(img)
-    #todos los circulos son de ratio 1
-    for cnt in data:
-        assert(cnt.aspect_ratio() == 1)
-
-    #se limpia la imagen
-    img = np.zeros((height,width,channels), dtype=np.uint8)
-    pts = np.array([[100,100],[100,200],[200,200]], np.int32)
-    pts = pts.reshape((-1,1,2))
-    img = cv2.fillPoly(img,[pts],(0,255,255))
-    pts = np.array([[250,250],[350,250],[300,350]], np.int32)
-    pts = pts.reshape((-1,1,2))
-    img = cv2.fillPoly(img,[pts],(0,255,255))
-    pts = np.array([[0,200],[0,300],[100,260]], np.int32)
-    pts = pts.reshape((-1,1,2))
-    img = cv2.fillPoly(img,[pts],(0,255,255))
-    #los 3 triangulos tienen aspect ratio 1
-    for cnt in data:
-        assert(cnt.aspect_ratio() == 1)
-    data = contour_segmentation(img)
-    
-    #se limpia la imagen
-    img = np.zeros((height,width,channels), dtype=np.uint8)
-    pts = np.array([[100,100],[100,200],[200,200],[150,150],[200,100]], np.int32)
-    pts = pts.reshape((-1,1,2))
-    img = cv2.fillPoly(img,[pts],(0,255,255))
-    pts = np.array([[250,250], [350,250],[280,200],[300,300],[320,200]], np.int32)
-    pts = pts.reshape((-1,1,2))
-    img = cv2.fillPoly(img,[pts],(0,255,255))
-    pts = np.array([[0,200],[0,300],[100,260], [60,220]], np.int32)
-    pts = pts.reshape((-1,1,2))
-    img = cv2.fillPoly(img,[pts],(0,255,255))
-    #poligonos de ratio 1
-    for cnt in data:
-        assert(cnt.aspect_ratio() == 1)
-
-    archivo = open("test_ratio.txt", 'w')
-    archivo.write("lados,ratio_matematico,ratio_programa,error\n")
-    for i in range(3,100):
-        img = np.zeros((height,width,channels), dtype=np.uint8)
-        pts = poli_gen(3,(200,200),100)
-        ratio_math = math_aspect_ratio(pts)
-        pts = pts.reshape((-1,1,2))
-        img = cv2.fillPoly(img,[pts],(0,255,255))
-        data = contour_segmentation(img)
-        archivo.write(f"{i},{ratio_math},{data[0].aspect_ratio()},{(data[0].aspect_ratio()-ratio_math)/ratio_math}\n")
-    archivo.close()
-
-
-
+i = 0
+while(i<=100):
+    testing(ContourData.get_area, math_area, 0.05)
+    testing(ContourData.aspect_ratio, math_aspect_ratio, 0.01)
+    testing(ContourData.get_equiv_radius,math_equiv_radio, 0.05)
+    testing(ContourData.get_equiv_lenght, math_equiv_length, 0.01)
+    testing(ContourData.get_middle_point, math_middle_point, 0.01)
+    i +=1
