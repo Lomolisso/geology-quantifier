@@ -1008,15 +1008,20 @@ class GUI(object):
 
     def switch_unit(self) -> None:
         self.cm = not self.cm
+        color_array = None
         if self.cm:
             self.switch_btn_image = ON
             self.height_mm *= 0.1
         else:
             self.switch_btn_image = OFF
             self.height_mm *= 10
+        if self.toggle_var.get() == 1:
+            color_array = sc.COLORS
+        else:
+            color_array = sc.DEF_COLOR
         
         results = sc.generate_results(self.contour, self.height_mm/self.segmentated.shape[0])
-        self.fill_table(results, sc.COLORS)
+        self.fill_table(results, color_array)
         
 
 
