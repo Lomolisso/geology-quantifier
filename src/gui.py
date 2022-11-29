@@ -12,7 +12,7 @@ import tkinter.messagebox
 
 from PIL import Image, ImageTk
 from sample_extraction import ExtractorModeEnum, SampleExtractor
-from utils import PlaceholderEntry, createBalloon, createButtonWithHover, generate_zip, get_file_filepath, get_path, get_results_filepath
+from utils import PlaceholderEntry, createBalloon, createCheckBoxWithHover, createButtonWithHover, generate_zip, get_file_filepath, get_path, get_results_filepath
 from typing import Any, List
 
 
@@ -23,6 +23,9 @@ SCREEN_HEIGHT = ROOT.winfo_screenheight()
 ARROW_LEFT = tkinter.PhotoImage(file=get_path("./assets/left_arrow.png"))
 ARROW_RIGHT = tkinter.PhotoImage(file=get_path("./assets/right_arrow.png"))
 HELP_ICON = tkinter.PhotoImage(file=get_path("./assets/help_icon.png"))
+OFF = tkinter.PhotoImage(file=get_path("./assets/off.png"))
+ON = tkinter.PhotoImage(file=get_path("./assets/on.png"))
+
 
 class GUI(object):
     """
@@ -143,8 +146,8 @@ class GUI(object):
         btn_rectangle_description = 'Si'
         self.btn_rectangle, self.hover_rectangle = createButtonWithHover(self.crop_fr, btn_rectangle_name, self.to_rectangle, btn_rectangle_description)
 
-        btn_height_name = 'Altura (mm)'
-        btn_height_description = 'Permite guardar la altura (en mm) de la roca introdujida.'
+        btn_height_name = 'Altura(cm)'
+        btn_height_description = 'Permite guardar la altura (en cm) de la roca introducida.'
         self.btn_height, self.hover_height = createButtonWithHover(self.size_sub_fr, btn_height_name, self.set_height, btn_height_description)
 
         btn_save_name = 'Guardar'
@@ -177,12 +180,13 @@ class GUI(object):
        
         btn_analyze_name = 'Analizar'
         btn_analyze_description = 'Permite analizar la imagen seleccionada, calculando las estadisticas presentes en el programa.'
-        self.btn_analyze, self.hover_analyze = createButtonWithHover(self.gen_results_fr, btn_analyze_name, self.analyze, btn_analyze_description)
+        self.btn_analyze, self.hover_analyze = createButtonWithHover(self.gen_results_fr, btn_analyze_name, self.process_image, btn_analyze_description)
 
-        btn_segmentate_name = 'Segmentar'
-        btn_segmentate_description = 'Calcula resultados utilizando como base la imagen seleccionada.'
-        self.btn_segmentate, self.hover_segmentate = createButtonWithHover(self.gen_results_fr, btn_segmentate_name, self.segmentate, btn_segmentate_description)
-
+        toggle_seg_name = 'Segmentar por formas'
+        toggle_seg_description = 'Permite activar o desactivar la segmentacion por formas al momento de analizar la imagen seleccionada.'
+        self.toggle_var = tkinter.BooleanVar()
+        self.toggle_seg, self.hover_toggle = createCheckBoxWithHover(self.gen_results_fr, toggle_seg_name, toggle_seg_description, self.toggle_var)
+        
         btn_back_name = 'Atras'
         btn_back_description = 'Permite acceder a la imagen que se tenia anteriormente.'
         self.btn_back, self.hover_back = createButtonWithHover(self.navigate_fr, btn_back_name, self.back, btn_back_description, image=ARROW_LEFT)
@@ -199,8 +203,8 @@ class GUI(object):
         self.total_clusters = PlaceholderEntry(self.color_seg_fr, "3")
         self.total_clusters['font'] = self.my_font
 
-        self.entry_height_mm = PlaceholderEntry(self.size_sub_fr, "100")
-        self.entry_height_mm['font'] = self.my_font
+        self.entry_height_cm = PlaceholderEntry(self.size_sub_fr, "20")
+        self.entry_height_cm['font'] = self.my_font
 
         # -- labels --
         self.file_fr_lbl = tkinter.Label(self.file_fr, text = "Archivos", font= self.section_font)
@@ -218,14 +222,18 @@ class GUI(object):
         self.set_up_scrollbar()
         self.btn_fr_size = 200
         self.segmentation = False
-        self.height_mm = 100
+        self.height_mm = None
         self.grados = 0
-        self.last_index_selected = []
+        self.canvas_preview = tkinter.Canvas(self.principal_fr)
+        self.prev_boolean = False
+        self.cm = False
+        self.switch_btn_image = OFF
    
     def set_height(self):
         try:
-            self.height_mm = float(self.entry_height_mm.get())
-        except:
+            self.height_mm = float(self.entry_height_cm.get()) * 10
+        except Exception as e:
+            print(e)
             tkinter.messagebox.showwarning("Error", message="Por favor ingresa un número.")
             return
 
@@ -373,6 +381,10 @@ class GUI(object):
         self.canvas_preview.grid(row=0,column=1)
 
     def save_image(self):
+        if self.height_mm is None:
+            tkinter.messagebox.showwarning("Error", message="Por favor ingresa la altura.")
+            return
+        self.prev_boolean = False
         self.org_img = self.choose_cut_method(self.org_img)
         self.main_win.unbind('<Key>')
         self.un_measures()
@@ -388,7 +400,6 @@ class GUI(object):
         for wget in self.size_fr.winfo_children():
             wget.grid_forget()   
         self.size_fr.grid_forget()
-        # self.entry_height_mm._clear_placeholder(None)
         self.show_img()            
 
     def reset_image(self):
@@ -435,13 +446,13 @@ class GUI(object):
     def measures(self):
         self.size_fr.grid(row=0, column=4, sticky=tkinter.N)
         self.size_sub_fr.grid(row=0, column=0)
-        self.entry_height_mm.grid(row=0, column=0)
+        self.entry_height_cm.grid(row=0, column=0)
         self.btn_height.grid(row=0, column=1)
         self.size_fr_lbl.grid(row=1, column=0)
 
     def un_measures(self):
         
-        self.entry_height_mm.grid_forget()
+        self.entry_height_cm.grid_forget()
         self.btn_height.grid_forget()
         self.size_fr_lbl.grid_forget()
         self.size_fr.grid_forget()
@@ -503,7 +514,7 @@ class GUI(object):
 
             self.segmentation = False
             self.grados = 0
-            self.height_mm = 100
+            self.height_mm = None
         except:
             pass
 
@@ -561,8 +572,8 @@ class GUI(object):
         self.gen_results_fr.grid(row=0, column=4, sticky=tkinter.N)
         self.btn_3d.grid(row=0, column=0, padx=5, pady=5)
         self.btn_analyze.grid(row=1, column=0, padx=5, pady=5)
-        self.btn_segmentate.grid(row=1, column=1, padx=5, pady=5)
-        self.gen_results_lb.grid(padx=5, pady=5, columnspan=2)
+        self.toggle_seg.grid(row=2, column=0, padx=5, pady=5)
+        self.gen_results_lb.grid(column=0, padx=5, pady=5)
 
         # -- Navigate --
         self.navigate_fr.grid(row=1, column=1, sticky=tkinter.N)
@@ -790,6 +801,12 @@ class GUI(object):
         self.selected_images_indices = [self.last_index_selected.pop()]
         self.update_screen()
     
+    def process_image(self):
+        if self.toggle_var.get() == 1:
+            self.segmentate()
+        else:
+            self.analyze()
+        
     def analyze(self) -> None:
         """
         This method is in charge of the shape detection at a cluster.
@@ -846,11 +863,11 @@ class GUI(object):
         for i in range(len(sc.COLORS)):
             agg_results.append([])
             color_count.append(0)
-            for _ in sc.STATISTICS:
+            for _ in sc.STATISTICS_CM:
                 agg_results[i].append(0)
         for res in results:
             color_count[res[0]] += 1
-            for i in range(len(sc.STATISTICS)):
+            for i in range(len(sc.STATISTICS_CM)):
                 # i is the statistic to aggregate
                 # i+1 is the position of the statistic
                 # in the res list
@@ -860,7 +877,7 @@ class GUI(object):
             if color_count[i] == 0:
                 agg_results[i] = None
                 continue
-            for j in range(len(sc.STATISTICS)):
+            for j in range(len(sc.STATISTICS_CM)):
                 agg_results[i][j] /= color_count[i]
                 agg_results[i][j] = np.round(agg_results[i][j], 2)
         return agg_results
@@ -880,15 +897,27 @@ class GUI(object):
         This method fills and shows a table at the GUI.
         The data is given as an input.
         """
+        for widget in self.results_fr.winfo_children():
+            widget.destroy()
+
+        statistic_array = None
+        unit = ""
+        if self.cm:
+            statistic_array = sc.STATISTICS_CM
+            unit = "CM"
+        else:
+            statistic_array = sc.STATISTICS_MM
+            unit = "MM"
+
         aggregated_results = self.aggregate(results)
         self.results_fr.grid(row=0,column=0,padx=10, pady=5)
         self.img_container_canvas.xview('moveto', 0)
         self.create_label("Color", 0, 0)
         self.create_label("Mineral", 0, 1)
-        for i in range(len(sc.STATISTICS)):
-            label = self.create_label(sc.STATISTICS[i], 0, i+2)
-            createBalloon(widget=label, header=sc.STATISTICS[i], text=sc.STATISTICS_DESC[i])
-        label = self.create_label("Area total (%)", 0, len(sc.STATISTICS)+2)
+        for i in range(len(statistic_array)):
+            label = self.create_label(statistic_array[i], 0, i+2)
+            createBalloon(widget=label, header=statistic_array[i], text=sc.STATISTICS_DESC[i])
+        label = self.create_label("Area total (%)", 0, len(statistic_array)+2)
         createBalloon(widget=label, header="Area total (%)", text="Indica el area total del mineral en relación al resto del testigo de roca.")
 
         images = sc.image_agrupation(self.img_tree.image, self.contour, len(colors))
@@ -904,12 +933,22 @@ class GUI(object):
             name = PlaceholderEntry(self.results_fr, f"Mineral {row_num}")
             name.grid(row=row_num+1, column=1, sticky=tkinter.W+tkinter.E)
 
-            for col_num in range(len(sc.STATISTICS)):
+            for col_num in range(len(statistic_array)):
                 self.create_label(aggregated_results[row_num][col_num], row_num+1, col_num+2)
-            self.create_label(percent.percent(images[row_num]) ,row_num+1, len(sc.STATISTICS)+2)
+            self.create_label(percent.percent(images[row_num]) ,row_num+1, len(statistic_array)+2)
+        
+        btn_export_name = "Descargar"
+        btn_export_description = "Descarga los resultados obtenidos, guardando las estadisticas de cada figura en un archivo CSV y las fotos de los distintos minerales en un archivo zip"
+        self.btn_export, self.hover_export = createButtonWithHover(self.results_fr, btn_export_name, lambda : self.table_to_csv(results, len(colors)), btn_export_description)
+        self.btn_export.grid(row=len(aggregated_results) + 1, column=len(statistic_array) // 2 + 1)
+        
+        btn_switch_unit_name = 'Cambiar unidad'
+        btn_switch_unit_description = 'Permite cambiar la unidad de medida entre centímetro o milímetros.'
+        self.btn_switch_unit, self.hover_units = createButtonWithHover(self.results_fr, btn_switch_unit_name, self.switch_unit, btn_switch_unit_description,image=self.switch_btn_image)
+        self.btn_switch_unit.config(padding=0)
+        self.btn_switch_unit.grid(row=len(aggregated_results) + 1, column=len(statistic_array) // 2 + 2)
 
-        self.btnExport = ttk.Button(self.results_fr, text="Descargar", width=15, command=lambda : self.table_to_csv(results, len(colors)) , cursor='arrow')
-        self.btnExport.grid(row=len(aggregated_results) + 1, column=len(sc.STATISTICS) // 2 + 1)
+        self.create_label(unit ,len(aggregated_results) + 1, len(statistic_array) // 2 + 3)
     
     def table_to_csv(self, results, cluster_num) -> None:
         """
@@ -924,11 +963,14 @@ class GUI(object):
         # Get the names the user set
         names = []
         wgets = self.results_fr.winfo_children()[:-1]
-        entrys = [wgets[i] for i in range(len(sc.STATISTICS)+4, len(wgets), len(sc.STATISTICS)+3)]
+        entrys = [wgets[i] for i in range(len(sc.STATISTICS_MM)+4, len(wgets)-3, len(sc.STATISTICS_MM)+3)]
         for entry in entrys:
-            names.append(entry.get())
-
-        header_row = ["Nombre Mineral", "ID imagen", *sc.STATISTICS]
+            try:
+                names.append(entry.get())
+            except Exception as e:
+                print(entry)
+                print(e)
+        header_row = ["Nombre Mineral", "ID imagen", *sc.STATISTICS_MM]
         with open(f'{filepath}_data.csv', 'w', newline='') as f:
             wrtr = csv.writer(f, delimiter=',')
             wrtr.writerow(header_row)
@@ -936,7 +978,7 @@ class GUI(object):
                 row = []
                 row.append(names[results[i][0]])
                 row.append(str(i))
-                for j in range(len(sc.STATISTICS)):
+                for j in range(len(sc.STATISTICS_MM)):
                     row.append(results[i][j+1])
                 wrtr.writerow(row)
         images = sc.image_agrupation(self.img_tree.image, self.contour, cluster_num)
@@ -995,6 +1037,23 @@ class GUI(object):
         self.sample_extractor.refresh_image()
         self.update_image(self.label_extractor, self.sample_extractor.get_image())        
 
+    def switch_unit(self) -> None:
+        self.cm = not self.cm
+        color_array = None
+        if self.cm:
+            self.switch_btn_image = ON
+            self.height_mm *= 0.1
+        else:
+            self.switch_btn_image = OFF
+            self.height_mm *= 10
+        if self.toggle_var.get() == 1:
+            color_array = sc.COLORS
+        else:
+            color_array = sc.DEF_COLOR
+        
+        results = sc.generate_results(self.contour, self.height_mm/self.segmentated.shape[0])
+        self.fill_table(results, color_array)
+        
 
 
 
