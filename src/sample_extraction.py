@@ -96,14 +96,14 @@ class AbstractExtraction(object):
         return min_margins and max_margins
 
 
-class PanoramicExtraction(AbstractExtraction):
+class FreeExtraction(AbstractExtraction):
     def __init__(self, img: cv2.Mat) -> None:
         """
         Class constructor, sets the main attributes of the
         instance acording to the input image.
         """
         self.TOTAL_VERTICES = 4
-        super(PanoramicExtraction, self).__init__(img)
+        super(FreeExtraction, self).__init__(img)
 
         self.vertex_data = []
         self.vertex_dirty = None
@@ -392,7 +392,7 @@ class UnwrapperExtraction(AbstractExtraction):
         self._draw_circles_and_lines()
 
 
-class RectangleExtraction(PanoramicExtraction):
+class RectangleExtraction(FreeExtraction):
     def __init__(self, img: cv2.Mat) -> None:
         """
         Class constructor, sets the main attributes of the
@@ -451,7 +451,7 @@ class SampleExtractor(object):
 
     def to_free(self):
         self.mode = ExtractorModeEnum.FREE
-        self.ext = PanoramicExtraction(img=self.img)
+        self.ext = FreeExtraction(img=self.img)
 
     def init_extractor(self):
         if self.mode == ExtractorModeEnum.FREE:

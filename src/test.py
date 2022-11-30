@@ -52,6 +52,17 @@ def math_middle_point(array):
     return (np.round(x + w / 2, 1), np.round(y + h / 2, 1))
 
 
+def math_perimeter(array):
+    perimeter = 0
+    for i in range(len(array)):
+        if i == len(array) - 1:
+            long = np.sqrt(np.square(abs(array[0][0]-array[i][0]))+np.square(abs(array[0][1]-array[i][1])))
+        else:
+            long = np.sqrt(np.square(abs(array[i+1][0]-array[i][0]))+np.square(abs(array[i+1][1]-array[i][1])))
+        perimeter+=long
+    return perimeter
+
+
 def poli_gen(n, center, radius):
     x, y = center
     theta = np.sort(np.random.rand(n))
@@ -163,7 +174,7 @@ def testing(funcion_programa, funcion_math, error):
 
 
 i = 0
-while i <= 100:
+while i <= 30:
     testing(ContourData.get_area, math_area, 0.05)
     testing(ContourData.aspect_ratio, math_aspect_ratio, 0.01)
     testing(ContourData.get_equiv_radius, math_equiv_radio, 0.05)
