@@ -1,3 +1,8 @@
-opencv-python==4.6.0.66
-numpy==1.21.4
+numpy==1.23.3
+opencv_python==4.6.0.66
+Pillow==9.2.0
 pyvista==0.36.1
+pyinstaller==5.6.1
+pyinstaller-hooks-contrib==2022.10
+sv-ttk==2.0
+ttkwidgets==0.12.1
