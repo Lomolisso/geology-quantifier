@@ -11,6 +11,7 @@ import sys
 import os
 from ttkwidgets.frames import Balloon
 
+
 class PlaceholderEntry(ttk.Entry):
     def __init__(self, container, placeholder, *args, **kwargs):
         super().__init__(container, *args, **kwargs)
@@ -34,6 +35,7 @@ class PlaceholderEntry(ttk.Entry):
             self.insert("0", self.placeholder)
             self["style"] = self.placeholder_style
 
+
 def createBalloon(widget, header, text):
     """
     Creates a Balloon object to display a description of the widget.
@@ -41,27 +43,46 @@ def createBalloon(widget, header, text):
     """
     width = 200
     timeout = 1
-    return Balloon(master=widget, headertext=header, text=text, timeout=timeout, width=width)
+    return Balloon(
+        master=widget, headertext=header, text=text, timeout=timeout, width=width
+    )
+
 
 def createButtonWithHover(master, name, command, description, image=None):
     """
     Creates a new button with a hover balloon.
     """
     width = 20
-    cursor = 'arrow'
-    btn = ttk.Button(master=master, text=name, width=width, command=command, cursor=cursor, image=image)
+    cursor = "arrow"
+    btn = ttk.Button(
+        master=master,
+        text=name,
+        width=width,
+        command=command,
+        cursor=cursor,
+        image=image,
+    )
     hover = createBalloon(btn, name, description)
     return btn, hover
+
 
 def createCheckBoxWithHover(master, name, description, variable):
     """
     Creates a new checkbox with a hover balloon.
     """
     width = 20
-    cursor = 'arrow'
-    switch = ttk.Checkbutton(master=master, width=width, text='Segmentar', cursor=cursor, style='Switch.TCheckbutton', variable=variable)
+    cursor = "arrow"
+    switch = ttk.Checkbutton(
+        master=master,
+        width=width,
+        text="Segmentar",
+        cursor=cursor,
+        style="Switch.TCheckbutton",
+        variable=variable,
+    )
     hover = createBalloon(switch, name, description)
     return switch, hover
+
 
 def get_results_filepath() -> str:
     """
@@ -71,13 +92,10 @@ def get_results_filepath() -> str:
     filepath = tkinter.filedialog.asksaveasfilename(
         initialdir=".",
         title="Elige donde guardar los resultados",
-        filetypes=(
-            ("all files", ".*"),
-            ('Zip File', '*.zip'),
-            ('CSV File', '*.csv')
-        )
+        filetypes=(("all files", ".*"), ("Zip File", "*.zip"), ("CSV File", "*.csv")),
     )
     return filepath
+
 
 def get_file_filepath() -> str:
     """
@@ -87,25 +105,24 @@ def get_file_filepath() -> str:
     filepath = tkinter.filedialog.asksaveasfilename(
         initialdir="../img",
         title="Guardar como",
-        filetypes=(
-            ('Zip File', '*.zip'),
-            ("all files", ".*")
-        )
+        filetypes=(("Zip File", "*.zip"), ("all files", ".*")),
     )
     return filepath
 
+
 def generate_zip(filepath, files, files_name=None) -> None:
     """
-    Generates a ZIP file that contains a list 
+    Generates a ZIP file that contains a list
     of files given as an input.
     """
     if not files_name:
         files_name = range(len(files))
         files_name = map(str, files_name)
-    zipObj = ZipFile(f'{filepath}.zip', 'w')
+    zipObj = ZipFile(f"{filepath}.zip", "w")
     for (file_img, name) in zip(files, files_name):
-        _, buf = cv2.imencode('.png', file_img)
-        zipObj.writestr(name + '.png', buf)
+        _, buf = cv2.imencode(".png", file_img)
+        zipObj.writestr(name + ".png", buf)
+
 
 def get_path(filename):
     if hasattr(sys, "_MEIPASS"):

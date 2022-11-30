@@ -3,11 +3,13 @@ import numpy as np
 import cv2
 from typing import List
 
+
 def clustering(image, N):
     """
     Dispatchs the clustering task.
     """
     return color_segmentation.generate_clusters(image, N)
+
 
 def substract(image_1, image_2):
     """
@@ -15,24 +17,26 @@ def substract(image_1, image_2):
     """
     return cv2.subtract(image_1, image_2)
 
+
 def add(image_1, image_2):
     """
     Dispatchs the addition of two images.
     """
     return cv2.add(image_1, image_2)
-    
+
+
 class ImageNode(object):
     """
     Data structure in charge of managing the current
-    status of the GUI. The combination of ImageNodes 
+    status of the GUI. The combination of ImageNodes
     forms an Image Tree which contains the complete
-    history of the interaction between the user and 
+    history of the interaction between the user and
     the GUI's images.
 
     First, the tree contains only one ImageNode without
     childs (empty list). Once the user applies clustering
     to the image, the node acquires num_clusters
-    childs (list of nodes with image but no childs). 
+    childs (list of nodes with image but no childs).
 
     If a user selects a cluster image as the "current"
     image of the GUI and calls the clustering algorithm
@@ -44,6 +48,7 @@ class ImageNode(object):
     This data structure allows the user to travel the each
     status of the gui without lossing information.
     """
+
     def __init__(self, parent, image, name) -> None:
         """
         Class constructor, instantiates key parameters.
@@ -68,25 +73,25 @@ class ImageNode(object):
 
     def _collapse_image_nodes(self, indices):
         """
-        Combines a list of ImageNodes, the resulting image 
+        Combines a list of ImageNodes, the resulting image
         is the addition of the images of the input list.
         """
-        acc = np.zeros(self.image.shape, dtype='uint8')
+        acc = np.zeros(self.image.shape, dtype="uint8")
         for i in indices:
             child_img = self.childs[i].image
             acc = add(acc, child_img)
             self.childs[i] = None
         self.childs = [child for child in self.childs if child is not None]
         return acc
-        
+
     def delete(self, indices: List[int]) -> None:
         """
-        Deletes one or more ImageNodes and propagates 
+        Deletes one or more ImageNodes and propagates
         the deletion to the ancestors nodes.
         """
         acc = self._collapse_image_nodes(indices)
         self._propagate_delete(acc)
-    
+
     def merge(self, indices: List[int]) -> None:
         """
         Merges a list of ImageNodes into one, note that
@@ -94,16 +99,16 @@ class ImageNode(object):
         """
         acc = self._collapse_image_nodes(indices)
         self.childs.append(ImageNode(self, acc, f"{self.name} cluster {indices[0]}"))
-        
+
     def split(self, n_childs: int) -> None:
         """
         Takes an ImageNode without childs and sets it's
         parameter to the result of calling the clustering
-        algorithm on it's image. 
+        algorithm on it's image.
         """
         self.childs = []
         cluster_images = clustering(self.image, n_childs)
         for i in range(len(cluster_images)):
-            self.childs.append(ImageNode(self, cluster_images[i], f"{self.name} cluster {i}"))
-
-
+            self.childs.append(
+                ImageNode(self, cluster_images[i], f"{self.name} cluster {i}")
+            )

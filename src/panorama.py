@@ -24,6 +24,5 @@ img4 = sample_extraction.extract_sample(raw_img4)
 stitcher = stitching.Stitcher()
 panorama = stitcher.stitch([img1, img2, img3, img4])
 
-cv2.namedWindow('Sample Area')
-cv2.imshow('Sample Area', panorama)
-
+cv2.namedWindow("Sample Area")
+cv2.imshow("Sample Area", panorama)
