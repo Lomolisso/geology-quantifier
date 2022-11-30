@@ -202,7 +202,6 @@ class GUI(object):
             self.command_fr, btn_rotateL_name, self.rotateL, btn_rotateL_description
         )
 
-
         btn_rectangle_name = "Modo rectangular"
         btn_rectangle_description = "Es necesario posicionar 4 puntos para realizar un recorte sin ajuste de perspectiva."
         self.btn_rectangle, self.hover_rectangle = createButtonWithHover(
@@ -229,8 +228,6 @@ class GUI(object):
             self.to_free,
             btn_free_description,
         )
-
-
 
         btn_height_name = "Altura(cm)"
         btn_height_description = (
@@ -704,7 +701,7 @@ class GUI(object):
             self.btn_rotateL.grid(row=1, column=2, padx=5, pady=5)
             self.command_fr_lbl.grid(column=0, padx=5, pady=5, columnspan=3)
             # -- crop types --
-            self.crop_fr.grid(row=0, column=2, sticky=tkinter.N)       
+            self.crop_fr.grid(row=0, column=2, sticky=tkinter.N)
             self.btn_rectangle.grid(row=0, column=0, padx=5, pady=5)
             self.btn_unwrapping.grid(row=1, column=0, padx=5, pady=5)
             self.btn_free.grid(row=2, column=0, padx=5, pady=5)
