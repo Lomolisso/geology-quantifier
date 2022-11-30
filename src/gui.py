@@ -1348,24 +1348,39 @@ class GUI(object):
             )
 
     def to_free(self):
+        """
+        Change the cutting mode to FREE mode, where the cutting area can be any quadrilateral,
+        moving one point at a time.
+        """
         self.sample_extractor.to_free()
         self.sample_extractor.refresh_image()
         self.update_image(self.label_extractor, self.sample_extractor.get_image())
         self.preview()
 
     def to_unwrapping(self):
+        """
+        Change the cutting mode to UNWRAPPING mode, where the cutting area is a hexagon, where the ends move like the RECTANGLE mode, 
+        and the other two points move freely.
+        """
         self.sample_extractor.to_unwrapping()
         self.sample_extractor.refresh_image()
         self.update_image(self.label_extractor, self.sample_extractor.get_image())
         self.preview()
 
     def to_rectangle(self):
+        """
+        Change the cutting mode to RECTANGLE mode, where the cutting area is always a rectangle.
+        """
         self.sample_extractor.to_rectangle()
         self.sample_extractor.refresh_image()
         self.update_image(self.label_extractor, self.sample_extractor.get_image())
         self.preview()
 
     def switch_unit(self) -> None:
+        """
+        Change the unit of measurement of the data in the results table, 
+        between millimeters (MM) and centimeters (CM).
+        """
         color_array = None
         if self.cm.get()==1:
             self.switch_btn_image = ON
