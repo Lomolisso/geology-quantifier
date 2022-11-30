@@ -60,6 +60,9 @@ class AbstractExtraction(object):
             cv2.circle(self.image, v, self.min_radius, LIGHTBLUE, -1)
     
     def refresh_image(self):
+        """
+        Reloads the image and figure to select the cutting area
+        """
         self.image = self.original_image.copy()
         self._draw_circles_and_lines()
         self._reset_vertex_dirty()
@@ -82,6 +85,9 @@ class AbstractExtraction(object):
                 break
 
     def _margin_conditions(self, x, y):
+        """
+        Here are written the margins of the image, so the selection dots can't go outside of the image
+        """
         min_margins = x > 0 and y > 0
         max_margins = x < self.image_size[1] and y < self.image_size[0]
         return min_margins and max_margins
@@ -182,6 +188,9 @@ class PanoramicExtraction(AbstractExtraction):
         self._draw_circles_and_lines()
     
     def to_corners(self):
+        """
+        Moves the selection points to the corners of the image
+        """
         self.vertex_data = [
             np.array((0,0)),
             np.array((0,self.image_size[0])),
@@ -229,6 +238,9 @@ class UnwrapperExtraction(AbstractExtraction):
             np.array((image_cols, 0))+d,
             np.array((image_cols//2, 0))+d,
         ]
+
+    # All dots in this part go anti clockwise (vertex_0 is in the top-left corner), and move as a rectangle, with dots 2 and 5 moving to stay in the
+    # middle low and top respectively
     
     def _mov_vertex_0(self, x, y):
         """
@@ -357,6 +369,9 @@ class UnwrapperExtraction(AbstractExtraction):
         self._draw_circles_and_lines()
     
     def to_corners(self):
+        """
+        Moves the selection points to the corners of the image
+        """
         self.vertex_data = [
             np.array((0,0)),
             np.array((0,self.image_size[0])),
@@ -388,6 +403,8 @@ class RectangleExtraction(PanoramicExtraction):
         if self.vertex_dirty is not None and cond_list[self.vertex_dirty](x, y) and self._margin_conditions(x, y):
             punto_posterior = self.vertex_dirty + 1
             punto_anterior = self.vertex_dirty - 1
+            # This function makes sure that all points move as a rectangle, by assesing the possition of the moving vertex and how
+            # the other ones should react
             aprox_posterior = (punto_posterior)%2
             if aprox_posterior==0:
                 self.vertex_data[(punto_anterior)%4][0] = x
