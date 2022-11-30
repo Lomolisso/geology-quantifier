@@ -202,13 +202,14 @@ class GUI(object):
             self.command_fr, btn_rotateL_name, self.rotateL, btn_rotateL_description
         )
 
-        btn_panoramic_name = "Modo panorámico"
-        btn_panoramic_description = "Es necesario posicionar 4 puntos para realizar un recorte sin ajuste de perspectiva."
-        self.btn_panoramic, self.hover_panoramic = createButtonWithHover(
+
+        btn_rectangle_name = "Modo rectangular"
+        btn_rectangle_description = "Es necesario posicionar 4 puntos para realizar un recorte sin ajuste de perspectiva."
+        self.btn_rectangle, self.hover_rectangle = createButtonWithHover(
             self.crop_fr,
-            btn_panoramic_name,
-            self.to_panoramic,
-            btn_panoramic_description,
+            btn_rectangle_name,
+            self.to_rectangle,
+            btn_rectangle_description,
         )
 
         btn_unwrapping_name = "Modo unwrapping"
@@ -220,14 +221,16 @@ class GUI(object):
             btn_unwrapping_description,
         )
 
-        btn_rectangle_name = "Modo rectangular"
-        btn_rectangle_description = "Si"
-        self.btn_rectangle, self.hover_rectangle = createButtonWithHover(
+        btn_free_name = "Modo libre"
+        btn_free_description = "Es necesario posicionar 4 puntos para realizar un recorte con ajuste de perspectiva."
+        self.btn_free, self.hover_free = createButtonWithHover(
             self.crop_fr,
-            btn_rectangle_name,
-            self.to_rectangle,
-            btn_rectangle_description,
+            btn_free_name,
+            self.to_free,
+            btn_free_description,
         )
+
+
 
         btn_height_name = "Altura(cm)"
         btn_height_description = (
@@ -600,7 +603,7 @@ class GUI(object):
         if event.char == "s":
             self.save_image()
         elif event.char == "p":
-            self.to_panoramic()
+            self.to_free()
         elif event.char == "w":
             self.to_unwrapping()
         elif event.char == "r":
@@ -701,10 +704,10 @@ class GUI(object):
             self.btn_rotateL.grid(row=1, column=2, padx=5, pady=5)
             self.command_fr_lbl.grid(column=0, padx=5, pady=5, columnspan=3)
             # -- crop types --
-            self.crop_fr.grid(row=0, column=2, sticky=tkinter.N)
-            self.btn_panoramic.grid(row=0, column=0, padx=5, pady=5)
+            self.crop_fr.grid(row=0, column=2, sticky=tkinter.N)       
+            self.btn_rectangle.grid(row=0, column=0, padx=5, pady=5)
             self.btn_unwrapping.grid(row=1, column=0, padx=5, pady=5)
-            self.btn_rectangle.grid(row=2, column=0, padx=5, pady=5)
+            self.btn_free.grid(row=2, column=0, padx=5, pady=5)
             self.crop_fr_lbl.grid(column=0, padx=5, pady=5)
             # -- help --
             self.help_fr.grid(row=0, column=5, sticky=tkinter.N)
@@ -1340,20 +1343,23 @@ class GUI(object):
                 "https://github.com/Lomolisso/geology-quantifier/blob/ba67360da5f0c7dc3e2edac6996fc463c8b78599/Documentacion_Proyecto.pdf"
             )
 
-    def to_panoramic(self):
-        self.sample_extractor.to_panoramic()
+    def to_free(self):
+        self.sample_extractor.to_free()
         self.sample_extractor.refresh_image()
         self.update_image(self.label_extractor, self.sample_extractor.get_image())
+        self.preview()
 
     def to_unwrapping(self):
         self.sample_extractor.to_unwrapping()
         self.sample_extractor.refresh_image()
         self.update_image(self.label_extractor, self.sample_extractor.get_image())
+        self.preview()
 
     def to_rectangle(self):
         self.sample_extractor.to_rectangle()
         self.sample_extractor.refresh_image()
         self.update_image(self.label_extractor, self.sample_extractor.get_image())
+        self.preview()
 
     def switch_unit(self) -> None:
         self.cm = not self.cm

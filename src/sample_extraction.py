@@ -18,7 +18,7 @@ BLACK = (0, 0, 0)
 
 
 class ExtractorModeEnum(str, enum.Enum):
-    PANORAMIC = "panoramic"
+    FREE = "free"
     UNWRAPPER = "unwrapper"
     RECTANGLE = "rectangle"
 
@@ -416,28 +416,30 @@ class RectangleExtraction(PanoramicExtraction):
 
 class SampleExtractor(object):
     def __init__(self) -> None:
-        self.mode = ExtractorModeEnum.PANORAMIC
+        self.mode = ExtractorModeEnum.RECTANGLE
 
     def set_image(self, img: cv2.Mat, rotation: bool = False):
         self.img = img
         if rotation:
             self.ext.set_image(img)
 
-    def to_panoramic(self):
-        self.mode = ExtractorModeEnum.PANORAMIC
-        self.ext = PanoramicExtraction(img=self.img)
+    def to_rectangle(self):
+        self.mode = ExtractorModeEnum.RECTANGLE
+        self.ext = RectangleExtraction(img=self.img)
 
     def to_unwrapping(self):
         self.mode = ExtractorModeEnum.UNWRAPPER
         self.ext = UnwrapperExtraction(img=self.img)
 
-    def to_rectangle(self):
-        self.mode = ExtractorModeEnum.RECTANGLE
-        self.ext = RectangleExtraction(img=self.img)
+    def to_free(self):
+        self.mode = ExtractorModeEnum.FREE
+        self.ext = PanoramicExtraction(img=self.img)
+
+
 
     def init_extractor(self):
-        if self.mode == ExtractorModeEnum.PANORAMIC:
-            self.to_panoramic()
+        if self.mode == ExtractorModeEnum.FREE:
+            self.to_free()
         elif self.mode == ExtractorModeEnum.UNWRAPPER:
             self.to_unwrapping()
         else:
