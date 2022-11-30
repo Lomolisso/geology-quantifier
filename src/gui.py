@@ -49,6 +49,7 @@ class GUI(object):
         # --- workflow parameters ---
         self.org_img = None
         self.clone_img = None
+        self.last_index_selected = []
 
         self.sample_extractor = SampleExtractor()
 
