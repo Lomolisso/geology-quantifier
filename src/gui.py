@@ -379,7 +379,7 @@ class GUI(object):
         self.set_up_scrollbar()
         self.btn_fr_size = 200
         self.segmentation = False
-        self.height_mm = None
+        self.height_mm = 200
         self.grados = 0
         self.canvas_preview = tkinter.Canvas(self.principal_fr)
         self.prev_boolean = False
@@ -716,7 +716,7 @@ class GUI(object):
 
             self.segmentation = False
             self.grados = 0
-            self.height_mm = None
+            self.height_mm = 200
         except:
             pass
 
