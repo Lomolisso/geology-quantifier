@@ -50,7 +50,7 @@ def load_image_from_window() -> None:
         assert img.size > 0
     except:
         return np.array([])
-    return img
+    return img, filename
 
 def save_image_from_window(img: cv2.Mat) -> None:
     """

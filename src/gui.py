@@ -71,7 +71,6 @@ class GUI(object):
         self.size_fr = ttk.Frame(self.btns_fr, style='Card.TFrame', padding=(5, 6, 7, 8))
         self.size_sub_fr = ttk.Frame(self.size_fr, style='Card.TFrame', padding=(5, 6, 7, 8))
         self.color_seg_fr = ttk.Frame(self.btns_fr, style='Card.TFrame', padding=(5, 6, 7, 8))
-        self.shape_seg_fr = ttk.Frame(self.btns_fr, style='Card.TFrame', padding=(5, 6, 7, 8))
         self.image_tools_fr = ttk.Frame(self.btns_fr, style='Card.TFrame', padding=(5, 6, 7, 8))
         self.gen_results_fr = ttk.Frame(self.btns_fr, style='Card.TFrame', padding=(5, 6, 7, 8))
         self.navigate_fr = ttk.Frame(self.main_win, style='Card.TFrame', padding=(5, 6, 7, 8))
@@ -87,7 +86,6 @@ class GUI(object):
         self.size_sub_fr.columnconfigure(1, weight=1)
         self.color_seg_fr.columnconfigure(0, weight=1)
         self.color_seg_fr.columnconfigure(1, weight=1)
-        self.shape_seg_fr.columnconfigure(0, weight=1)
         self.image_tools_fr.columnconfigure(0, weight=1)
         self.gen_results_fr.columnconfigure(0, weight=1)
         self.navigate_fr.columnconfigure(0, weight=1)
@@ -124,6 +122,10 @@ class GUI(object):
         btn_rotate_description = 'Gira 90 grados la imagen a recortar en sentido horario.'
         self.btn_rotate, self.hover_rotate = createButtonWithHover(self.command_fr, btn_rotate_name, self.rotate_image, btn_rotate_description)
         
+        btn_select_all_img_name = 'Seleccionar todo'
+        btn_select_all_img_description = "Mueve los puntos a las esquinas de la imagen"
+        self.btn_select_all_img, self.hover_select_all_img = createButtonWithHover(self.command_fr, btn_select_all_img_name, self.select_all_img, btn_select_all_img_description)
+
         btn_rotateR_name = 'Rotar imagen R'
         btn_rotateR_description = 'gira levemente la imagen en sentido horario'
         self.btn_rotateR, self.hover_rotateR = createButtonWithHover(self.command_fr, btn_rotateR_name, self.rotateR, btn_rotateR_description)
@@ -140,8 +142,12 @@ class GUI(object):
         btn_unwrapping_description = 'Es necesario posicionar 6 puntos para realizar un recorte con ajuste de perspectiva.'
         self.btn_unwrapping, self.hover_unwrapping = createButtonWithHover(self.crop_fr, btn_unwrapping_name, self.to_unwrapping, btn_unwrapping_description)
         
-        btn_height_name = 'Altura'
-        btn_height_description = 'Permite guardar la altura (en cm) de la roca introdujida.'
+        btn_rectangle_name = 'Modo rectangular'
+        btn_rectangle_description = 'Si'
+        self.btn_rectangle, self.hover_rectangle = createButtonWithHover(self.crop_fr, btn_rectangle_name, self.to_rectangle, btn_rectangle_description)
+
+        btn_height_name = 'Altura(cm)'
+        btn_height_description = 'Permite guardar la altura (en cm) de la roca introducida.'
         self.btn_height, self.hover_height = createButtonWithHover(self.size_sub_fr, btn_height_name, self.set_height, btn_height_description)
 
         btn_save_name = 'Guardar'
@@ -181,23 +187,23 @@ class GUI(object):
         self.toggle_var = tkinter.BooleanVar()
         self.toggle_seg, self.hover_toggle = createCheckBoxWithHover(self.gen_results_fr, toggle_seg_name, toggle_seg_description, self.toggle_var)
         
-        btn_up_name = 'Subir'
-        btn_up_description = 'Permite acceder a la imagen que se tenia anteriormente.'
-        self.btn_up, self.hover_up = createButtonWithHover(self.navigate_fr, btn_up_name, self.up, btn_up_description, image=ARROW_LEFT)
+        btn_back_name = 'Atras'
+        btn_back_description = 'Permite acceder a la imagen que se tenia anteriormente.'
+        self.btn_back, self.hover_back = createButtonWithHover(self.navigate_fr, btn_back_name, self.back, btn_back_description, image=ARROW_LEFT)
         
-        btn_down_name = 'Bajar'
-        btn_down_description = 'Permite cambiar la imagen actual por la imagen seleccionada.'
-        self.btn_down, self.hover_down = createButtonWithHover(self.navigate_fr, btn_down_name, self.down, btn_down_description,image=ARROW_RIGHT)
+        btn_forward_name = 'Adelante'
+        btn_forward_description = 'Permite cambiar la imagen actual por la imagen seleccionada.'
+        self.btn_forward, self.hover_forward = createButtonWithHover(self.navigate_fr, btn_forward_name, self.forward, btn_forward_description,image=ARROW_RIGHT)
 
         btn_doc_name = 'Ayuda'
         btn_doc_description = 'Permite abrir la documentación completa de la aplicación.'
         self.btn_doc, self.hover_doc = createButtonWithHover(self.help_fr, btn_doc_name, self.view_documentation, btn_doc_description,image=HELP_ICON)
 
         # -- entries --
-        self.total_clusters = PlaceholderEntry(self.color_seg_fr, "Número de clusters")
+        self.total_clusters = PlaceholderEntry(self.color_seg_fr, "3")
         self.total_clusters['font'] = self.my_font
 
-        self.entry_height_cm = PlaceholderEntry(self.size_sub_fr, "Altura recorte (cm)")
+        self.entry_height_cm = PlaceholderEntry(self.size_sub_fr, "20")
         self.entry_height_cm['font'] = self.my_font
 
         # -- labels --
@@ -207,7 +213,6 @@ class GUI(object):
         self.crop_fr_lbl = tkinter.Label(self.crop_fr, text = "Modo de\n recorte", font= self.section_font)
         self.size_fr_lbl = tkinter.Label(self.size_fr, text = "Tamaño", font= self.section_font)
         self.color_seg_lb = tkinter.Label(self.color_seg_fr, text = "Segmentación color", font= self.section_font)
-        self.shape_seg_lb = tkinter.Label(self.shape_seg_fr, text = "Segmentación \n forma", font= self.section_font)
         self.image_tools_lb = tkinter.Label(self.image_tools_fr, text = "Modificar imagen", font= self.section_font)
         self.gen_results_lb = tkinter.Label(self.gen_results_fr, text = "Generación \n resultados", font= self.section_font)
         self.navigate_lb = tkinter.Label(self.navigate_fr, text = "Navegar", font= self.section_font)
@@ -307,10 +312,10 @@ class GUI(object):
             self.img_tree = self.img_tree.childs[self.selected_images_indices[0]]
         
         self.img_tree.split(n_childs=n_childs)
+        self.selected_images_indices=[]
         self.segmentation = False
         self.update_screen()
-        self.selected_images_indices=[]
-    
+
     def click_check(self, event):
         self.sample_extractor.check_mov(event.x, event.y)
     
@@ -319,15 +324,23 @@ class GUI(object):
         self.update_image(self.label_extractor, self.sample_extractor.get_image())
 
     def choose_cut_method(self, img):
-        return self.sample_extractor.cut(img)
+        return self.sample_extractor.cut(img)        
+
+    def select_all_img(self):
+        self.sample_extractor.to_corners()
+        
+        self.sample_extractor.refresh_image()
+        self.update_image(self.label_extractor, self.sample_extractor.get_image())
+        self.preview()
 
     def rotateR(self):
         image_center = tuple(np.array(self.clone_img.shape[1::-1]) / 2)
         self.grados-=0.2
         rotation_matrix = cv2.getRotationMatrix2D(image_center, angle=self.grados, scale=1)
-        self.org_img = cv2.warpAffine(self.clone_img, rotation_matrix,(self.clone_img.shape[1],self.clone_img.shape[0]))
+        self.rot_img = cv2.warpAffine(self.clone_img, rotation_matrix,(self.clone_img.shape[1],self.clone_img.shape[0]))
         
-        self.sample_extractor.set_image(self._resize_img(self.org_img), rotation=True)
+        self.sample_extractor.set_image(self._resize_img(self.rot_img), rotation=True)
+        self.sample_extractor.reset_vertices()
         self.sample_extractor.refresh_image()
         self.update_image(self.label_extractor, self.sample_extractor.get_image())
         self.preview()
@@ -336,9 +349,10 @@ class GUI(object):
         image_center = tuple(np.array(self.clone_img.shape[1::-1]) / 2)
         self.grados += 0.2
         rotation_matrix = cv2.getRotationMatrix2D(image_center, angle=self.grados, scale=1)
-        self.org_img = cv2.warpAffine(self.clone_img, rotation_matrix,(self.clone_img.shape[1],self.clone_img.shape[0]))
+        self.rot_img = cv2.warpAffine(self.clone_img, rotation_matrix,(self.clone_img.shape[1],self.clone_img.shape[0]))
         
-        self.sample_extractor.set_image(self._resize_img(self.org_img), rotation=True)
+        self.sample_extractor.set_image(self._resize_img(self.rot_img), rotation=True)
+        self.sample_extractor.reset_vertices()
         self.sample_extractor.refresh_image()
         self.update_image(self.label_extractor, self.sample_extractor.get_image())
         self.preview()
@@ -352,12 +366,18 @@ class GUI(object):
         label.grid(row=0, column=0, padx=10, pady=10)
 
     def preview(self):
-        if self.canvas_preview:
+        if hasattr(self, "canvas_preview"):
             self.canvas_preview.destroy()
+            self.canvas_preview = tkinter.Canvas(self.principal_fr)
+            copy_img = self.choose_cut_method(self.org_img)
+            copy_img = self._resize_img(copy_img, 1.7)
+            self.label_extractor2 = self.add_img_to_canvas(self.canvas_preview, copy_img)
+            self.canvas_preview.grid(row=0,column=1)
+            self.update_image(self.label_extractor2, copy_img)
+            return
         self.canvas_preview = tkinter.Canvas(self.principal_fr)
-        self.prev_boolean = True
         copy_img = self.choose_cut_method(self.org_img)
-        self.label_extractor2 = self.add_img_to_canvas(self.canvas_preview, self._resize_img(copy_img, 2))
+        self.label_extractor2 = self.add_img_to_canvas(self.canvas_preview, self._resize_img(copy_img, 1.7))
         self.canvas_preview.grid(row=0,column=1)
 
     def save_image(self):
@@ -380,18 +400,17 @@ class GUI(object):
         for wget in self.size_fr.winfo_children():
             wget.grid_forget()   
         self.size_fr.grid_forget()
-        self.entry_height_cm._clear_placeholder(None)
         self.show_img()            
 
     def reset_image(self):
+        self.clone_img = self.org_img
+        self.rot_img = self.org_img
+        self.grados = 0
+        self.sample_extractor.set_image(self._resize_img(self.org_img), rotation=True)
         self.sample_extractor.reset_vertices()
         self.sample_extractor.refresh_image()
-        photo_img = cv2.cvtColor(self.sample_extractor.get_image(), cv2.COLOR_BGR2RGB)
-        photo_img = Image.fromarray(photo_img)
-        img_for_label = ImageTk.PhotoImage(photo_img)
-        self.label_extractor.configure(image=img_for_label)
-        self.label_extractor.image = img_for_label
-        self.label_extractor.grid(row=0, column=0, padx=10, pady=10)
+        self.update_image(self.label_extractor, self.sample_extractor.get_image())
+        self.preview()
 
     def key_press(self, event):
         if event.char == "s":
@@ -405,7 +424,7 @@ class GUI(object):
     
     def release_click(self, event):
         copy_img = self.choose_cut_method(self.org_img)
-        self.update_image(self.label_extractor2, self._resize_img(copy_img, 2))
+        self.update_image(self.label_extractor2, self._resize_img(copy_img, 1.7))
         self.sample_extractor.refresh_image()
 
     def _set_extractor_canvas(self):
@@ -421,7 +440,7 @@ class GUI(object):
     def crop(self):
         self.sample_extractor.init_extractor()
 
-        #se ingresa en un canvas
+        #insert in  canvas
         self._set_extractor_canvas()
 
     def measures(self):
@@ -441,7 +460,8 @@ class GUI(object):
 
     def select_img(self):
         try:
-            img = image_managers.load_image_from_window()
+            img, filename = image_managers.load_image_from_window()
+            self.filename = filename.split("/")[-1].split(".")[0]
             #set max resolution
             #TODO: Move to another module
             resize_height = SCREEN_HEIGHT
@@ -458,7 +478,8 @@ class GUI(object):
 
             self.org_img = resize_img
             self.clone_img = resize_img
-
+            self.rot_img = resize_img
+        
             self.clean_principal_frame()
             self.clean_canvas_frame()
             self.clean_btns()
@@ -467,7 +488,7 @@ class GUI(object):
             self.crop()
 
             self.measures()
-
+        
             # -- File managment
             self.file_fr.grid(row=0, column=0, sticky=tkinter.N)
             self.btn_img.grid(row=0, column=0, padx=5, pady=5)
@@ -476,6 +497,7 @@ class GUI(object):
             self.command_fr.grid(row=0, column=1, sticky=tkinter.N)
             self.btn_save_img.grid(row=0, column=0, padx=5, pady=5)
             self.btn_reset_img.grid(row=1, column=0, padx=5, pady=5)
+            self.btn_select_all_img.grid(row=1, column=1, padx=5, pady=5)
             self.btn_rotate.grid(row=0, column=1, padx=5, pady=5)
             self.btn_rotateR.grid(row=0, column=2, padx=5, pady=5)
             self.btn_rotateL.grid(row=1, column=2, padx=5, pady=5)
@@ -484,6 +506,7 @@ class GUI(object):
             self.crop_fr.grid(row = 0, column= 2, sticky=tkinter.N)
             self.btn_panoramic.grid(row=0, column=0,padx=5, pady=5)
             self.btn_unwrapping.grid(row=1, column=0, padx=5, pady=5)
+            self.btn_rectangle.grid(row=2, column=0, padx=5, pady=5)
             self.crop_fr_lbl.grid(column=0,padx=5, pady=5)
             # -- help --
             self.help_fr.grid(row=0, column=5, sticky=tkinter.N)
@@ -493,14 +516,14 @@ class GUI(object):
             self.grados = 0
             self.height_mm = None
         except:
-           pass
+            pass
 
     def show_img(self) -> None:
         """
         This method is called when a new image is uploaded. 
         """
         # self.clean_frames()
-        self.img_tree = image_tree.ImageNode(None, self.org_img, "Imagen original")
+        self.img_tree = image_tree.ImageNode(None, self.org_img, self.filename)
         self.segmentation = False
         self.update_screen()
                 
@@ -514,9 +537,6 @@ class GUI(object):
         for wget in self.color_seg_fr.winfo_children():
             wget.grid_forget()
         self.color_seg_fr.grid_forget()
-        for wget in self.shape_seg_fr.winfo_children():
-            wget.grid_forget()
-        self.shape_seg_fr.grid_forget()
         for wget in self.image_tools_fr.winfo_children():
             wget.grid_forget()
         self.image_tools_fr.grid_forget()
@@ -557,8 +577,8 @@ class GUI(object):
 
         # -- Navigate --
         self.navigate_fr.grid(row=1, column=1, sticky=tkinter.N)
-        self.btn_up.grid(row=0, column=0, padx=5, pady=5)
-        self.btn_down.grid(row=0, column=1, padx=5, pady=5)
+        self.btn_back.grid(row=0, column=0, padx=5, pady=5)
+        self.btn_forward.grid(row=0, column=1, padx=5, pady=5)
         self.navigate_lb.grid(column=0, padx=5, pady=5, columnspan=2)
 
         # -- Help --
@@ -619,7 +639,7 @@ class GUI(object):
             widgetP = ttk.Label(canvas, text=f"Porcentaje de pixeles: {color_percent}%")
             widgetP.grid(row = 1,column=0 )
 
-    def _resize_img(self, img, resize_scale = 1):
+    def _resize_img(self, img, resize_scale: float = 1):
         """
         Resize the image acording to the actual window size of the aplication.
         """
@@ -659,7 +679,6 @@ class GUI(object):
         self.clean_principal_frame()
 
         img = self._resize_img(self.img_tree.image) # image at the current node of the image_tree
-        self.selected_images_indices = [] # resets selected images
 
         if self.segmentation:
             principal_image = self.img_tree.image
@@ -703,6 +722,9 @@ class GUI(object):
                 canva.grid(row=2*(i%img_row_shape), column=i//img_row_shape)
                 name_label = tkinter.Label(self.canvas_fr, text=child.name)
                 name_label.grid(row=2*(i%img_row_shape) + 1, column=i//img_row_shape)
+                if i in self.selected_images_indices:
+                    label.event_generate("<ButtonPress-1>")
+                    label.event_generate("<ButtonPress-1>")
                 i+=1
 
     def merge(self) -> None:
@@ -713,9 +735,10 @@ class GUI(object):
             tkinter.messagebox.showwarning("Error", message="Por favor, seleccione 2 o más imagenes.")
             return
         self.img_tree.merge(self.selected_images_indices)
+        self.selected_images_indices=[]
         self.segmentation = False
         self.update_screen()
-        self.selected_images_indices=[]
+        
 
     def delete(self) -> None:
         """
@@ -725,9 +748,10 @@ class GUI(object):
             tkinter.messagebox.showwarning("Error", message="Por favor, seleccione al menos una imagen.")
             return
         self.img_tree.delete(self.selected_images_indices)
+        self.selected_images_indices=[]
         self.segmentation = False
         self.update_screen()
-        self.selected_images_indices=[]
+        
 
     def plot_3d(self) -> None:
         """
@@ -744,12 +768,12 @@ class GUI(object):
         """
         Resets the image tree back to it's original form.
         """
-        self.img_tree = image_tree.ImageNode(None,self.org_img,"Imagen original")
+        self.img_tree = image_tree.ImageNode(None,self.org_img, self.filename)
         self.selected_images_indices = []
         self.segmentation = False
         self.update_screen()
 
-    def down(self) -> None:
+    def forward(self) -> None:
         """
         Travels one level downwards in the image tree, this means that the GUI
         will show a cluster as a main image and the user will be able to
@@ -759,11 +783,12 @@ class GUI(object):
             tkinter.messagebox.showwarning("Error", message="Por favor, seleccione una imagen.")
             return
         self.img_tree = self.img_tree.childs[self.selected_images_indices[0]]
+        self.last_index_selected.append(self.selected_images_indices[0])
         self.selected_images_indices = []
         self.segmentation = False
         self.update_screen()
 
-    def up(self) -> None:
+    def back(self) -> None:
         """
         Travels one level upwards in the image tree, updates the GUI showing all the data
         related to the parent of the current node.
@@ -772,8 +797,8 @@ class GUI(object):
             tkinter.messagebox.showwarning("Error", message="Esta es la imagen original.")
             return
         self.img_tree = self.img_tree.parent
-        self.selected_images_indices = []
         self.segmentation = False
+        self.selected_images_indices = [self.last_index_selected.pop()]
         self.update_screen()
     
     def process_image(self):
@@ -805,9 +830,6 @@ class GUI(object):
 
         results = sc.generate_results(self.contour, self.height_mm/self.segmentated.shape[0])
         self.fill_table(results, sc.DEF_COLOR)
-
-    def outline(self) -> None:
-        tkinter.messagebox.showwarning("Proximamente", message="Esta funcionalidad estara disponible proximamente.")
 
     def segmentate(self) -> None:
         """
@@ -983,8 +1005,9 @@ class GUI(object):
 
     def rotate_image(self) -> None:
         self.clean_principal_frame()
-        self.org_img =  cv2.rotate(self.org_img, cv2.ROTATE_90_CLOCKWISE)
-        self.sample_extractor.set_image(self._resize_img(self.org_img), True)
+        self.rot_img =  cv2.rotate(self.rot_img, cv2.ROTATE_90_CLOCKWISE)
+        self.clone_img = self.rot_img
+        self.sample_extractor.set_image(self._resize_img(self.rot_img), True)
         self.crop()
 
     def view_documentation(self) -> None:
@@ -1000,11 +1023,19 @@ class GUI(object):
 
     def to_panoramic(self):
         self.sample_extractor.to_panoramic()
-        self._set_extractor_canvas()
+        self.sample_extractor.refresh_image()
+        self.update_image(self.label_extractor, self.sample_extractor.get_image())
+        
 
     def to_unwrapping(self):
         self.sample_extractor.to_unwrapping()
-        self._set_extractor_canvas()
+        self.sample_extractor.refresh_image()
+        self.update_image(self.label_extractor, self.sample_extractor.get_image())        
+    
+    def to_rectangle(self):
+        self.sample_extractor.to_rectangle()
+        self.sample_extractor.refresh_image()
+        self.update_image(self.label_extractor, self.sample_extractor.get_image())        
 
     def switch_unit(self) -> None:
         self.cm = not self.cm
