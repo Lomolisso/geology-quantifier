@@ -384,6 +384,9 @@ class GUI(object):
         self.switch_btn_image = OFF
 
     def set_height(self):
+        """
+        Sets height of the rock sample contents in the image
+        """
         try:
             self.height_mm = float(self.entry_height_cm.get()) * 10
         except Exception as e:
@@ -394,6 +397,9 @@ class GUI(object):
             return
 
     def focus_win(self, event):
+        """
+        Sets the focus on the widget clicked
+        """
         if not isinstance(event.widget, ttk.Entry):
             self.main_win.focus()
 
@@ -484,9 +490,15 @@ class GUI(object):
         self.update_screen()
 
     def click_check(self, event):
+        """
+        Handler event leftmost button click
+        """
         self.sample_extractor.check_mov(event.x, event.y)
 
     def click_pos(self, event):
+        """
+        Handler event leftmost button held down 
+        """
         self.sample_extractor.move_vertex(event.x, event.y)
         self.update_image(self.label_extractor, self.sample_extractor.get_image())
 
