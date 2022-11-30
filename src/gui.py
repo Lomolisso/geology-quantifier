@@ -537,6 +537,9 @@ class GUI(object):
         self.preview()
 
     def update_image(self, label, image):
+        """
+        Updates the image while not reloading the canvas frame
+        """
         photo_img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         photo_img = Image.fromarray(photo_img)
         img_for_label = ImageTk.PhotoImage(photo_img)
@@ -545,6 +548,9 @@ class GUI(object):
         label.grid(row=0, column=0, padx=10, pady=10)
 
     def preview(self):
+        """
+        Creates a preview of the cut the user is about to make in any of the configurations on the right side of the image
+        """
         if hasattr(self, "canvas_preview"):
             self.canvas_preview.destroy()
             self.canvas_preview = tkinter.Canvas(self.principal_fr)
@@ -613,6 +619,9 @@ class GUI(object):
         self.sample_extractor.refresh_image()
 
     def _set_extractor_canvas(self):
+        """
+        It adds the image when selected in the beggining and when changing the extraction mode
+        """
         canvas_extractor = tkinter.Canvas(self.principal_fr)
         self.label_extractor = self.add_img_to_canvas(
             canvas_extractor, self.sample_extractor.get_image()
