@@ -1340,6 +1340,9 @@ class GUI(object):
         )
 
     def rotate_image(self) -> None:
+        """
+        Rotate the principal image 90 degrees clockwise
+        """
         self.clean_principal_frame()
         self.rot_img = cv2.rotate(self.rot_img, cv2.ROTATE_90_CLOCKWISE)
         self.clone_img = self.rot_img
