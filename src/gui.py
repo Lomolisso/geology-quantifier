@@ -547,7 +547,7 @@ class GUI(object):
         if hasattr(self, "canvas_preview"):
             self.canvas_preview.destroy()
             self.canvas_preview = tkinter.Canvas(self.principal_fr)
-            copy_img = self.choose_cut_method(self.org_img)
+            copy_img = self.choose_cut_method(self.rot_img)
             copy_img = self._resize_img(copy_img, 1.7)
             self.label_extractor2 = self.add_img_to_canvas(
                 self.canvas_preview, copy_img
@@ -556,7 +556,7 @@ class GUI(object):
             self.update_image(self.label_extractor2, copy_img)
             return
         self.canvas_preview = tkinter.Canvas(self.principal_fr)
-        copy_img = self.choose_cut_method(self.org_img)
+        copy_img = self.choose_cut_method(self.rot_img)
         self.label_extractor2 = self.add_img_to_canvas(
             self.canvas_preview, self._resize_img(copy_img, 1.7)
         )
@@ -569,7 +569,7 @@ class GUI(object):
             )
             return
         self.prev_boolean = False
-        self.org_img = self.choose_cut_method(self.org_img)
+        self.org_img = self.choose_cut_method(self.rot_img)
         self.main_win.unbind("<Key>")
         self.un_measures()
         for wget in self.file_fr.winfo_children():
@@ -607,7 +607,7 @@ class GUI(object):
             self.reset_image()
 
     def release_click(self, event):
-        copy_img = self.choose_cut_method(self.org_img)
+        copy_img = self.choose_cut_method(self.rot_img)
         self.update_image(self.label_extractor2, self._resize_img(copy_img, 1.7))
         self.sample_extractor.refresh_image()
 
