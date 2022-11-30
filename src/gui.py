@@ -301,6 +301,7 @@ class GUI(object):
             toggle_seg_name,
             toggle_seg_description,
             self.toggle_var,
+            text = "Segmentar",
         )
 
         btn_back_name = "Atras"
@@ -379,7 +380,7 @@ class GUI(object):
         self.grados = 0
         self.canvas_preview = tkinter.Canvas(self.principal_fr)
         self.prev_boolean = False
-        self.cm = False
+        self.cm = tkinter.BooleanVar()
         self.switch_btn_image = OFF
 
     def set_height(self):
@@ -1181,7 +1182,7 @@ class GUI(object):
 
         statistic_array = None
         unit = ""
-        if self.cm:
+        if self.cm.get() == 1:
             statistic_array = sc.STATISTICS_CM
             unit = "CM"
         else:
@@ -1238,24 +1239,21 @@ class GUI(object):
             row=len(aggregated_results) + 1, column=len(statistic_array) // 2 + 1
         )
 
-        btn_switch_unit_name = "Cambiar unidad"
-        btn_switch_unit_description = (
-            "Permite cambiar la unidad de medida entre centímetro o milímetros."
-        )
-        self.btn_switch_unit, self.hover_units = createButtonWithHover(
+        toggle_switch_unit_name = "Cambiar unidad"
+        toggle_switch_unit_description = "Permite cambiar la unidad de medida entre centímetro o milímetros."
+        self.toggle_switch_unit, self.hover_toggle_unit = createCheckBoxWithHover(
             self.results_fr,
-            btn_switch_unit_name,
-            self.switch_unit,
-            btn_switch_unit_description,
-            image=self.switch_btn_image,
-        )
-        self.btn_switch_unit.config(padding=0)
-        self.btn_switch_unit.grid(
-            row=len(aggregated_results) + 1, column=len(statistic_array) // 2 + 2
+            toggle_switch_unit_name,
+            toggle_switch_unit_description,
+            self.cm,
+            command=self.switch_unit
         )
 
         self.create_label(
-            unit, len(aggregated_results) + 1, len(statistic_array) // 2 + 3
+            unit, len(aggregated_results) + 1, len(statistic_array) // 2 + 2
+        )
+        self.toggle_switch_unit.grid(
+            row=len(aggregated_results) + 1, column=len(statistic_array) // 2 + 3
         )
 
     def table_to_csv(self, results, cluster_num) -> None:
@@ -1359,9 +1357,8 @@ class GUI(object):
         self.preview()
 
     def switch_unit(self) -> None:
-        self.cm = not self.cm
         color_array = None
-        if self.cm:
+        if self.cm.get()==1:
             self.switch_btn_image = ON
             self.height_mm *= 0.1
         else:

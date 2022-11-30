@@ -67,7 +67,7 @@ def createButtonWithHover(master, name, command, description, image=None):
     return btn, hover
 
 
-def createCheckBoxWithHover(master, name, description, variable):
+def createCheckBoxWithHover(master, name, description, variable, text="", command = None):
     """
     Creates a new checkbox with a hover balloon.
     """
@@ -76,10 +76,11 @@ def createCheckBoxWithHover(master, name, description, variable):
     switch = ttk.Checkbutton(
         master=master,
         width=width,
-        text="Segmentar",
+        text=text,
         cursor=cursor,
         style="Switch.TCheckbutton",
         variable=variable,
+        command=command,
     )
     hover = createBalloon(switch, name, description)
     return switch, hover
