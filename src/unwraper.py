@@ -35,7 +35,7 @@ class Line(object):
             self.k = float(point2[1] - point1[1]) / (point2[0] - point1[0])
             self.b = point2[1] - self.k * point2[0]
 
-            k_normal = - 1 / self.k
+            k_normal = -1 / self.k
         else:
             self.vertical = True
             self.fixed_x = point2[0]
@@ -108,8 +108,14 @@ class LabelUnwrapper(object):
             self.points = points
 
         self.points = np.array(self.points)
-        (self.point_a, self.point_b, self.point_c,
-         self.point_d, self.point_e, self.point_f) = self.points
+        (
+            self.point_a,
+            self.point_b,
+            self.point_c,
+            self.point_d,
+            self.point_e,
+            self.point_f,
+        ) = self.points
 
         center_top = (self.point_a + self.point_c) / 2
         center_bottom = (self.point_d + self.point_f) / 2
@@ -136,8 +142,7 @@ class LabelUnwrapper(object):
         for row_index in range(self.ROW_COUNT):
             row = []
             for col_index in range(self.COL_COUNT):
-                row.append([int(dx * col_index),
-                            int(dy * row_index)])
+                row.append([int(dx * col_index), int(dy * row_index)])
 
             rows.append(row)
         return np.array(rows)
@@ -152,16 +157,18 @@ class LabelUnwrapper(object):
 
         dest_map = self.calc_dest_map()
 
-        grid_x, grid_y = np.mgrid[0:width - 1:width * 1j, 0:height - 1:height * 1j]
+        grid_x, grid_y = np.mgrid[
+            0 : width - 1 : width * 1j, 0 : height - 1 : height * 1j
+        ]
 
         destination = dest_map.reshape(dest_map.size // 2, 2)
         source = source_map.reshape(source_map.size // 2, 2)
 
-        grid_z = griddata(destination, source, (grid_x, grid_y), method='cubic')
+        grid_z = griddata(destination, source, (grid_x, grid_y), method="cubic")
         map_x = np.append([], [ar[:, 0] for ar in grid_z]).reshape(width, height)
         map_y = np.append([], [ar[:, 1] for ar in grid_z]).reshape(width, height)
-        map_x_32 = map_x.astype('float32')
-        map_y_32 = map_y.astype('float32')
+        map_x_32 = map_x.astype("float32")
+        map_y_32 = map_y.astype("float32")
         warped = cv2.remap(self.src_image, map_x_32, map_y_32, cv2.INTER_CUBIC)
         self.dst_image = cv2.transpose(warped)
 
@@ -180,20 +187,25 @@ class LabelUnwrapper(object):
 
         for row_index in range(self.ROW_COUNT - 1):
             for col_index in range(self.COL_COUNT - 1):
-                src_cell = (source_map[row_index][col_index],
-                            source_map[row_index][col_index + 1],
-                            source_map[row_index + 1][col_index],
-                            source_map[row_index + 1][col_index + 1])
+                src_cell = (
+                    source_map[row_index][col_index],
+                    source_map[row_index][col_index + 1],
+                    source_map[row_index + 1][col_index],
+                    source_map[row_index + 1][col_index + 1],
+                )
 
                 dst_cell = np.int32([[0, 0], [dx, 0], [0, dy], [dx, dy]])
 
-                M = cv2.getPerspectiveTransform(np.float32(src_cell), np.float32(dst_cell))
+                M = cv2.getPerspectiveTransform(
+                    np.float32(src_cell), np.float32(dst_cell)
+                )
                 dst = cv2.warpPerspective(self.src_image, M, (dx_int, dy_int))
                 x_offset = int(dx * col_index)
                 y_offset = int(dy * row_index)
 
-                self.dst_image[y_offset:y_offset + dy_int,
-                               x_offset:x_offset + dx_int] = dst
+                self.dst_image[
+                    y_offset : y_offset + dy_int, x_offset : x_offset + dx_int
+                ] = dst
 
     def get_roi_rect(self, points):
         max_x = min_x = points[0][0]
@@ -209,23 +221,24 @@ class LabelUnwrapper(object):
             if y < min_y:
                 min_y = y
 
-        return np.array([
-            [min_x, min_y],
-            [max_x, min_y],
-            [max_x, max_y],
-            [min_x, max_y]
-        ])
+        return np.array(
+            [[min_x, min_y], [max_x, min_y], [max_x, max_y], [min_x, max_y]]
+        )
 
     def get_roi(self, image, points):
         rect = self.get_roi_rect(points)
-        return image[np.floor(rect[0][1]):np.ceil(rect[2][1]),
-                     np.floor(rect[0][0]):np.ceil(rect[1][0])]
+        return image[
+            np.floor(rect[0][1]) : np.ceil(rect[2][1]),
+            np.floor(rect[0][0]) : np.ceil(rect[1][0]),
+        ]
 
     def calc_source_map(self):
-        top_points = self.calc_ellipse_points(self.point_a, self.point_b, self.point_c,
-                                              self.COL_COUNT)
-        bottom_points = self.calc_ellipse_points(self.point_f, self.point_e, self.point_d,
-                                                 self.COL_COUNT)
+        top_points = self.calc_ellipse_points(
+            self.point_a, self.point_b, self.point_c, self.COL_COUNT
+        )
+        bottom_points = self.calc_ellipse_points(
+            self.point_f, self.point_e, self.point_d, self.COL_COUNT
+        )
 
         rows = []
         for row_index in range(self.ROW_COUNT):
@@ -258,11 +271,27 @@ class LabelUnwrapper(object):
         if img is None:
             img = self.src_image
 
-        cv2.line(img, tuple(self.point_f.tolist()), tuple(self.point_a.tolist()), color, thickness)
-        cv2.line(img, tuple(self.point_c.tolist()), tuple(self.point_d.tolist()), color, thickness)
+        cv2.line(
+            img,
+            tuple(self.point_f.tolist()),
+            tuple(self.point_a.tolist()),
+            color,
+            thickness,
+        )
+        cv2.line(
+            img,
+            tuple(self.point_c.tolist()),
+            tuple(self.point_d.tolist()),
+            color,
+            thickness,
+        )
 
-        self.draw_ellipse(img, self.point_a, self.point_b, self.point_c, color, thickness)
-        self.draw_ellipse(img, self.point_d, self.point_e, self.point_f, color, thickness)
+        self.draw_ellipse(
+            img, self.point_a, self.point_b, self.point_c, color, thickness
+        )
+        self.draw_ellipse(
+            img, self.point_d, self.point_e, self.point_f, color, thickness
+        )
 
     def get_label_contour(self, color=WHITE_COLOR, thickness=1):
         mask = np.zeros(self.src_image.shape)
@@ -291,7 +320,9 @@ class LabelUnwrapper(object):
         else:
             start_angle, end_angle = 180, 360
 
-        cv2.ellipse(img, center_point, axis, angle, start_angle, end_angle, color, thickness)
+        cv2.ellipse(
+            img, center_point, axis, angle, start_angle, end_angle, color, thickness
+        )
 
     def draw_filled_ellipse(self, img, left, top, right, is_top=False):
         is_arc, center_point, axis, angle = self.get_ellipse_params(left, top, right)
@@ -307,7 +338,10 @@ class LabelUnwrapper(object):
         center = (left + right) / 2
         center_point = tuple(map(lambda x: int(np.round(x)), center.tolist()))
 
-        axis = (int(np.linalg.norm(left - right) / 2), int(np.linalg.norm(center - top)))
+        axis = (
+            int(np.linalg.norm(left - right) / 2),
+            int(np.linalg.norm(center - top)),
+        )
 
         x, y = left - right
         angle = np.arctan(float(y) / x) * 57.296
@@ -330,7 +364,7 @@ class LabelUnwrapper(object):
             delta = np.pi / (points_count - 1)
 
         else:
-            delta = - np.pi / (points_count - 1)
+            delta = -np.pi / (points_count - 1)
 
         cos_rot = (right - center)[0] / a
         sin_rot = (right - center)[1] / a
@@ -369,6 +403,7 @@ class LabelUnwrapper(object):
         avg_height = int((height1 + height2) / 2)
         return avg_width, avg_height
 
+
 def unwrapping(imcv, dots):
     points = []
     for point in dots:
@@ -376,8 +411,8 @@ def unwrapping(imcv, dots):
 
     distance = points[2][0] - points[0][0]
     proportion = 0.1
-    correction = distance*proportion//2
-    
+    correction = distance * proportion // 2
+
     points[0][0] = points[0][0] - correction
     points[2][0] = points[2][0] + correction
     points[3][0] = points[3][0] + correction
@@ -387,6 +422,6 @@ def unwrapping(imcv, dots):
 
     dst_image = unwrapper.unwrap(False)
     y, x, _ = dst_image.shape
-    interval = x//7
-    dst_image = dst_image[0:y, interval:(x - interval)]
+    interval = x // 7
+    dst_image = dst_image[0:y, interval : (x - interval)]
     return dst_image
