@@ -4,7 +4,9 @@ the geology-cuantifier project.
 """
 
 from typing import List, Tuple
-import cv2, numpy as np
+
+import cv2
+import numpy as np
 
 # COLORS in BGR
 DEF_COLOR = [(255, 255, 0)]

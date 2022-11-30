@@ -1,7 +1,9 @@
-import color_segmentation
-import numpy as np
-import cv2
 from typing import List
+
+import cv2
+import numpy as np
+
+import color_segmentation
 
 
 def clustering(image, N):

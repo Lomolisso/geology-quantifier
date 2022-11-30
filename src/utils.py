@@ -3,12 +3,13 @@ Utility functions/classes of the project.
 """
 
 
+import os
+import sys
 import tkinter
 from tkinter import ttk
 from zipfile import ZipFile
+
 import cv2
-import sys
-import os
 from ttkwidgets.frames import Balloon
 
 

@@ -3,9 +3,11 @@ Script to manualy cut the target sample of an image.
 You can do it calling extract_sample(img) passing the 
 image you want to cut.
 """
+import enum
+
 import cv2
 import numpy as np
-import enum
+
 from unwraper import unwrapping
 
 BLUE = (255, 0, 0)

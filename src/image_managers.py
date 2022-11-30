@@ -3,9 +3,10 @@ This script contains different ways to load and save images.
 All the loaded and saved images must be matrix objects.
 """
 
+from tkinter import filedialog
+
 import cv2
 import numpy as np
-from tkinter import filedialog
 
 
 def load_image_from_path(img_path: str) -> cv2.Mat:

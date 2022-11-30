@@ -6,6 +6,7 @@ a matrix.
 """
 import cv2
 import pyvista as pv
+
 from utils import get_path
 
 pv.global_theme.title = "3D Rock Sample"

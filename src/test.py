@@ -1,5 +1,6 @@
 import cv2
 import sample_extraction2
+
 import image_managers
 
 img = image_managers.load_image_from_window()

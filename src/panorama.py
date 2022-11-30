@@ -1,8 +1,8 @@
-import stitching
-import sample_extraction
-import sample_extraction
 import cv2
+import stitching
+
 import image_managers
+import sample_extraction
 
 # panorama = stitcher.stitch(["/img/raw/diorote/DIO 6N 0°.JPG", "/img/raw/diorote/DIO 6N 90°.JPG", "/img/raw/diorote/DIO 6N 180°.JPG"])
 raw_img1 = image_managers.load_image_from_window()

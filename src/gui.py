@@ -1,29 +1,25 @@
 import csv
-import image_tree
 import tkinter
 import tkinter.font as tk_font
-import numpy as np
-import webbrowser
-import cv2
-import image_managers, percent, tube, shape_detection as sc
-import sv_ttk
-from tkinter import ttk
 import tkinter.messagebox
-
-from PIL import Image, ImageTk
-from sample_extraction import ExtractorModeEnum, SampleExtractor
-from utils import (
-    PlaceholderEntry,
-    createBalloon,
-    createCheckBoxWithHover,
-    createButtonWithHover,
-    generate_zip,
-    get_file_filepath,
-    get_path,
-    get_results_filepath,
-)
+import webbrowser
+from tkinter import ttk
 from typing import Any, List
 
+import cv2
+import numpy as np
+import sv_ttk
+from PIL import Image, ImageTk
+
+import image_managers
+import image_tree
+import percent
+import shape_detection as sc
+import tube
+from sample_extraction import ExtractorModeEnum, SampleExtractor
+from utils import (PlaceholderEntry, createBalloon, createButtonWithHover,
+                   createCheckBoxWithHover, generate_zip, get_file_filepath,
+                   get_path, get_results_filepath)
 
 CLUSTER_RESHAPE = 0.7
 ROOT = tkinter.Tk()
