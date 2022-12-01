@@ -647,12 +647,18 @@ class GUI(object):
         self.preview()
 
     def crop(self):
+        """
+        Method to initalize and set the sample extractor.   
+        """
         self.sample_extractor.init_extractor()
 
         # insert in  canvas
         self._set_extractor_canvas()
 
     def measures(self):
+        """
+        Method to display all the buttons for the sample extraction.
+        """
         self.size_fr.grid(row=0, column=4, sticky=tkinter.N)
         self.size_sub_fr.grid(row=0, column=0)
         self.entry_height_cm.grid(row=0, column=0)
@@ -660,6 +666,9 @@ class GUI(object):
         self.size_fr_lbl.grid(row=1, column=0)
 
     def un_measures(self):
+        """
+        Method to hide all the buttons for the sample extraction.
+        """
 
         self.entry_height_cm.grid_forget()
         self.btn_height.grid_forget()
@@ -668,6 +677,9 @@ class GUI(object):
         self.size_sub_fr.grid_forget()
 
     def select_img(self):
+        """
+        Method to request for an image, initialize all the variables and perform a sample extraction.
+        """
         try:
             img, filename = image_managers.load_image_from_window()
             self.filename = filename.split("/")[-1].split(".")[0]
@@ -752,6 +764,9 @@ class GUI(object):
         self.create_btns()
 
     def clean_btns(self) -> None:
+        """
+        Method to destroy every frame and its widgets, is used to clean the screen to display new information.
+        """
         for wget in self.file_fr.winfo_children():
             wget.grid_forget()
         self.file_fr.grid_forget()
@@ -769,6 +784,10 @@ class GUI(object):
         self.navigate_fr.grid_forget()
 
     def create_btns(self) -> None:
+        """
+        Method to grid all the buttons related to the segmentation of the image.
+        It also grid the frames of every button.
+        """
         # -- files --
         self.file_fr.grid(row=0, column=0, sticky=tkinter.N)
         self.btn_img.grid(row=0, column=0, padx=5, pady=5)
@@ -1088,6 +1107,10 @@ class GUI(object):
         self.update_screen()
 
     def process_image(self):
+        """
+        Method to perform an analisis of the shapes in the image.
+        It performs a shape segmentation if the toogle_var is set in 1.
+        """
         if self.toggle_var.get() == 1:
             self.segmentate()
         else:
@@ -1155,17 +1178,20 @@ class GUI(object):
         self.fill_table(results, sc.COLORS)
 
     def aggregate(self, results) -> List:
+        """
+        Method to aggregate the results of every shape, it average all the results.
+        """
         agg_results = []
         color_count = []
         # Results list initialization
         for i in range(len(sc.COLORS)):
             agg_results.append([])
             color_count.append(0)
-            for _ in sc.STATISTICS_CM:
+            for _ in sc.STATISTICS_MM:
                 agg_results[i].append(0)
         for res in results:
             color_count[res[0]] += 1
-            for i in range(len(sc.STATISTICS_CM)):
+            for i in range(len(sc.STATISTICS_MM)):
                 # i is the statistic to aggregate
                 # i+1 is the position of the statistic
                 # in the res list
@@ -1175,12 +1201,15 @@ class GUI(object):
             if color_count[i] == 0:
                 agg_results[i] = None
                 continue
-            for j in range(len(sc.STATISTICS_CM)):
+            for j in range(len(sc.STATISTICS_MM)):
                 agg_results[i][j] /= color_count[i]
                 agg_results[i][j] = np.round(agg_results[i][j], 2)
         return agg_results
 
     def create_label(self, name, row, col):
+        """
+        Creates a ttk label with a custom name. It grids in the specified row and column.
+        """
         label = ttk.Label(
             self.results_fr, text=name, style="Heading.TLabel", padding=(5, 6, 7, 8)
         )
@@ -1188,6 +1217,9 @@ class GUI(object):
         return label
 
     def create_color_label(self, name, row, col):
+        """
+        Creates a simple tkinter label.
+        """
         label = tkinter.Label(self.results_fr, text=name)
         label.grid(
             row=row, column=col, sticky=tkinter.N + tkinter.S + tkinter.E + tkinter.W
