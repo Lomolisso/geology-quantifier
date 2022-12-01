@@ -16,7 +16,7 @@ import image_tree
 import percent
 import shape_detection as sc
 import tube
-from sample_extraction import ExtractorModeEnum, SampleExtractor
+from sample_extraction import SampleExtractor
 from utils import (PlaceholderEntry, createBalloon, createButtonWithHover,
                    createCheckBoxWithHover, generate_zip, get_file_filepath,
                    get_path, get_results_filepath)
@@ -47,17 +47,16 @@ class GUI(object):
         # --- workflow parameters ---
         self.org_img = None
         self.clone_img = None
-        self.last_index_selected = []
 
+        # --- interface parameters ---
         self.sample_extractor = SampleExtractor()
-
         self.img_tree = None
         self.selected_images_indices = []
+        self.last_index_selected = []
         self.main_win = root
         self.main_win.bind("<1>", self.focus_win)
         self.key_pressed = ""
         self.clicked_pos = (0, 0)
-        # --- interface parameters ---
 
         # -- fonts --
         self.my_font = tk_font.Font(size=14)
@@ -603,19 +602,7 @@ class GUI(object):
         self.prev_boolean = False
         self.org_img = self.choose_cut_method(self.rot_img)
         self.main_win.unbind("<Key>")
-        self.un_measures()
-        for wget in self.file_fr.winfo_children():
-            wget.grid_forget()
-        self.file_fr.grid_forget()
-        for wget in self.command_fr.winfo_children():
-            wget.grid_forget()
-        self.command_fr.grid_forget()
-        for wget in self.crop_fr.winfo_children():
-            wget.grid_forget()
-        self.crop_fr.grid_forget()
-        for wget in self.size_fr.winfo_children():
-            wget.grid_forget()
-        self.size_fr.grid_forget()
+        self.clean_se_btns()
         self.show_img()
 
     def reset_image(self):
@@ -672,29 +659,60 @@ class GUI(object):
         Sets sample extractor and his canvas 
         """
         self.sample_extractor.init_extractor()
-
-        # insert in  canvas
+        # insert in canvas
         self._set_extractor_canvas()
 
-    def measures(self):
+    def create_se_btns(self):
         """
-        Sets frame of measures
+        Method to grid all the buttons related to the sample extraction of the image.
+        It also grid the frames of every button.
         """
+        
+        # -- File managment
+        self.file_fr.grid(row=0, column=0, sticky=tkinter.N)
+        self.btn_img.grid(row=0, column=0, padx=5, pady=5)
+        self.file_fr_lbl.grid(column=0)
+        # -- commands --
+        self.command_fr.grid(row=0, column=1, sticky=tkinter.N)
+        self.btn_save_img.grid(row=0, column=0, padx=5, pady=5)
+        self.btn_reset_img.grid(row=1, column=0, padx=5, pady=5)
+        self.btn_select_all_img.grid(row=1, column=1, padx=5, pady=5)
+        self.btn_rotate.grid(row=0, column=1, padx=5, pady=5)
+        self.btn_rotateR.grid(row=0, column=2, padx=5, pady=5)
+        self.btn_rotateL.grid(row=1, column=2, padx=5, pady=5)
+        self.command_fr_lbl.grid(column=0, padx=5, pady=5, columnspan=3)
+        # -- crop types --
+        self.crop_fr.grid(row=0, column=2, sticky=tkinter.N)
+        self.btn_rectangle.grid(row=0, column=0, padx=5, pady=5)
+        self.btn_unwrapping.grid(row=1, column=0, padx=5, pady=5)
+        self.btn_free.grid(row=2, column=0, padx=5, pady=5)
+        self.crop_fr_lbl.grid(column=0, padx=5, pady=5)
+        # -- size tools --
         self.size_fr.grid(row=0, column=4, sticky=tkinter.N)
         self.size_sub_fr.grid(row=0, column=0)
         self.entry_height_cm.grid(row=0, column=0)
         self.btn_height.grid(row=0, column=1)
         self.size_fr_lbl.grid(row=1, column=0)
+        # -- help --
+        self.help_fr.grid(row=0, column=5, sticky=tkinter.N)
+        self.btn_doc.grid(row=0, column=0, padx=5, pady=5)
 
-    def un_measures(self):
+    def clean_se_btns(self) -> None:
         """
-        Clean frame of measures
+        Method to destroy every frame and its widgets related to the sample extraction, is used to clean the screen to display new information.
         """
-        self.entry_height_cm.grid_forget()
-        self.btn_height.grid_forget()
-        self.size_fr_lbl.grid_forget()
+        for wget in self.file_fr.winfo_children():
+            wget.grid_forget()
+        self.file_fr.grid_forget()
+        for wget in self.command_fr.winfo_children():
+            wget.grid_forget()
+        self.command_fr.grid_forget()
+        for wget in self.crop_fr.winfo_children():
+            wget.grid_forget()
+        self.crop_fr.grid_forget()
+        for wget in self.size_fr.winfo_children():
+            wget.grid_forget()
         self.size_fr.grid_forget()
-        self.size_sub_fr.grid_forget()
 
     def select_img(self):
         """
@@ -704,7 +722,6 @@ class GUI(object):
             img, filename = image_managers.load_image_from_window()
             self.filename = filename.split("/")[-1].split(".")[0]
             # set max resolution
-            # TODO: Move to another module
             resize_height = SCREEN_HEIGHT
             resize_width = SCREEN_WIDTH
             resize_img = img
@@ -740,30 +757,7 @@ class GUI(object):
             self.sample_extractor.set_image(self._resize_img(resize_img))
             self.crop()
 
-            self.measures()
-
-            # -- File managment
-            self.file_fr.grid(row=0, column=0, sticky=tkinter.N)
-            self.btn_img.grid(row=0, column=0, padx=5, pady=5)
-            self.file_fr_lbl.grid(column=0)
-            # -- commands --
-            self.command_fr.grid(row=0, column=1, sticky=tkinter.N)
-            self.btn_save_img.grid(row=0, column=0, padx=5, pady=5)
-            self.btn_reset_img.grid(row=1, column=0, padx=5, pady=5)
-            self.btn_select_all_img.grid(row=1, column=1, padx=5, pady=5)
-            self.btn_rotate.grid(row=0, column=1, padx=5, pady=5)
-            self.btn_rotateR.grid(row=0, column=2, padx=5, pady=5)
-            self.btn_rotateL.grid(row=1, column=2, padx=5, pady=5)
-            self.command_fr_lbl.grid(column=0, padx=5, pady=5, columnspan=3)
-            # -- crop types --
-            self.crop_fr.grid(row=0, column=2, sticky=tkinter.N)
-            self.btn_rectangle.grid(row=0, column=0, padx=5, pady=5)
-            self.btn_unwrapping.grid(row=1, column=0, padx=5, pady=5)
-            self.btn_free.grid(row=2, column=0, padx=5, pady=5)
-            self.crop_fr_lbl.grid(column=0, padx=5, pady=5)
-            # -- help --
-            self.help_fr.grid(row=0, column=5, sticky=tkinter.N)
-            self.btn_doc.grid(row=0, column=0, padx=5, pady=5)
+            self.create_se_btns()
 
             self.segmentation = False
             self.grados = 0
@@ -775,7 +769,6 @@ class GUI(object):
         """
         This method is called when a new image is uploaded.
         """
-        # self.clean_frames()
         self.img_tree = image_tree.ImageNode(None, self.org_img, self.filename)
         self.segmentation = False
         self.update_screen()
@@ -1079,8 +1072,6 @@ class GUI(object):
         This method plots the image of the current node of the image tree
         in a 3D model of a cilinder.
         """
-        # tkinter.messagebox.showinfo("Proximamente", message="Esta funcionalidad estará disponible proximamente.")
-
         img = self.img_tree.image
         # # Use the loaded img to fill a 3D tube surface.
         tube.fill_tube(img)
