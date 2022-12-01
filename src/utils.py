@@ -27,11 +27,17 @@ class PlaceholderEntry(ttk.Entry):
         self.bind("<FocusOut>", self._add_placeholder)
 
     def _clear_placeholder(self, e):
+        """
+        Deletes the actual placeholder of the entry.
+        """
         if self["style"] == self.placeholder_style:
             self.delete("0", "end")
             self["style"] = self.field_style
 
     def _add_placeholder(self, e):
+        """
+        Set the original placeholder of the entry.
+        """
         if not self.get():
             self.insert("0", self.placeholder)
             self["style"] = self.placeholder_style
@@ -127,6 +133,9 @@ def generate_zip(filepath, files, files_name=None) -> None:
 
 
 def get_path(filename):
+    """
+    Returns the absolute path of a given filename.
+    """
     if hasattr(sys, "_MEIPASS"):
         return os.path.join(sys._MEIPASS, filename)
     else:

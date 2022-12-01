@@ -5,23 +5,30 @@ from shape_detection import ContourData, contour_segmentation
 
 
 def math_area(array):
-    "calculo del area con determinante, los puntos deben estar ordenados y no crear agujeros en la figura"
-    detizq = 0
-    detder = 0
+    """
+    Calculate the area using the determinant of a matrix created using the input array, 
+    the points must be ordered and the image must not have holes in it.
+    """
+    left_det = 0
+    right_det = 0
     for i in range(len(array)):
         if i == len(array) - 1:
-            detizq += array[i][0] * array[0][1]
-            detder += array[i][1] * array[0][0]
+            left_det += array[i][0] * array[0][1]
+            right_det += array[i][1] * array[0][0]
         else:
-            detizq += array[i][0] * array[i + 1][1]
-            detder += array[i][1] * array[i + 1][0]
-    if 1 / 2 * (detizq - detder) > 0:
-        return np.round(1 / 2 * (detizq - detder), 2)
+            left_det += array[i][0] * array[i + 1][1]
+            right_det += array[i][1] * array[i + 1][0]
+    if 1 / 2 * (left_det - right_det) > 0:
+        return np.round(1 / 2 * (left_det - right_det), 2)
     else:
-        return np.round(-1 / 2 * (detizq - detder), 2)
+        return np.round(-1 / 2 * (left_det - right_det), 2)
 
 
 def math_aspect_ratio(array):
+    """
+    Calculate the aspect ratio of the points in the input array.
+    it draws the inscrite rectangle of the shapes and perform its aspect ratio.
+    """
     maxx = max(fila[0] for fila in array)
     minx = min(fila[0] for fila in array)
     maxy = max(fila[1] for fila in array)
@@ -35,14 +42,25 @@ def math_aspect_ratio(array):
 
 
 def math_equiv_radio(array):
+    """
+    Calculate the equivalent radius of the shape using the formula:
+    area = pi * radius**2
+    """
     return np.sqrt(math_area(array) / np.pi)
 
 
 def math_equiv_length(array):
+    """
+    Calculate the equivalent length of the shape using the formula:
+    area = (length) * (asp_ratio * length)
+    """
     return np.round(np.sqrt(math_area(array) / math_aspect_ratio(array)), 1)
 
 
 def math_middle_point(array):
+    """
+    Calculate the middle points of the shape using the minimum and maximum coordinate in the x and y axis of the points.
+    """
     maxx = max(fila[0] for fila in array)
     x = min(fila[0] for fila in array)
     maxy = max(fila[1] for fila in array)
@@ -53,6 +71,9 @@ def math_middle_point(array):
 
 
 def math_perimeter(array):
+    """
+    Calculate the perimeter of the shape calculate the euclidean distance between every point in the shape.
+    """
     perimeter = 0
     for i in range(len(array)):
         if i == len(array) - 1:
@@ -64,6 +85,9 @@ def math_perimeter(array):
 
 
 def poli_gen(n, center, radius):
+    """
+    Generate a random poligon with n vertices. The point is at distance radius of the center, with an angle given by a random number.
+    """
     x, y = center
     theta = np.sort(np.random.rand(n))
     theta = 2 * np.pi * theta
@@ -74,11 +98,14 @@ def poli_gen(n, center, radius):
     return np.array(points, np.int32)
 
 
-def poli_gen_radio(n, center, radio, min):
+def poli_gen_radio(n, center, radius, min):
+    """
+    Generate a random poligon with n vertices. The point is at distance radius (with a difference given by a random number) of the center, with an angle given by a random number.
+    """
     x, y = center
     theta = np.sort(np.random.uniform(0, 1, n))
     theta = 2 * np.pi * theta
-    ran = radio * np.random.uniform(min, 1, n)
+    ran = radius * np.random.uniform(min, 1, n)
     points = [
         [
             round(x + ran[i] * np.cos(theta[i]), 0),
@@ -90,6 +117,10 @@ def poli_gen_radio(n, center, radio, min):
 
 
 def assert_error_tuple(estimate_value: tuple, calculated_value: tuple, error: float):
+    """
+    Compares the estimate_value with the calculate_value and throws an Assertion Error if the difference between both values is greater than error.
+    It compares the two values inside the tuple.
+    """
     est_x, est_y = estimate_value
     cal_x, cal_y = calculated_value
     error_calculado = (cal_x - est_x) / est_x
@@ -98,21 +129,29 @@ def assert_error_tuple(estimate_value: tuple, calculated_value: tuple, error: fl
     assert error > abs(error_calculado)
 
 
-def assert_error_float(
-    estimate_value: np.float64, calculated_value: np.float64, error: float
-):
-    error_calculado = (calculated_value - estimate_value) / estimate_value
-    assert error > abs(error_calculado)
+def assert_error_float(estimate_value: np.float64, calculated_value: np.float64, error: float):
+    """
+    Compares the estimate_value with the calculate_value and throws an Assertion Error if the difference between both values is greater than error.
+    """
+    calculated_error = (calculated_value - estimate_value) / estimate_value
+    assert error > abs(calculated_error)
 
 
 def assert_error(estimate_value, calculated_value, error: float):
+    """
+    Dispach the values to the assert_error_tuple or assert_error_float depending on the type of the input values.
+    """
     if type(estimate_value) == tuple:
         assert_error_tuple(estimate_value, calculated_value, error)
     else:
         assert_error_float(estimate_value, calculated_value, error)
 
 
-def testing(funcion_programa, funcion_math, error):
+def testing(program_function, math_function, error):
+    """
+    Perform the testing of the given program_function againts the ground truth math_function.
+    It fails with an AssesionError if the diference between the function is greater than the error value.
+    """
     height = 400
     width = 400
     channels = 3
@@ -131,44 +170,42 @@ def testing(funcion_programa, funcion_math, error):
 
     for pts in points:
         img = np.zeros((height, width, channels), dtype=np.uint8)
-        value = funcion_math(pts)
+        value = math_function(pts)
         pts = pts.reshape((-1, 1, 2))
         img = cv2.fillPoly(img, [pts], (0, 255, 255))
         data = contour_segmentation(img)
-        # revisar diagonales dificiles
+        # Check complex diagonals
         try:
-            assert_error(value, funcion_programa(data[0]), error)
+            assert_error(value, program_function(data[0]), error)
         except:
-            print(value)
-            print(funcion_programa(data[0]))
-            cv2.imshow(f"{funcion_programa}", img)
+            cv2.imshow(f"{program_function}", img)
             cv2.waitKey(0)
             cv2.destroyAllWindows()
 
     for i in range(10, 100):
         img = np.zeros((height, width, channels), dtype=np.uint8)
         pts = poli_gen(i, (200, 200), 100)
-        value = funcion_math(pts)
+        value = math_function(pts)
         pts = pts.reshape((-1, 1, 2))
         img = cv2.fillPoly(img, [pts], (0, 255, 255))
         data = contour_segmentation(img)
         try:
-            assert_error(value, funcion_programa(data[0]), error)
+            assert_error(value, program_function(data[0]), error)
         except:
-            cv2.imshow(f"{funcion_programa}", img)
+            cv2.imshow(f"{program_function}", img)
             cv2.waitKey(0)
             cv2.destroyAllWindows()
     for i in range(10, 100):
         img = np.zeros((height, width, channels), dtype=np.uint8)
         pts = poli_gen_radio(i, (200, 200), 100, 0.8)
-        value = funcion_math(pts)
+        value = math_function(pts)
         pts = pts.reshape((-1, 1, 2))
         img = cv2.fillPoly(img, [pts], (0, 255, 255))
         data = contour_segmentation(img)
         try:
-            assert_error(value, funcion_programa(data[0]), error)
+            assert_error(value, program_function(data[0]), error)
         except:
-            cv2.imshow(f"{funcion_programa}", img)
+            cv2.imshow(f"{program_function}", img)
             cv2.waitKey(0)
             cv2.destroyAllWindows()
 

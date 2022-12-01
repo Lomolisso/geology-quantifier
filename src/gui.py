@@ -28,8 +28,6 @@ SCREEN_HEIGHT = ROOT.winfo_screenheight()
 ARROW_LEFT = tkinter.PhotoImage(file=get_path("./assets/left_arrow.png"))
 ARROW_RIGHT = tkinter.PhotoImage(file=get_path("./assets/right_arrow.png"))
 HELP_ICON = tkinter.PhotoImage(file=get_path("./assets/help_icon.png"))
-OFF = tkinter.PhotoImage(file=get_path("./assets/off.png"))
-ON = tkinter.PhotoImage(file=get_path("./assets/on.png"))
 
 
 class GUI(object):
@@ -382,7 +380,6 @@ class GUI(object):
         self.canvas_preview = tkinter.Canvas(self.principal_fr)
         self.prev_boolean = False
         self.cm = tkinter.BooleanVar()
-        self.switch_btn_image = OFF
 
     def set_height(self):
         """
@@ -788,7 +785,7 @@ class GUI(object):
 
     def clean_btns(self) -> None:
         """
-        Clean button canvas
+        Method to destroy every frame and its widgets, is used to clean the screen to display new information.
         """
         for wget in self.file_fr.winfo_children():
             wget.grid_forget()
@@ -808,7 +805,8 @@ class GUI(object):
 
     def create_btns(self) -> None:
         """
-        Sets button canvas
+        Method to grid all the buttons related to the segmentation of the image.
+        It also grid the frames of every button.
         """
         # -- files --
         self.file_fr.grid(row=0, column=0, sticky=tkinter.N)
@@ -1130,7 +1128,8 @@ class GUI(object):
 
     def process_image(self):
         """
-        Choose analysis method 
+        Method to perform an analisis of the shapes in the image.
+        It performs a shape segmentation if the toogle_var is set in 1.
         """
         if self.toggle_var.get() == 1:
             self.segmentate()
@@ -1208,11 +1207,11 @@ class GUI(object):
         for i in range(len(sc.COLORS)):
             agg_results.append([])
             color_count.append(0)
-            for _ in sc.STATISTICS_CM:
+            for _ in sc.STATISTICS_MM:
                 agg_results[i].append(0)
         for res in results:
             color_count[res[0]] += 1
-            for i in range(len(sc.STATISTICS_CM)):
+            for i in range(len(sc.STATISTICS_MM)):
                 # i is the statistic to aggregate
                 # i+1 is the position of the statistic
                 # in the res list
@@ -1222,7 +1221,7 @@ class GUI(object):
             if color_count[i] == 0:
                 agg_results[i] = None
                 continue
-            for j in range(len(sc.STATISTICS_CM)):
+            for j in range(len(sc.STATISTICS_MM)):
                 agg_results[i][j] /= color_count[i]
                 agg_results[i][j] = np.round(agg_results[i][j], 2)
         return agg_results
@@ -1239,7 +1238,7 @@ class GUI(object):
 
     def create_color_label(self, name, row, col):
         """
-        Create a ttk label with color
+        Creates a simple tkinter label.
         """
         label = tkinter.Label(self.results_fr, text=name)
         label.grid(
@@ -1452,10 +1451,8 @@ class GUI(object):
         """
         color_array = None
         if self.cm.get()==1:
-            self.switch_btn_image = ON
             self.height_mm *= 0.1
         else:
-            self.switch_btn_image = OFF
             self.height_mm *= 10
         if self.toggle_var.get() == 1:
             color_array = sc.COLORS
