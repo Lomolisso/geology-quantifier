@@ -504,9 +504,15 @@ class GUI(object):
         self.update_image(self.label_extractor, self.sample_extractor.get_image())
 
     def choose_cut_method(self, img):
+        """
+        Cut a image from points on sample extractor
+        """
         return self.sample_extractor.cut(img)
 
     def select_all_img(self):
+        """
+        Move points to corners in sample extractor
+        """
         self.sample_extractor.to_corners()
 
         self.sample_extractor.refresh_image()
@@ -514,6 +520,9 @@ class GUI(object):
         self.preview()
 
     def rotateR(self):
+        """
+        Rotate image in sample extractor to right 0.2 grades 
+        """
         image_center = tuple(np.array(self.clone_img.shape[1::-1]) / 2)
         self.grados -= 0.2
         rotation_matrix = cv2.getRotationMatrix2D(
@@ -532,6 +541,9 @@ class GUI(object):
         self.preview()
 
     def rotateL(self):
+        """
+        Rotate image in sample extractor to left 0.2 grades 
+        """
         image_center = tuple(np.array(self.clone_img.shape[1::-1]) / 2)
         self.grados += 0.2
         rotation_matrix = cv2.getRotationMatrix2D(
@@ -583,6 +595,9 @@ class GUI(object):
         self.canvas_preview.grid(row=0, column=1)
 
     def save_image(self):
+        """
+        Clean window and save image cut from sample extractor
+        """
         if self.height_mm is None:
             tkinter.messagebox.showwarning(
                 "Error", message="Por favor ingresa la altura."
@@ -607,6 +622,9 @@ class GUI(object):
         self.show_img()
 
     def reset_image(self):
+        """
+        Sets image on sample extractor as the original image
+        """
         self.clone_img = self.org_img
         self.rot_img = self.org_img
         self.grados = 0
@@ -617,6 +635,9 @@ class GUI(object):
         self.preview()
 
     def key_press(self, event):
+        """
+        Handler event press a key on keyboard
+        """
         if event.char == "s":
             self.save_image()
         elif event.char == "p":
@@ -627,6 +648,9 @@ class GUI(object):
             self.reset_image()
 
     def release_click(self, event):
+        """
+        Handler event leftmost click release
+        """
         copy_img = self.choose_cut_method(self.rot_img)
         self.update_image(self.label_extractor2, self._resize_img(copy_img, 1.7))
         self.sample_extractor.refresh_image()
@@ -647,12 +671,18 @@ class GUI(object):
         self.preview()
 
     def crop(self):
+        """
+        Sets sample extractor and his canvas 
+        """
         self.sample_extractor.init_extractor()
 
         # insert in  canvas
         self._set_extractor_canvas()
 
     def measures(self):
+        """
+        Sets frame of measures
+        """
         self.size_fr.grid(row=0, column=4, sticky=tkinter.N)
         self.size_sub_fr.grid(row=0, column=0)
         self.entry_height_cm.grid(row=0, column=0)
@@ -660,7 +690,9 @@ class GUI(object):
         self.size_fr_lbl.grid(row=1, column=0)
 
     def un_measures(self):
-
+        """
+        Clean frame of measures
+        """
         self.entry_height_cm.grid_forget()
         self.btn_height.grid_forget()
         self.size_fr_lbl.grid_forget()
@@ -668,6 +700,9 @@ class GUI(object):
         self.size_sub_fr.grid_forget()
 
     def select_img(self):
+        """
+        Load a image from window and set canvas
+        """
         try:
             img, filename = image_managers.load_image_from_window()
             self.filename = filename.split("/")[-1].split(".")[0]
@@ -752,6 +787,9 @@ class GUI(object):
         self.create_btns()
 
     def clean_btns(self) -> None:
+        """
+        Clean button canvas
+        """
         for wget in self.file_fr.winfo_children():
             wget.grid_forget()
         self.file_fr.grid_forget()
@@ -769,6 +807,9 @@ class GUI(object):
         self.navigate_fr.grid_forget()
 
     def create_btns(self) -> None:
+        """
+        Sets button canvas
+        """
         # -- files --
         self.file_fr.grid(row=0, column=0, sticky=tkinter.N)
         self.btn_img.grid(row=0, column=0, padx=5, pady=5)
@@ -1088,6 +1129,9 @@ class GUI(object):
         self.update_screen()
 
     def process_image(self):
+        """
+        Choose analysis method 
+        """
         if self.toggle_var.get() == 1:
             self.segmentate()
         else:
@@ -1155,6 +1199,9 @@ class GUI(object):
         self.fill_table(results, sc.COLORS)
 
     def aggregate(self, results) -> List:
+        """
+        Join data from groups and return means from statistics
+        """
         agg_results = []
         color_count = []
         # Results list initialization
@@ -1181,6 +1228,9 @@ class GUI(object):
         return agg_results
 
     def create_label(self, name, row, col):
+        """
+        Create a ttk label 
+        """
         label = ttk.Label(
             self.results_fr, text=name, style="Heading.TLabel", padding=(5, 6, 7, 8)
         )
@@ -1188,6 +1238,9 @@ class GUI(object):
         return label
 
     def create_color_label(self, name, row, col):
+        """
+        Create a ttk label with color
+        """
         label = tkinter.Label(self.results_fr, text=name)
         label.grid(
             row=row, column=col, sticky=tkinter.N + tkinter.S + tkinter.E + tkinter.W
