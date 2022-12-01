@@ -28,8 +28,6 @@ SCREEN_HEIGHT = ROOT.winfo_screenheight()
 ARROW_LEFT = tkinter.PhotoImage(file=get_path("./assets/left_arrow.png"))
 ARROW_RIGHT = tkinter.PhotoImage(file=get_path("./assets/right_arrow.png"))
 HELP_ICON = tkinter.PhotoImage(file=get_path("./assets/help_icon.png"))
-OFF = tkinter.PhotoImage(file=get_path("./assets/off.png"))
-ON = tkinter.PhotoImage(file=get_path("./assets/on.png"))
 
 
 class GUI(object):
@@ -382,7 +380,6 @@ class GUI(object):
         self.canvas_preview = tkinter.Canvas(self.principal_fr)
         self.prev_boolean = False
         self.cm = tkinter.BooleanVar()
-        self.switch_btn_image = OFF
 
     def set_height(self):
         """
@@ -1454,10 +1451,8 @@ class GUI(object):
         """
         color_array = None
         if self.cm.get()==1:
-            self.switch_btn_image = ON
             self.height_mm *= 0.1
         else:
-            self.switch_btn_image = OFF
             self.height_mm *= 10
         if self.toggle_var.get() == 1:
             color_array = sc.COLORS
