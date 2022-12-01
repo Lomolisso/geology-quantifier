@@ -2,15 +2,15 @@ name: Package Application
 
 on:
   push:
-    branches: [ geo-q-dev ] # Development branch name
+    branches: [ main ] # Main branch name
   pull_request:
-    branches: [ geo-q-dev ] # Development branch name
+    branches: [ main ] # Main branch name
 
 jobs:
   build-executable:
     runs-on: ubuntu-latest
-    name: Generate executable  
-    
+    name: Generate executable
+
     steps:
     - name: Checkout files
       uses: actions/checkout@v3
@@ -24,14 +24,15 @@ jobs:
         spec: ../gui.spec
         requirements: ../requirements.txt
 
-    - name: Upload executable 
+    - name: Upload executable
       uses: actions/upload-artifact@v3.1.1
       with:
         name: gui
         path: src/dist/windows/gui.exe
   
   release:
-    name: Release dev app
+    name: Release app
+    if: contains(github.ref, 'main')
     runs-on: ubuntu-latest
     needs: build-executable
     
@@ -42,8 +43,8 @@ jobs:
     - name: Update tag
       uses: rickstaa/action-create-tag@v1
       with:
-        tag: test # Tag for development version
-        message: app version for test
+        tag: stable  # Tag for stable version
+        message: Stable app version
         force_push_tag: true 
 
     - name: Download binary
@@ -57,10 +58,10 @@ jobs:
     - name: Publish release
       uses: ncipollo/release-action@v1.11.1
       with:
-        name: Test release
+        name: Stable release
         token: ${{ secrets.GITHUB_TOKEN }}
         commit: ${{ github.sha }}
-        tag: test  # Tag for development version
+        tag: stable # Tag for stable version
         allowUpdates: true
-        body: Executable for testing purposes
+        body: Stable app version
         artifacts: gui.exe
