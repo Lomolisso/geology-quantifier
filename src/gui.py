@@ -16,7 +16,7 @@ import image_tree
 import percent
 import shape_detection as sc
 import tube
-from sample_extraction import ExtractorModeEnum, SampleExtractor
+from sample_extraction import SampleExtractor
 from utils import (PlaceholderEntry, createBalloon, createButtonWithHover,
                    createCheckBoxWithHover, generate_zip, get_file_filepath,
                    get_path, get_results_filepath)
@@ -47,17 +47,16 @@ class GUI(object):
         # --- workflow parameters ---
         self.org_img = None
         self.clone_img = None
-        self.last_index_selected = []
 
+        # --- interface parameters ---
         self.sample_extractor = SampleExtractor()
-
         self.img_tree = None
         self.selected_images_indices = []
+        self.last_index_selected = []
         self.main_win = root
         self.main_win.bind("<1>", self.focus_win)
         self.key_pressed = ""
         self.clicked_pos = (0, 0)
-        # --- interface parameters ---
 
         # -- fonts --
         self.my_font = tk_font.Font(size=14)
@@ -660,8 +659,7 @@ class GUI(object):
         Sets sample extractor and his canvas 
         """
         self.sample_extractor.init_extractor()
-
-        # insert in  canvas
+        # insert in canvas
         self._set_extractor_canvas()
 
     def create_se_btns(self):
@@ -724,7 +722,6 @@ class GUI(object):
             img, filename = image_managers.load_image_from_window()
             self.filename = filename.split("/")[-1].split(".")[0]
             # set max resolution
-            # TODO: Move to another module
             resize_height = SCREEN_HEIGHT
             resize_width = SCREEN_WIDTH
             resize_img = img
@@ -772,7 +769,6 @@ class GUI(object):
         """
         This method is called when a new image is uploaded.
         """
-        # self.clean_frames()
         self.img_tree = image_tree.ImageNode(None, self.org_img, self.filename)
         self.segmentation = False
         self.update_screen()
@@ -1076,8 +1072,6 @@ class GUI(object):
         This method plots the image of the current node of the image tree
         in a 3D model of a cilinder.
         """
-        # tkinter.messagebox.showinfo("Proximamente", message="Esta funcionalidad estará disponible proximamente.")
-
         img = self.img_tree.image
         # # Use the loaded img to fill a 3D tube surface.
         tube.fill_tube(img)
