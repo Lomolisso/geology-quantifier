@@ -25,12 +25,20 @@ class ExtractorModeEnum(str, enum.Enum):
 
 class AbstractExtraction(object):
     def __init__(self, img: cv2.Mat) -> None:
+        """
+        Class constructor, instantiates class
+        params. such as the image, min_radius 
+        and its radius
+        """
         self.set_image(img)
 
         self.min_radius = 6
         self.radius = 7
 
     def set_image(self, img: cv2.Mat):
+        """
+        Sets image to extractor
+        """
         self.image = np.copy(img)
         self.image_size = self.image.shape
         self.original_image = np.copy(self.image)
@@ -71,9 +79,15 @@ class AbstractExtraction(object):
         self._reset_vertex_dirty()
 
     def get_image(self):
+        """
+        Return the image on extractor
+        """
         return self.image
 
     def get_vertex_data(self):
+        """
+        Return the vertex_data on extractor
+        """
         return self.vertex_data
 
     def check_mov(self, x: int, y: int) -> None:
@@ -135,6 +149,9 @@ class FreeExtraction(AbstractExtraction):
         ]
 
     def _margin_conditions(self, x, y):
+        """
+        Deny set the selection points out of image
+        """
         min_margins = x > 0 and y > 0
         max_margins = x < self.image_size[1] and y < self.image_size[0]
         return min_margins and max_margins
@@ -180,6 +197,9 @@ class FreeExtraction(AbstractExtraction):
         return out
 
     def move_vertex(self, x, y):
+        """
+        Move the selection point clicked to x, y on the image
+        """
         self.image = self.original_image.copy()
         v1, v2, v3, v4 = self.vertex_data
         cond_list = [
@@ -325,6 +345,10 @@ class UnwrapperExtraction(AbstractExtraction):
         v5 += np.array([m - v5[0], dy])
 
     def _mov_vertex_5(self, x, y):
+        """
+        Handles the scaled movement of each vertex
+        when the clicked is vertex_5
+        """
         _, _, v2, _, _, v5 = self.vertex_data
         vect = np.array([x, y])
         dx, dy = vect - v5
@@ -332,6 +356,9 @@ class UnwrapperExtraction(AbstractExtraction):
         v5 += np.array([dx, dy])
 
     def _process_scale_mov(self, x, y):
+        """
+        Process vertex moves 
+        """
         mov_dict = {
             0: self._mov_vertex_0,
             1: self._mov_vertex_1,
@@ -370,6 +397,9 @@ class UnwrapperExtraction(AbstractExtraction):
         return unwrapping(copy_img, points)
 
     def move_vertex(self, x, y):
+        """
+        Moves the selection point clicked to x, y on the image
+        """
         self.image = self.original_image.copy()
 
         if self._margin_conditions(x, y):
@@ -401,6 +431,9 @@ class RectangleExtraction(FreeExtraction):
         super().__init__(img)
 
     def move_vertex(self, x, y):
+        """
+        Moves the selection point clicked to x, y on the image
+        """
         self.image = self.original_image.copy()
         v1, v2, v3, v4 = self.vertex_data
         cond_list = [
@@ -434,26 +467,45 @@ class RectangleExtraction(FreeExtraction):
 
 class SampleExtractor(object):
     def __init__(self) -> None:
+        """
+        Class constructor, instantiates class
+        params. such as the mode
+        """
         self.mode = ExtractorModeEnum.RECTANGLE
 
     def set_image(self, img: cv2.Mat, rotation: bool = False):
+        """
+        Puts image on img param
+        """
         self.img = img
         if rotation:
             self.ext.set_image(img)
 
     def to_rectangle(self):
+        """
+        Sets extractor mode to rectangle
+        """
         self.mode = ExtractorModeEnum.RECTANGLE
         self.ext = RectangleExtraction(img=self.img)
 
     def to_unwrapping(self):
+        """
+        Sets extractor mode to unwrapping
+        """
         self.mode = ExtractorModeEnum.UNWRAPPER
         self.ext = UnwrapperExtraction(img=self.img)
 
     def to_free(self):
+        """
+        Sets extractor mode to free
+        """
         self.mode = ExtractorModeEnum.FREE
         self.ext = FreeExtraction(img=self.img)
 
     def init_extractor(self):
+        """
+        Initialize extractor
+        """
         if self.mode == ExtractorModeEnum.FREE:
             self.to_free()
         elif self.mode == ExtractorModeEnum.UNWRAPPER:
@@ -464,25 +516,49 @@ class SampleExtractor(object):
     # --- Public extraction methods ---
 
     def get_image(self):
+        """
+        Return image on extractor
+        """
         return self.ext.get_image()
 
     def refresh_image(self):
+        """
+        Refresh image on extractor
+        """
         self.ext.refresh_image()
 
     def get_vertex_data(self):
+        """
+        Return vertex_data on extractor
+        """
         return self.ext.vertex_data
 
     def reset_vertices(self):
+        """
+        Reset vertex_data on extractor
+        """
         self.ext.reset_vertices()
 
     def check_mov(self, x, y):
+        """
+        Check movement of vertex on extractor
+        """
         self.ext.check_mov(x, y)
 
     def move_vertex(self, x, y):
+        """
+        Move vertex on extractor
+        """
         self.ext.move_vertex(x, y)
 
     def to_corners(self):
+        """
+        Sets vertexs position to corners on extractor
+        """
         self.ext.to_corners()
 
     def cut(self, img):
+        """
+        Cut img on extractor
+        """
         return self.ext.cut(img)
