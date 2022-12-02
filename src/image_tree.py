@@ -85,7 +85,6 @@ class ImageNode(object):
             self.childs[i] = None
         self.childs = [child for child in self.childs if child is not None]
         return acc
-
     def delete(self, indices: List[int]) -> None:
         """
         Deletes one or more ImageNodes and propagates
@@ -93,7 +92,6 @@ class ImageNode(object):
         """
         acc = self._collapse_image_nodes(indices)
         self._propagate_delete(acc)
-
     def merge(self, indices: List[int]) -> None:
         """
         Merges a list of ImageNodes into one, note that
