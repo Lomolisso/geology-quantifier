@@ -17,16 +17,9 @@ import percent
 import shape_detection as sc
 import tube
 from sample_extraction import SampleExtractor
-from utils import (
-    PlaceholderEntry,
-    createBalloon,
-    createButtonWithHover,
-    createCheckBoxWithHover,
-    generate_zip,
-    get_file_filepath,
-    get_path,
-    get_results_filepath,
-)
+from utils import (PlaceholderEntry, createBalloon, createButtonWithHover,
+                   createCheckBoxWithHover, generate_zip, get_file_filepath,
+                   get_path, get_results_filepath)
 
 CLUSTER_RESHAPE = 0.7
 ROOT = tkinter.Tk()
