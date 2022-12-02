@@ -486,7 +486,7 @@ class GUI(object):
             return
 
         if selected_imgs == 1:
-            self.img_tree = self.img_tree.childs[self.selected_images_indices[0]]
+            self.forward()
 
         self.img_tree.split(n_childs=n_childs)
         self.selected_images_indices = []
@@ -766,6 +766,7 @@ class GUI(object):
 
             self.create_se_btns()
 
+            self.selected_images_indices = []
             self.segmentation = False
             self.grados = 0
             self.height_mm = 200
@@ -1079,8 +1080,11 @@ class GUI(object):
         This method plots the image of the current node of the image tree
         in a 3D model of a cilinder.
         """
-        img = self.img_tree.image
-        # # Use the loaded img to fill a 3D tube surface.
+        if len(self.selected_images_indices) == 1:
+            img = self.img_tree.childs[self.selected_images_indices[0]].image
+        else:
+            img = self.img_tree.image
+        # Use the loaded img to fill a 3D tube surface.
         tube.fill_tube(img)
 
     def undo(self) -> None:
@@ -1144,7 +1148,7 @@ class GUI(object):
             )
             return
         if len(self.selected_images_indices) == 1:
-            self.img_tree = self.img_tree.childs[self.selected_images_indices[0]]
+            self.forward()
 
         self.clean_principal_frame()
         self.clean_canvas_frame()
