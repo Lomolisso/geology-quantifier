@@ -17,9 +17,16 @@ import percent
 import shape_detection as sc
 import tube
 from sample_extraction import SampleExtractor
-from utils import (PlaceholderEntry, createBalloon, createButtonWithHover,
-                   createCheckBoxWithHover, generate_zip, get_file_filepath,
-                   get_path, get_results_filepath)
+from utils import (
+    PlaceholderEntry,
+    createBalloon,
+    createButtonWithHover,
+    createCheckBoxWithHover,
+    generate_zip,
+    get_file_filepath,
+    get_path,
+    get_results_filepath,
+)
 
 CLUSTER_RESHAPE = 0.7
 ROOT = tkinter.Tk()
@@ -299,7 +306,7 @@ class GUI(object):
             toggle_seg_name,
             toggle_seg_description,
             self.toggle_var,
-            text = "Segmentar",
+            text="Segmentar",
         )
 
         btn_back_name = "Atras"
@@ -494,7 +501,7 @@ class GUI(object):
 
     def click_pos(self, event):
         """
-        Handler event leftmost button held down 
+        Handler event leftmost button held down
         """
         self.sample_extractor.move_vertex(event.x, event.y)
         self.update_image(self.label_extractor, self.sample_extractor.get_image())
@@ -517,7 +524,7 @@ class GUI(object):
 
     def rotateR(self):
         """
-        Rotate image in sample extractor to right 0.2 grades 
+        Rotate image in sample extractor to right 0.2 grades
         """
         image_center = tuple(np.array(self.clone_img.shape[1::-1]) / 2)
         self.grados -= 0.2
@@ -538,7 +545,7 @@ class GUI(object):
 
     def rotateL(self):
         """
-        Rotate image in sample extractor to left 0.2 grades 
+        Rotate image in sample extractor to left 0.2 grades
         """
         image_center = tuple(np.array(self.clone_img.shape[1::-1]) / 2)
         self.grados += 0.2
@@ -656,7 +663,7 @@ class GUI(object):
 
     def crop(self):
         """
-        Sets sample extractor and his canvas 
+        Sets sample extractor and his canvas
         """
         self.sample_extractor.init_extractor()
         # insert in canvas
@@ -667,7 +674,7 @@ class GUI(object):
         Method to grid all the buttons related to the sample extraction of the image.
         It also grid the frames of every button.
         """
-        
+
         # -- File managment
         self.file_fr.grid(row=0, column=0, sticky=tkinter.N)
         self.btn_img.grid(row=0, column=0, padx=5, pady=5)
@@ -1219,7 +1226,7 @@ class GUI(object):
 
     def create_label(self, name, row, col):
         """
-        Create a ttk label 
+        Create a ttk label
         """
         label = ttk.Label(
             self.results_fr, text=name, style="Heading.TLabel", padding=(5, 6, 7, 8)
@@ -1305,13 +1312,15 @@ class GUI(object):
         )
 
         toggle_switch_unit_name = "Cambiar unidad"
-        toggle_switch_unit_description = "Permite cambiar la unidad de medida entre centímetro o milímetros."
+        toggle_switch_unit_description = (
+            "Permite cambiar la unidad de medida entre centímetro o milímetros."
+        )
         self.toggle_switch_unit, self.hover_toggle_unit = createCheckBoxWithHover(
             self.results_fr,
             toggle_switch_unit_name,
             toggle_switch_unit_description,
             self.cm,
-            command=self.switch_unit
+            command=self.switch_unit,
         )
 
         self.create_label(
@@ -1418,7 +1427,7 @@ class GUI(object):
 
     def to_unwrapping(self):
         """
-        Change the cutting mode to UNWRAPPING mode, where the cutting area is a hexagon, where the ends move like the RECTANGLE mode, 
+        Change the cutting mode to UNWRAPPING mode, where the cutting area is a hexagon, where the ends move like the RECTANGLE mode,
         and the other two points move freely.
         """
         self.sample_extractor.to_unwrapping()
@@ -1437,11 +1446,11 @@ class GUI(object):
 
     def switch_unit(self) -> None:
         """
-        Change the unit of measurement of the data in the results table, 
+        Change the unit of measurement of the data in the results table,
         between millimeters (MM) and centimeters (CM).
         """
         color_array = None
-        if self.cm.get()==1:
+        if self.cm.get() == 1:
             self.height_mm *= 0.1
         else:
             self.height_mm *= 10

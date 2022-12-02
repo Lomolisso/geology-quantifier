@@ -6,7 +6,7 @@ from shape_detection import ContourData, contour_segmentation
 
 def math_area(array):
     """
-    Calculate the area using the determinant of a matrix created using the input array, 
+    Calculate the area using the determinant of a matrix created using the input array,
     the points must be ordered and the image must not have holes in it.
     """
     left_det = 0
@@ -77,10 +77,16 @@ def math_perimeter(array):
     perimeter = 0
     for i in range(len(array)):
         if i == len(array) - 1:
-            long = np.sqrt(np.square(abs(array[0][0]-array[i][0]))+np.square(abs(array[0][1]-array[i][1])))
+            long = np.sqrt(
+                np.square(abs(array[0][0] - array[i][0]))
+                + np.square(abs(array[0][1] - array[i][1]))
+            )
         else:
-            long = np.sqrt(np.square(abs(array[i+1][0]-array[i][0]))+np.square(abs(array[i+1][1]-array[i][1])))
-        perimeter+=long
+            long = np.sqrt(
+                np.square(abs(array[i + 1][0] - array[i][0]))
+                + np.square(abs(array[i + 1][1] - array[i][1]))
+            )
+        perimeter += long
     return perimeter
 
 
@@ -129,7 +135,9 @@ def assert_error_tuple(estimate_value: tuple, calculated_value: tuple, error: fl
     assert error > abs(error_calculado)
 
 
-def assert_error_float(estimate_value: np.float64, calculated_value: np.float64, error: float):
+def assert_error_float(
+    estimate_value: np.float64, calculated_value: np.float64, error: float
+):
     """
     Compares the estimate_value with the calculate_value and throws an Assertion Error if the difference between both values is greater than error.
     """

@@ -27,7 +27,7 @@ class AbstractExtraction(object):
     def __init__(self, img: cv2.Mat) -> None:
         """
         Class constructor, instantiates class
-        params. such as the image, min_radius 
+        params. such as the image, min_radius
         and its radius
         """
         self.set_image(img)
@@ -271,7 +271,7 @@ class UnwrapperExtraction(AbstractExtraction):
 
     # All dots in this part go anti clockwise (vertex_0 is in the top-left corner), and move as a rectangle, with dots 2 and 5 moving to stay in the
     # middle low and top respectively
-    
+
     def _mov_vertex_0(self, x, y):
         """
         Handles the scaled movement of each vertex
@@ -357,7 +357,7 @@ class UnwrapperExtraction(AbstractExtraction):
 
     def _process_scale_mov(self, x, y):
         """
-        Process vertex moves 
+        Process vertex moves
         """
         mov_dict = {
             0: self._mov_vertex_0,
@@ -449,7 +449,7 @@ class RectangleExtraction(FreeExtraction):
         ):
             punto_posterior = self.vertex_dirty + 1
             punto_anterior = self.vertex_dirty - 1
-            
+
             # This function makes sure that all points move as a rectangle, by assesing the possition of the moving vertex and how
             # the other ones should react
             aprox_posterior = (punto_posterior) % 2

@@ -73,7 +73,7 @@ def createButtonWithHover(master, name, command, description, image=None):
     return btn, hover
 
 
-def createCheckBoxWithHover(master, name, description, variable, text="", command = None):
+def createCheckBoxWithHover(master, name, description, variable, text="", command=None):
     """
     Creates a new checkbox with a hover balloon.
     """
