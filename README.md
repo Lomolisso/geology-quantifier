@@ -1,7 +1,7 @@
 # Geology Quantifier
 
 ## Licence
-Software QGeo © 2023 by Dr Pia Lois Morales and Dr Kimie Suzuki Morales is licensed under CC BY-NC-SA 4.0 
+Software QGeo © 2023 by Dr Pia Lois Morales and Dr Kimie Suzuki Morales is licensed under CC BY-NC-SA 4.0. To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/
 
 ## Description
 This repository contains the implementation of a basic geological quantifier that uses computer vision techniques to detect minerals in a rock sample and calculate rock statistics.
