@@ -1,6 +1,6 @@
 # Geology Quantifier
 
-#Licence
+## Licence
 Software QGeo © 2023 by Dr Pia Lois Morales and Dr Kimie Suzuki Morales is licensed under CC BY-NC-SA 4.0 
 
 ## Description
